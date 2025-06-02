@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
 import { Folder } from '../types/database';
+import { useAuthStore } from './authStore';
 
 interface FolderState {
   folders: Folder[];
@@ -40,9 +41,12 @@ export const useFolderStore = create<FolderState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
+      const user = useAuthStore.getState().user;
+      if (!user) throw new Error('User must be authenticated to create a folder');
+
       const { data, error } = await supabase
         .from('folders')
-        .insert([folder])
+        .insert([{ ...folder, owner_id: user.id }])
         .select()
         .single();
 
