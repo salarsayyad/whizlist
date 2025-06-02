@@ -52,7 +52,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           <ul className="space-y-1">
             <li>
               <NavLink 
-                to="/" 
+                to="/dashboard" 
                 end
                 className={({ isActive }) => 
                   cn("nav-link", isActive && "nav-link-active")
