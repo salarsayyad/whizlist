@@ -2,6 +2,7 @@ import { Menu, Bell, Search, Plus, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddProductModal from '../product/AddProductModal';
+import { useAuthStore } from '../../store/authStore';
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -11,11 +12,16 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     // Implementation of search functionality would go here
     console.log('Searching for:', searchQuery);
+  };
+  
+  const handleLogoClick = () => {
+    navigate(user ? '/dashboard' : '/');
   };
   
   return (
@@ -29,7 +35,7 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
             <Menu size={20} />
           </button>
           
-          <div className="flex items-center cursor-pointer" onClick={() => navigate('/')}>
+          <div className="flex items-center cursor-pointer" onClick={handleLogoClick}>
             <Zap size={24} className="text-accent-500" />
             <span className="ml-2 text-xl font-medium text-primary-800">Whizlist</span>
           </div>
