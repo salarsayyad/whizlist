@@ -8,14 +8,17 @@ import NotFound from './pages/NotFound';
 import Landing from './pages/Landing';
 import Login from './pages/auth/Login';
 import SignUp from './pages/auth/SignUp';
-import ProtectedRoute from './components/auth/ProtectedRoute.tsx';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import RedirectRoute from './components/auth/RedirectRoute';
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<SignUp />} />
+      <Route element={<RedirectRoute />}>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+      </Route>
       
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
