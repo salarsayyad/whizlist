@@ -59,7 +59,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }: ModalProps) =>
               >
                 {title && (
                   <div className="flex items-center justify-between mb-4">
-                    <Dialog.Title as="h3\" className="text-lg font-medium text-primary-900">
+                    <Dialog.Title as="h3" className="text-lg font-medium text-primary-900">
                       {title}
                     </Dialog.Title>
                     <button
