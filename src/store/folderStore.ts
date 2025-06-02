@@ -1,33 +1,33 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
-import { List } from '../types/database';
+import { Folder } from '../types/database';
 
-interface ListState {
-  lists: List[];
+interface FolderState {
+  folders: Folder[];
   isLoading: boolean;
   error: string | null;
-  fetchLists: () => Promise<void>;
-  createList: (list: Pick<List, 'name' | 'description' | 'is_public' | 'folder_id'>) => Promise<void>;
-  updateList: (id: string, updates: Partial<List>) => Promise<void>;
-  deleteList: (id: string) => Promise<void>;
+  fetchFolders: () => Promise<void>;
+  createFolder: (folder: Pick<Folder, 'name' | 'description' | 'is_public' | 'parent_id'>) => Promise<void>;
+  updateFolder: (id: string, updates: Partial<Folder>) => Promise<void>;
+  deleteFolder: (id: string) => Promise<void>;
 }
 
-export const useListStore = create<ListState>((set, get) => ({
-  lists: [],
+export const useFolderStore = create<FolderState>((set, get) => ({
+  folders: [],
   isLoading: false,
   error: null,
 
-  fetchLists: async () => {
+  fetchFolders: async () => {
     try {
       set({ isLoading: true, error: null });
       
       const { data, error } = await supabase
-        .from('lists')
+        .from('folders')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      set({ lists: data });
+      set({ folders: data });
       
     } catch (error) {
       set({ error: (error as Error).message });
@@ -36,18 +36,18 @@ export const useListStore = create<ListState>((set, get) => ({
     }
   },
 
-  createList: async (list) => {
+  createFolder: async (folder) => {
     try {
       set({ isLoading: true, error: null });
       
       const { data, error } = await supabase
-        .from('lists')
-        .insert([list])
+        .from('folders')
+        .insert([folder])
         .select()
         .single();
 
       if (error) throw error;
-      set(state => ({ lists: [data, ...state.lists] }));
+      set(state => ({ folders: [data, ...state.folders] }));
       
     } catch (error) {
       set({ error: (error as Error).message });
@@ -57,12 +57,12 @@ export const useListStore = create<ListState>((set, get) => ({
     }
   },
 
-  updateList: async (id, updates) => {
+  updateFolder: async (id, updates) => {
     try {
       set({ isLoading: true, error: null });
       
       const { data, error } = await supabase
-        .from('lists')
+        .from('folders')
         .update(updates)
         .eq('id', id)
         .select()
@@ -70,8 +70,8 @@ export const useListStore = create<ListState>((set, get) => ({
 
       if (error) throw error;
       set(state => ({
-        lists: state.lists.map(list => 
-          list.id === id ? { ...list, ...data } : list
+        folders: state.folders.map(folder => 
+          folder.id === id ? { ...folder, ...data } : folder
         )
       }));
       
@@ -83,18 +83,18 @@ export const useListStore = create<ListState>((set, get) => ({
     }
   },
 
-  deleteList: async (id) => {
+  deleteFolder: async (id) => {
     try {
       set({ isLoading: true, error: null });
       
       const { error } = await supabase
-        .from('lists')
+        .from('folders')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
       set(state => ({
-        lists: state.lists.filter(list => list.id !== id)
+        folders: state.folders.filter(folder => folder.id !== id)
       }));
       
     } catch (error) {

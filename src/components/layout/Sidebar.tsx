@@ -1,8 +1,10 @@
 import { X, Grid, List, FolderOpen, Share2, Star, Trash2, Settings, Plus, ChevronDown, ChevronRight } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { cn } from '../../lib/utils';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Menu } from '@headlessui/react';
+import { useFolderStore } from '../../store/folderStore';
+import { useListStore } from '../../store/listStore';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -11,6 +13,13 @@ interface SidebarProps {
 
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
+  const { folders, fetchFolders } = useFolderStore();
+  const { lists, fetchLists } = useListStore();
+  
+  useEffect(() => {
+    fetchFolders();
+    fetchLists();
+  }, []);
   
   const toggleFolder = (folderId: string) => {
     setExpandedFolders(prev => 
@@ -18,6 +27,14 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         ? prev.filter(id => id !== folderId)
         : [...prev, folderId]
     );
+  };
+  
+  const getFolderLists = (folderId: string) => {
+    return lists.filter(list => list.folder_id === folderId);
+  };
+  
+  const getUnorganizedLists = () => {
+    return lists.filter(list => !list.folder_id);
   };
   
   return (
@@ -136,127 +153,62 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             </div>
             
             <ul className="space-y-1">
-              {/* Home Decor Folder */}
-              <li>
-                <button 
-                  className="nav-link w-full"
-                  onClick={() => toggleFolder('1')}
-                >
-                  <FolderOpen size={18} />
-                  <span className="flex-1">Home Decor</span>
-                  {expandedFolders.includes('1') ? (
-                    <ChevronDown size={16} />
-                  ) : (
-                    <ChevronRight size={16} />
+              {/* Folders and their lists */}
+              {folders.map(folder => (
+                <li key={folder.id}>
+                  <button 
+                    className="nav-link w-full"
+                    onClick={() => toggleFolder(folder.id)}
+                  >
+                    <FolderOpen size={18} />
+                    <span className="flex-1">{folder.name}</span>
+                    {expandedFolders.includes(folder.id) ? (
+                      <ChevronDown size={16} />
+                    ) : (
+                      <ChevronRight size={16} />
+                    )}
+                  </button>
+                  
+                  {expandedFolders.includes(folder.id) && (
+                    <ul className="ml-6 mt-1 space-y-1">
+                      {getFolderLists(folder.id).map(list => (
+                        <li key={list.id}>
+                          <NavLink 
+                            to={`/list/${list.id}`}
+                            className={({ isActive }) => 
+                              cn("nav-link text-sm py-1.5", isActive && "nav-link-active")
+                            }
+                          >
+                            <List size={16} />
+                            <span>{list.name}</span>
+                          </NavLink>
+                        </li>
+                      ))}
+                      <li>
+                        <button className="nav-link text-sm py-1.5 text-accent-600 hover:text-accent-700 w-full">
+                          <Plus size={16} />
+                          <span>New List</span>
+                        </button>
+                      </li>
+                    </ul>
                   )}
-                </button>
-                
-                {expandedFolders.includes('1') && (
-                  <ul className="ml-6 mt-1 space-y-1">
-                    <li>
-                      <NavLink 
-                        to="/list/3" 
-                        className={({ isActive }) => 
-                          cn("nav-link text-sm py-1.5", isActive && "nav-link-active")
-                        }
-                      >
-                        <List size={16} />
-                        <span>Living Room</span>
-                      </NavLink>
-                    </li>
-                    <li>
-                      <NavLink 
-                        to="/list/4" 
-                        className={({ isActive }) => 
-                          cn("nav-link text-sm py-1.5", isActive && "nav-link-active")
-                        }
-                      >
-                        <List size={16} />
-                        <span>Kitchen</span>
-                      </NavLink>
-                    </li>
-                    <li>
-                      <button className="nav-link text-sm py-1.5 text-accent-600 hover:text-accent-700 w-full">
-                        <Plus size={16} />
-                        <span>New List</span>
-                      </button>
-                    </li>
-                  </ul>
-                )}
-              </li>
+                </li>
+              ))}
               
-              {/* Tech Gadgets Folder */}
-              <li>
-                <button 
-                  className="nav-link w-full"
-                  onClick={() => toggleFolder('2')}
-                >
-                  <FolderOpen size={18} />
-                  <span className="flex-1">Tech Gadgets</span>
-                  {expandedFolders.includes('2') ? (
-                    <ChevronDown size={16} />
-                  ) : (
-                    <ChevronRight size={16} />
-                  )}
-                </button>
-                
-                {expandedFolders.includes('2') && (
-                  <ul className="ml-6 mt-1 space-y-1">
-                    <li>
-                      <NavLink 
-                        to="/list/5" 
-                        className={({ isActive }) => 
-                          cn("nav-link text-sm py-1.5", isActive && "nav-link-active")
-                        }
-                      >
-                        <List size={16} />
-                        <span>Wishlist</span>
-                      </NavLink>
-                    </li>
-                    <li>
-                      <NavLink 
-                        to="/list/6" 
-                        className={({ isActive }) => 
-                          cn("nav-link text-sm py-1.5", isActive && "nav-link-active")
-                        }
-                      >
-                        <List size={16} />
-                        <span>Reviews</span>
-                      </NavLink>
-                    </li>
-                    <li>
-                      <button className="nav-link text-sm py-1.5 text-accent-600 hover:text-accent-700 w-full">
-                        <Plus size={16} />
-                        <span>New List</span>
-                      </button>
-                    </li>
-                  </ul>
-                )}
-              </li>
-              
-              {/* Uncategorized Lists */}
-              <li>
-                <NavLink 
-                  to="/list/1" 
-                  className={({ isActive }) => 
-                    cn("nav-link", isActive && "nav-link-active")
-                  }
-                >
-                  <List size={18} />
-                  <span>Shopping List</span>
-                </NavLink>
-              </li>
-              <li>
-                <NavLink 
-                  to="/list/2" 
-                  className={({ isActive }) => 
-                    cn("nav-link", isActive && "nav-link-active")
-                  }
-                >
-                  <List size={18} />
-                  <span>Gift Ideas</span>
-                </NavLink>
-              </li>
+              {/* Unorganized Lists */}
+              {getUnorganizedLists().map(list => (
+                <li key={list.id}>
+                  <NavLink 
+                    to={`/list/${list.id}`}
+                    className={({ isActive }) => 
+                      cn("nav-link", isActive && "nav-link-active")
+                    }
+                  >
+                    <List size={18} />
+                    <span>{list.name}</span>
+                  </NavLink>
+                </li>
+              ))}
             </ul>
           </div>
         </nav>

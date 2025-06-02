@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Grid, List as ListIcon, Plus, Filter } from 'lucide-react';
 import { useProductStore } from '../store/productStore';
+import { useFolderStore } from '../store/folderStore';
+import { useListStore } from '../store/listStore';
 import ProductGrid from '../components/product/ProductGrid';
 import ProductList from '../components/product/ProductList';
 import Button from '../components/ui/Button';
@@ -8,8 +10,26 @@ import AddProductModal from '../components/product/AddProductModal';
 import { motion } from 'framer-motion';
 
 const Dashboard = () => {
-  const { viewMode, setViewMode, products } = useProductStore();
+  const { viewMode, setViewMode, products, fetchProducts, isLoading: productsLoading } = useProductStore();
+  const { folders, fetchFolders, isLoading: foldersLoading } = useFolderStore();
+  const { lists, fetchLists, isLoading: listsLoading } = useListStore();
   const [showAddModal, setShowAddModal] = useState(false);
+  
+  useEffect(() => {
+    fetchProducts();
+    fetchFolders();
+    fetchLists();
+  }, []);
+  
+  const isLoading = productsLoading || foldersLoading || listsLoading;
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-700"></div>
+      </div>
+    );
+  }
   
   return (
     <div>
