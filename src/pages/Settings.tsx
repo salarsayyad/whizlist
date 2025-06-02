@@ -1,9 +1,22 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User, Bell, Key, LogOut } from 'lucide-react';
 import Button from '../components/ui/Button';
+import { useAuthStore } from '../store/authStore';
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState('account');
+  const { signOut } = useAuthStore();
+  const navigate = useNavigate();
+  
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
   
   return (
     <div>
@@ -49,7 +62,10 @@ const Settings = () => {
             </nav>
             
             <div className="mt-6 pt-4 border-t border-primary-100">
-              <button className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-md text-error-600 hover:bg-error-50">
+              <button 
+                className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-md text-error-600 hover:bg-error-50"
+                onClick={handleLogout}
+              >
                 <LogOut size={18} />
                 <span>Log out</span>
               </button>
