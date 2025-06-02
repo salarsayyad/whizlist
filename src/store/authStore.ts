@@ -57,9 +57,9 @@ export const useAuthStore = create<AuthState>((set) => ({
           ]);
 
         if (profileError) {
-          // If profile creation fails, delete the auth user to maintain consistency
-          await supabase.auth.admin.deleteUser(authData.user.id);
-          throw new Error('Failed to create user profile');
+          // Log the error but continue since the user was created
+          console.error('Failed to create user profile:', profileError);
+          throw new Error('Failed to create user profile. Please contact support.');
         }
 
         set({ user: authData.user });
