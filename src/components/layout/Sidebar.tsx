@@ -1,10 +1,12 @@
-import { X, Grid, List, FolderOpen, Share2, Star, Trash2, Settings, Plus, ChevronDown, ChevronRight } from 'lucide-react';
+import { X, Grid, List as ListIcon, FolderOpen, Share2, Star, Trash2, Settings, Plus, ChevronDown, ChevronRight } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { useState, useEffect } from 'react';
 import { Menu } from '@headlessui/react';
 import { useFolderStore } from '../../store/folderStore';
 import { useListStore } from '../../store/listStore';
+import CreateFolderModal from '../folder/CreateFolderModal';
+import CreateListModal from '../list/CreateListModal';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -15,6 +17,9 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
   const { folders, fetchFolders } = useFolderStore();
   const { lists, fetchLists } = useListStore();
+  const [showCreateFolder, setShowCreateFolder] = useState(false);
+  const [showCreateList, setShowCreateList] = useState(false);
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   
   useEffect(() => {
     fetchFolders();
@@ -35,6 +40,15 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   
   const getUnorganizedLists = () => {
     return lists.filter(list => !list.folder_id);
+  };
+  
+  const handleCreateFolder = () => {
+    setShowCreateFolder(true);
+  };
+  
+  const handleCreateList = (folderId?: string) => {
+    setSelectedFolderId(folderId || null);
+    setShowCreateList(true);
   };
   
   return (
@@ -129,6 +143,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                           "flex items-center gap-2 w-full px-3 py-2 text-sm",
                           active ? "bg-primary-50 text-primary-900" : "text-primary-700"
                         )}
+                        onClick={handleCreateFolder}
                       >
                         <FolderOpen size={16} />
                         <span>New Folder</span>
@@ -142,8 +157,9 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                           "flex items-center gap-2 w-full px-3 py-2 text-sm",
                           active ? "bg-primary-50 text-primary-900" : "text-primary-700"
                         )}
+                        onClick={() => handleCreateList()}
                       >
-                        <List size={16} />
+                        <ListIcon size={16} />
                         <span>New List</span>
                       </button>
                     )}
@@ -179,13 +195,16 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                               cn("nav-link text-sm py-1.5", isActive && "nav-link-active")
                             }
                           >
-                            <List size={16} />
+                            <ListIcon size={16} />
                             <span>{list.name}</span>
                           </NavLink>
                         </li>
                       ))}
                       <li>
-                        <button className="nav-link text-sm py-1.5 text-accent-600 hover:text-accent-700 w-full">
+                        <button 
+                          className="nav-link text-sm py-1.5 text-accent-600 hover:text-accent-700 w-full"
+                          onClick={() => handleCreateList(folder.id)}
+                        >
                           <Plus size={16} />
                           <span>New List</span>
                         </button>
@@ -204,7 +223,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                       cn("nav-link", isActive && "nav-link-active")
                     }
                   >
-                    <List size={18} />
+                    <ListIcon size={18} />
                     <span>{list.name}</span>
                   </NavLink>
                 </li>
@@ -225,6 +244,17 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           </NavLink>
         </div>
       </aside>
+
+      {showCreateFolder && (
+        <CreateFolderModal onClose={() => setShowCreateFolder(false)} />
+      )}
+      
+      {showCreateList && (
+        <CreateListModal 
+          folderId={selectedFolderId || undefined}
+          onClose={() => setShowCreateList(false)} 
+        />
+      )}
     </>
   );
 };
