@@ -10,12 +10,28 @@ interface AuthState {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   clearError: () => void;
+  initializeAuth: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isLoading: true,
   error: null,
+
+  initializeAuth: async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      set({ 
+        user: session?.user ?? null,
+        isLoading: false 
+      });
+    } catch (error) {
+      set({ 
+        error: (error as Error).message,
+        isLoading: false 
+      });
+    }
+  },
 
   signUp: async (email: string, password: string, name: string) => {
     try {
@@ -81,15 +97,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 
 // Listen for auth state changes
 supabase.auth.onAuthStateChange((event, session) => {
-  if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-    useAuthStore.setState({ 
-      user: session?.user ?? null,
-      isLoading: false 
-    });
-  } else if (event === 'SIGNED_OUT') {
-    useAuthStore.setState({ 
-      user: null,
-      isLoading: false 
-    });
-  }
+  useAuthStore.setState({ 
+    user: session?.user ?? null,
+    isLoading: false 
+  });
 });
