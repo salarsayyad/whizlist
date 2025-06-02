@@ -79,7 +79,17 @@ export const useAuthStore = create<AuthState>((set) => ({
   clearError: () => set({ error: null }),
 }));
 
-// Initialize auth state
+// Listen for auth state changes
 supabase.auth.onAuthStateChange((event, session) => {
-  useAuthStore.setState({ user: session?.user ?? null, isLoading: false });
+  if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+    useAuthStore.setState({ 
+      user: session?.user ?? null,
+      isLoading: false 
+    });
+  } else if (event === 'SIGNED_OUT') {
+    useAuthStore.setState({ 
+      user: null,
+      isLoading: false 
+    });
+  }
 });
