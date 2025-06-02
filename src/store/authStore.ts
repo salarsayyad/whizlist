@@ -81,12 +81,20 @@ export const useAuthStore = create<AuthState>((set) => ({
   signOut: async () => {
     try {
       set({ isLoading: true, error: null });
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      
+      // Always clear the user state first to ensure the UI updates immediately
       set({ user: null });
+      
+      const { error } = await supabase.auth.signOut();
+      
+      // If there's an error during sign out, we don't throw it since the user is already signed out locally
+      if (error) {
+        console.warn('Error during sign out:', error.message);
+      }
+      
     } catch (error) {
-      set({ error: (error as Error).message });
-      throw error;
+      // Log the error but don't throw it or update the error state
+      console.warn('Unexpected error during sign out:', (error as Error).message);
     } finally {
       set({ isLoading: false });
     }
