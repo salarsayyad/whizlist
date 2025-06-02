@@ -1,18 +1,24 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Zap } from 'lucide-react';
+import { Zap, AlertCircle } from 'lucide-react';
 import Button from '../../components/ui/Button';
+import { useAuthStore } from '../../store/authStore';
 
 const SignUp = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { signUp, error, isLoading, clearError } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement actual signup logic
-    navigate('/dashboard');
+    try {
+      await signUp(email, password, name);
+      navigate('/dashboard');
+    } catch (err) {
+      // Error is handled by the store
+    }
   };
 
   return (
@@ -28,6 +34,13 @@ const SignUp = () => {
             Create your account
           </h2>
           
+          {error && (
+            <div className="mb-4 p-3 rounded bg-error-50 text-error-700 flex items-center gap-2">
+              <AlertCircle size={18} />
+              <span>{error}</span>
+            </div>
+          )}
+          
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-primary-700">
@@ -39,7 +52,10 @@ const SignUp = () => {
                 required
                 className="input mt-1"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  clearError();
+                }}
               />
             </div>
 
@@ -53,7 +69,10 @@ const SignUp = () => {
                 required
                 className="input mt-1"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  clearError();
+                }}
               />
             </div>
 
@@ -67,11 +86,14 @@ const SignUp = () => {
                 required
                 className="input mt-1"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  clearError();
+                }}
               />
             </div>
 
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" isLoading={isLoading}>
               Sign up
             </Button>
           </form>

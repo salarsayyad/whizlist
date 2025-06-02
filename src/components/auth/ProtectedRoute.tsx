@@ -1,10 +1,18 @@
 import { Navigate, Outlet } from 'react-router-dom';
+import { useAuthStore } from '../../store/authStore';
 
 const ProtectedRoute = () => {
-  // TODO: Implement actual auth check
-  const isAuthenticated = true;
+  const { user, isLoading } = useAuthStore();
 
-  if (!isAuthenticated) {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-700"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
 
