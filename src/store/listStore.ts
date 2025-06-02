@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
 import { List } from '../types/database';
+import { useAuthStore } from './authStore';
 
 interface ListState {
   lists: List[];
@@ -40,9 +41,12 @@ export const useListStore = create<ListState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
+      const userId = useAuthStore.getState().user?.id;
+      if (!userId) throw new Error('User not authenticated');
+      
       const { data, error } = await supabase
         .from('lists')
-        .insert([list])
+        .insert([{ ...list, owner_id: userId }])
         .select()
         .single();
 
