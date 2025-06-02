@@ -37,33 +37,18 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       set({ isLoading: true, error: null });
       
-      // Sign up the user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: name // Pass the name as metadata
+          }
+        }
       });
 
-      if (authError) throw authError;
-      
-      if (authData.user) {
-        // Create the user's profile
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([
-            {
-              id: authData.user.id,
-              full_name: name,
-            }
-          ]);
-
-        if (profileError) {
-          // Log the error but continue since the user was created
-          console.error('Failed to create user profile:', profileError);
-          throw new Error('Failed to create user profile. Please contact support.');
-        }
-
-        set({ user: authData.user });
-      }
+      if (error) throw error;
+      set({ user: data.user });
       
     } catch (error) {
       set({ error: (error as Error).message });
