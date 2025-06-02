@@ -1,6 +1,7 @@
 import { Fragment, ReactNode, useEffect } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface ModalProps {
   isOpen: boolean;
@@ -11,15 +12,21 @@ interface ModalProps {
 }
 
 const Modal = ({ isOpen, onClose, title, children, size = 'md' }: ModalProps) => {
-  // Close modal on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
     
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [onClose]);
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden';
+    }
+    
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, onClose]);
   
   const maxWidthClass = {
     sm: 'max-w-sm',
@@ -28,56 +35,52 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }: ModalProps) =>
     xl: 'max-w-xl',
   }[size];
   
-  return (
-    <Transition show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={onClose}>
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-primary-900/25 backdrop-blur-sm" />
-        </Transition.Child>
-
-        <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
+  if (!isOpen) return null;
+  
+  return createPortal(
+    <AnimatePresence>
+      {isOpen && (
+        <Fragment>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-primary-900/25 backdrop-blur-sm z-50"
+            onClick={onClose}
+          />
+          
+          <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className={`w-full ${maxWidthClass} bg-white rounded-lg shadow-xl`}
+              onClick={(e) => e.stopPropagation()}
             >
-              <Dialog.Panel 
-                className={`w-full ${maxWidthClass} transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all`}
-              >
-                {title && (
-                  <div className="flex items-center justify-between mb-4">
-                    <Dialog.Title as="h3\" className="text-lg font-medium text-primary-900">
-                      {title}
-                    </Dialog.Title>
-                    <button
-                      type="button"
-                      className="text-primary-500 hover:text-primary-700 p-1 rounded-md hover:bg-primary-100"
-                      onClick={onClose}
-                    >
-                      <X size={20} />
-                    </button>
-                  </div>
-                )}
+              {title && (
+                <div className="flex items-center justify-between px-6 py-4 border-b border-primary-100">
+                  <h3 className="text-lg font-medium text-primary-900">
+                    {title}
+                  </h3>
+                  <button
+                    type="button"
+                    className="text-primary-500 hover:text-primary-700 p-1 rounded-md hover:bg-primary-100"
+                    onClick={onClose}
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+              )}
+              
+              <div className="p-6">
                 {children}
-              </Dialog.Panel>
-            </Transition.Child>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      </Dialog>
-    </Transition>
+        </Fragment>
+      )}
+    </AnimatePresence>,
+    document.body
   );
 };
 
