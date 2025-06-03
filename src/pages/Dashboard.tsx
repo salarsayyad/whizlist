@@ -31,6 +31,10 @@ const Dashboard = () => {
     );
   }
   
+  const handleAddProduct = () => {
+    setShowAddModal(true);
+  };
+  
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -71,7 +75,7 @@ const Dashboard = () => {
           
           <Button 
             className="flex items-center gap-1"
-            onClick={() => setShowAddModal(true)}
+            onClick={handleAddProduct}
           >
             <Plus size={16} />
             <span>Add Product</span>
@@ -84,7 +88,7 @@ const Dashboard = () => {
           <h3 className="text-xl font-medium text-primary-700 mb-2">No products yet</h3>
           <p className="text-primary-600 mb-6">Start by adding your first product from around the web.</p>
           <Button 
-            onClick={() => setShowAddModal(true)}
+            onClick={handleAddProduct}
             className="flex items-center gap-1 mx-auto"
           >
             <Plus size={16} />
