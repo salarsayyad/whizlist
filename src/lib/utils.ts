@@ -29,20 +29,29 @@ export async function extractProductDetails(url: string) {
         'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ url }),
+      body: JSON.stringify({
+        url,
+        fields: {
+          title: { type: 'string', description: 'Product title' },
+          description: { type: 'string', description: 'Product description' },
+          imageUrl: { type: 'string', description: 'Product image URL' },
+          price: { type: 'string', description: 'Product price' }
+        }
+      }),
     });
 
     if (!response.ok) {
       throw new Error('Failed to extract metadata');
     }
 
-    const { title, description, imageUrl } = await response.json();
+    const { data } = await response.json();
+    const { title, description, imageUrl, price } = data;
 
     return {
       title,
       description,
       imageUrl,
-      price: null,
+      price: price || null,
       productUrl: url,
       isPinned: false,
       tags: [],
