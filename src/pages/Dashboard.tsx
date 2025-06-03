@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Grid, List as ListIcon, Plus, Filter } from 'lucide-react';
 import { useProductStore } from '../store/productStore';
-import { useFolderStore } from '../store/folderStore';
-import { useListStore } from '../store/listStore';
 import ProductGrid from '../components/product/ProductGrid';
 import ProductList from '../components/product/ProductList';
 import Button from '../components/ui/Button';
@@ -10,18 +8,12 @@ import AddProductModal from '../components/product/AddProductModal';
 import { motion } from 'framer-motion';
 
 const Dashboard = () => {
-  const { viewMode, setViewMode, products, fetchProducts, isLoading: productsLoading } = useProductStore();
-  const { folders, fetchFolders, isLoading: foldersLoading } = useFolderStore();
-  const { lists, fetchLists, isLoading: listsLoading } = useListStore();
+  const { viewMode, setViewMode, products, fetchProducts, isLoading } = useProductStore();
   const [showAddModal, setShowAddModal] = useState(false);
   
   useEffect(() => {
     fetchProducts();
-    fetchFolders();
-    fetchLists();
   }, []);
-  
-  const isLoading = productsLoading || foldersLoading || listsLoading;
   
   const handleAddProduct = () => {
     setShowAddModal(true);
@@ -106,9 +98,7 @@ const Dashboard = () => {
       )}
       
       {showAddModal && (
-        <AddProductModal 
-          onClose={handleCloseModal}
-        />
+        <AddProductModal onClose={handleCloseModal} />
       )}
     </div>
   );

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
 import { Product } from '../types/database';
+import { useAuthStore } from './authStore';
 
 interface ProductState {
   products: Product[];
@@ -8,7 +9,7 @@ interface ProductState {
   error: string | null;
   viewMode: 'grid' | 'list';
   fetchProducts: () => Promise<void>;
-  createProduct: (product: Omit<Product, 'id' | 'owner_id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  createProduct: (product: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
   updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   togglePin: (id: string) => Promise<void>;
@@ -31,7 +32,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      set({ products: data });
+      set({ products: data || [] });
       
     } catch (error) {
       set({ error: (error as Error).message });
@@ -44,9 +45,12 @@ export const useProductStore = create<ProductState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
+      const userId = useAuthStore.getState().user?.id;
+      if (!userId) throw new Error('User not authenticated');
+
       const { data, error } = await supabase
         .from('products')
-        .insert([product])
+        .insert([{ ...product, owner_id: userId }])
         .select()
         .single();
 
