@@ -24,7 +24,7 @@
 // { "data": { "title": "…", "price": 12.9, "inStock": true }, "tookMs": 1412 }
 //
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { Stagehand } from "@browserbasehq/stagehand";
+import { Stagehand } from "npm:@browserbasehq/stagehand";
 import { z } from "/zod";
 
 // ▸ Types ----------------------------------------------------------------------
