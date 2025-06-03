@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Modal from '../ui/Modal';
+import { extractProductDetails } from '../../lib/utils';
 import { useProductStore } from '../../store/productStore';
 import { useListStore } from '../../store/listStore';
 import Button from '../ui/Button';
@@ -15,10 +16,6 @@ interface AddProductModalProps {
 const AddProductModal = ({ onClose }: AddProductModalProps) => {
   const { id: currentListId } = useParams<{ id: string }>();
   const [url, setUrl] = useState('');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedListId, setSelectedListId] = useState<string | null>(currentListId || null);
@@ -26,11 +23,15 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
   const { createProduct } = useProductStore();
   const { lists, fetchLists, addProductToList } = useListStore();
   
+  useEffect(() => {
+    fetchLists();
+  }, []);
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!url || !title) {
-      setError('Please enter a URL and title');
+    if (!url) {
+      setError('Please enter a URL');
       return;
     }
     
@@ -43,11 +44,10 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
     setError('');
     
     try {
+      const productDetails = await extractProductDetails(url);
+      
       const product = {
-        title,
-        description,
-        price,
-        image_url: imageUrl,
+        ...productDetails,
         product_url: url,
         is_pinned: false,
         tags: [],
@@ -61,7 +61,7 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
       
       onClose();
     } catch (err) {
-      setError('Failed to create product. Please try again.');
+      setError('Failed to extract product details. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -91,63 +91,9 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
                 required
               />
             </div>
-          </div>
-
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium text-primary-700 mb-1">
-              Title
-            </label>
-            <input
-              type="text"
-              id="title"
-              className="input"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Product title"
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-primary-700 mb-1">
-              Description
-            </label>
-            <textarea
-              id="description"
-              className="input resize-none"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Product description"
-              rows={3}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="price" className="block text-sm font-medium text-primary-700 mb-1">
-              Price
-            </label>
-            <input
-              type="text"
-              id="price"
-              className="input"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              placeholder="$0.00"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="imageUrl" className="block text-sm font-medium text-primary-700 mb-1">
-              Image URL
-            </label>
-            <input
-              type="text"
-              id="imageUrl"
-              className="input"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://example.com/image.jpg"
-            />
+            <p className="mt-1 text-xs text-primary-500">
+              Paste a product URL from any website to save it to your Whizlist
+            </p>
           </div>
 
           <div>
@@ -212,9 +158,9 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
           <Button 
             type="submit"
             isLoading={isLoading}
-            disabled={isLoading || !url.trim() || !title.trim()}
+            disabled={!url.trim() || isLoading}
           >
-            Add Product
+            {isLoading ? 'Extracting...' : 'Add Product'}
           </Button>
         </div>
       </form>
