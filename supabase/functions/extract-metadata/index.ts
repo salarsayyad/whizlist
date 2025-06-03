@@ -1,4 +1,4 @@
-import { HyperAgent } from 'npm:hyperbrowser/sdk';
+import { HyperAgent } from 'npm:@hyperbrowser/agent@latest';
 import { ChatOpenAI } from 'npm:langchain/openai';
 import { z } from 'npm:zod';
 import * as cheerio from 'npm:cheerio';
