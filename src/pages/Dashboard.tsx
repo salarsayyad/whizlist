@@ -23,6 +23,14 @@ const Dashboard = () => {
   
   const isLoading = productsLoading || foldersLoading || listsLoading;
   
+  const handleAddProduct = () => {
+    setShowAddModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowAddModal(false);
+  };
+  
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -30,10 +38,6 @@ const Dashboard = () => {
       </div>
     );
   }
-  
-  const handleAddProduct = () => {
-    setShowAddModal(true);
-  };
   
   return (
     <div>
@@ -103,7 +107,7 @@ const Dashboard = () => {
       
       {showAddModal && (
         <AddProductModal 
-          onClose={() => setShowAddModal(false)} 
+          onClose={handleCloseModal}
         />
       )}
     </div>
