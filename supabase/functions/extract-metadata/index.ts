@@ -1,4 +1,7 @@
-import { DOMParser } from 'https://deno.land/x/deno_dom/deno-dom-wasm.ts';
+import { HyperAgent } from '@hyperbrowser/agent';
+import { ChatOpenAI } from '@langchain/openai';
+import { z } from 'zod';
+import * as cheerio from 'cheerio';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -6,26 +9,69 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-async function extractMetadata(url: string) {
+const productSchema = z.object({
+  title: z.string().describe("The product title or name"),
+  description: z.string().describe("A description of the product"),
+  price: z.string().nullable().describe("The product price if available"),
+  imageUrl: z.string().nullable().describe("URL of the product image if available"),
+});
+
+async function extractWithHyperAgent(url: string) {
+  try {
+    const llm = new ChatOpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+      model: 'gpt-4',
+    });
+
+    const agent = new HyperAgent({
+      llm,
+      debug: false,
+    });
+
+    const task = `Navigate to ${url} and extract the product information including title, description, price, and image URL`;
+
+    const result = await agent.executeTask(task, {
+      outputSchema: productSchema,
+    });
+
+    await agent.closeAgent();
+    return result.output;
+  } catch (error) {
+    console.error('HyperAgent extraction failed:', error);
+    return null;
+  }
+}
+
+async function extractWithDOMParser(url: string) {
   try {
     const response = await fetch(url);
     const html = await response.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
+    const $ = cheerio.load(html);
 
-    if (!doc) {
-      throw new Error('Failed to parse HTML');
-    }
+    // Try to find the product title
+    const title = $('title').text() ||
+                 $('meta[property="og:title"]').attr('content') ||
+                 $('h1').first().text() ||
+                 '';
 
-    const title = doc.querySelector('title')?.textContent || '';
-    const description = doc.querySelector('meta[name="description"]')?.getAttribute('content') || 
-                       doc.querySelector('meta[property="og:description"]')?.getAttribute('content') || '';
-    const price = doc.querySelector('meta[property="product:price:amount"]')?.getAttribute('content') ||
+    // Try to find the product description
+    const description = $('meta[name="description"]').attr('content') ||
+                       $('meta[property="og:description"]').attr('content') ||
+                       $('meta[name="twitter:description"]').attr('content') ||
+                       '';
+
+    // Try to find the product price
+    const price = $('meta[property="product:price:amount"]').attr('content') ||
+                 $('[class*="price"]').first().text() ||
                  null;
-    const imageUrl = doc.querySelector('meta[property="og:image"]')?.getAttribute('content') ||
-                    doc.querySelector('meta[name="twitter:image"]')?.getAttribute('content') ||
-                    doc.querySelector('meta[property="product:image"]')?.getAttribute('content') ||
-                    doc.querySelector('link[rel="image_src"]')?.getAttribute('href') || null;
+
+    // Try to find the product image
+    const imageUrl = $('meta[property="og:image"]').attr('content') ||
+                    $('meta[name="twitter:image"]').attr('content') ||
+                    $('meta[property="product:image"]').attr('content') ||
+                    $('link[rel="image_src"]').attr('href') ||
+                    $('img[class*="product"]').first().attr('src') ||
+                    null;
 
     return {
       title: title.trim(),
@@ -34,57 +80,42 @@ async function extractMetadata(url: string) {
       imageUrl,
     };
   } catch (error) {
-    console.error('Metadata extraction failed:', error);
+    console.error('DOM Parser extraction failed:', error);
     return null;
   }
 }
 
-Deno.serve(async (req) => {
+export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return res.status(200).set(corsHeaders).end();
   }
 
   try {
-    const { url } = await req.json();
+    const { url } = req.body;
 
     if (!url) {
-      return new Response(
-        JSON.stringify({ error: 'URL is required' }), 
-        { 
-          status: 400,
-          headers: {
-            'Content-Type': 'application/json',
-            ...corsHeaders
-          }
-        }
-      );
+      return res.status(400).json({ 
+        error: 'URL is required' 
+      });
     }
 
-    const productData = await extractMetadata(url);
+    // Try HyperAgent first for intelligent extraction
+    let productData = await extractWithHyperAgent(url);
+
+    // Fall back to DOM parsing if HyperAgent fails
+    if (!productData) {
+      productData = await extractWithDOMParser(url);
+    }
 
     if (!productData) {
       throw new Error('Failed to extract product data');
     }
 
-    return new Response(
-      JSON.stringify(productData),
-      { 
-        headers: {
-          'Content-Type': 'application/json',
-          ...corsHeaders
-        }
-      }
-    );
+    return res.status(200).json(productData);
   } catch (error) {
-    return new Response(
-      JSON.stringify({ error: error.message }), 
-      { 
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          ...corsHeaders
-        }
-      }
-    );
+    console.error('Error extracting product data:', error);
+    return res.status(500).json({ 
+      error: error.message 
+    });
   }
-});
+}
