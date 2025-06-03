@@ -198,9 +198,9 @@ const ProductDetail = () => {
         
         <div className="md:col-span-1">
           <div className="card overflow-hidden">
-            {product.image ? (
+            {product.imageUrl ? (
               <img 
-                src={product.image} 
+                src={product.imageUrl} 
                 alt={product.title} 
                 className="w-full aspect-square object-cover"
               />

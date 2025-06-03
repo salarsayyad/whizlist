@@ -52,9 +52,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
       onClick={handleClick}
     >
       <div className="relative">
-        {product.image ? (
+        {product.imageUrl ? (
           <img 
-            src={product.image} 
+            src={product.imageUrl} 
             alt={product.title} 
             className="w-full h-48 object-cover"
           />
