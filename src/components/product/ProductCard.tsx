@@ -14,7 +14,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const navigate = useNavigate();
-  const { togglePin, removeProduct } = useProductStore();
+  const { togglePin, deleteProduct } = useProductStore();
   const [showOptions, setShowOptions] = useState(false);
   const [showListSelector, setShowListSelector] = useState(false);
   
@@ -29,7 +29,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   
   const handleRemove = (e: React.MouseEvent) => {
     e.stopPropagation();
-    removeProduct(product.id);
+    deleteProduct(product.id);
   };
   
   const handleOpenListSelector = (e: React.MouseEvent) => {

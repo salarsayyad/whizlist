@@ -13,7 +13,7 @@ import { motion } from 'framer-motion';
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { products, togglePin, removeProduct } = useProductStore();
+  const { products, togglePin, deleteProduct } = useProductStore();
   const product = products.find(p => p.id === id);
   
   const [comment, setComment] = useState('');
@@ -35,7 +35,7 @@ const ProductDetail = () => {
   }
   
   const handleRemove = () => {
-    removeProduct(product.id);
+    deleteProduct(product.id);
     navigate('/');
   };
   

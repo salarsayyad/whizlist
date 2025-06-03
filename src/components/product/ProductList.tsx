@@ -5,7 +5,7 @@ import { formatDate, truncateText } from '../../lib/utils';
 import { motion } from 'framer-motion';
 
 const ProductList = () => {
-  const { products, togglePin, removeProduct } = useProductStore();
+  const { products, togglePin, deleteProduct } = useProductStore();
   const navigate = useNavigate();
   
   // Sort products with pinned first, then by date
@@ -102,7 +102,7 @@ const ProductList = () => {
               </button>
               <button 
                 className="p-1.5 rounded-full bg-primary-100 text-primary-800 hover:bg-primary-200"
-                onClick={() => removeProduct(product.id)}
+                onClick={() => deleteProduct(product.id)}
               >
                 <Trash2 size={16} />
               </button>
