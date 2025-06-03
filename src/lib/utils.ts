@@ -32,10 +32,10 @@ export async function extractProductDetails(url: string) {
       body: JSON.stringify({
         url,
         fields: {
-          title: { type: 'string', description: 'Product name/title' },
+          title: { type: 'string', description: 'Product name/title', required: true },
           description: { type: 'string', description: 'Full product description' },
           originalPrice: { type: 'string', description: 'Original/regular price of the product' },
-          salePrice: { type: 'string', description: 'Current sale price if the product is discounted, null if not on sale' },
+          salePrice: { type: 'string', description: 'Current sale price if the product is discounted' },
           imageUrl: { type: 'string', description: 'URL of the main/primary product image' }
         }
       }),
@@ -45,10 +45,14 @@ export async function extractProductDetails(url: string) {
       throw new Error('Failed to extract metadata');
     }
 
-    const { data } = await response.json();
-    const { title, description, originalPrice, salePrice, imageUrl } = data;
+    const result = await response.json();
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to extract product details');
+    }
 
-    // Ensure title is never null
+    const { title, description, originalPrice, salePrice, imageUrl } = result.data;
+
     if (!title) {
       throw new Error('Could not extract product title');
     }
@@ -60,7 +64,7 @@ export async function extractProductDetails(url: string) {
       price: salePrice || originalPrice || null,
       productUrl: url,
       isPinned: false,
-      tags: [],
+      tags: []
     };
   } catch (error) {
     console.error('Error extracting product details:', error);
