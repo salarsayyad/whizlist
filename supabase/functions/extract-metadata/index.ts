@@ -1,5 +1,5 @@
 import { HyperAgent } from 'npm:@hyperbrowser/agent@latest';
-import { ChatOpenAI } from 'npm:langchain/openai';
+import { ChatOpenAI } from 'npm:@langchain/openai@latest';
 import { z } from 'npm:zod';
 import * as cheerio from 'npm:cheerio';
 
