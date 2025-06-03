@@ -13,7 +13,7 @@ import { motion } from 'framer-motion';
 const ListDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { lists, togglePin, removeList } = useListStore();
+  const { lists, togglePin, deleteList } = useListStore();
   const { products, viewMode, setViewMode } = useProductStore();
   
   const list = lists.find(l => l.id === id);
@@ -39,7 +39,7 @@ const ListDetail = () => {
   }
   
   const handleRemove = () => {
-    removeList(list.id);
+    deleteList(list.id);
     navigate('/');
   };
   
