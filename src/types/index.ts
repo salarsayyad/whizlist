@@ -24,14 +24,14 @@ export interface Product {
 export interface List {
   id: string;
   name: string;
-  description?: string;
+  description?: string | null;
   isPublic: boolean;
   isPinned: boolean;
   createdAt: string;
   updatedAt: string;
-  folderId?: string;
+  folderId?: string | null;
   products: string[]; // Array of product IDs
-  createdBy: string;
+  ownerId: string;
   collaborators: Collaborator[];
 }
 
