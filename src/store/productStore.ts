@@ -9,7 +9,7 @@ interface ProductState {
   error: string | null;
   viewMode: 'grid' | 'list';
   fetchProducts: () => Promise<void>;
-  createProduct: (product: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  createProduct: (product: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => Promise<Product>;
   updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   togglePin: (id: string) => Promise<void>;
@@ -55,7 +55,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
         .single();
 
       if (error) throw error;
+      
       set(state => ({ products: [data, ...state.products] }));
+      return data;
       
     } catch (error) {
       set({ error: (error as Error).message });

@@ -45,23 +45,16 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
     
     try {
       const productDetails = await extractProductDetails(url);
+      const createdProduct = await createProduct(productDetails);
       
-      const product = {
-        ...productDetails,
-        product_url: url,
-        is_pinned: false,
-        tags: [],
-      };
-
-      const createdProduct = await createProduct(product);
-      
-      if (selectedListId && createdProduct) {
+      if (selectedListId) {
         await addProductToList(selectedListId, createdProduct.id);
       }
       
       onClose();
     } catch (err) {
       setError('Failed to extract product details. Please try again.');
+      console.error('Error adding product:', err);
     } finally {
       setIsLoading(false);
     }
