@@ -36,12 +36,12 @@ export async function extractProductDetails(url: string) {
       throw new Error('Failed to extract metadata');
     }
 
-    const { title, description } = await response.json();
+    const { title, description, imageUrl } = await response.json();
 
     return {
       title,
       description,
-      imageUrl: null,
+      imageUrl,
       price: null,
       productUrl: url,
       isPinned: false,
