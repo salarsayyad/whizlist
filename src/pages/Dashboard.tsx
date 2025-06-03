@@ -97,7 +97,11 @@ const Dashboard = () => {
         </div>
       )}
       
-      {showAddModal && <AddProductModal onClose={() => setShowAddModal(false)} />}
+      {showAddModal && (
+        <AddProductModal 
+          onClose={() => setShowAddModal(false)} 
+        />
+      )}
     </div>
   );
 };
