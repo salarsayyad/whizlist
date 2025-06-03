@@ -3,13 +3,40 @@ import { supabase } from '../lib/supabase';
 import { Product } from '../types/database';
 import { useAuthStore } from './authStore';
 
+// Helper function to map database product to UI product
+const mapDbProductToUiProduct = (dbProduct: any): Product => ({
+  id: dbProduct.id,
+  title: dbProduct.title,
+  description: dbProduct.description,
+  price: dbProduct.price,
+  imageUrl: dbProduct.image_url,
+  productUrl: dbProduct.product_url,
+  isPinned: dbProduct.is_pinned || false,
+  tags: dbProduct.tags || [],
+  ownerId: dbProduct.owner_id,
+  createdAt: dbProduct.created_at,
+  updatedAt: dbProduct.updated_at
+});
+
+// Helper function to map UI product to database format
+const mapUiProductToDbProduct = (uiProduct: Partial<Product>) => ({
+  title: uiProduct.title,
+  description: uiProduct.description,
+  price: uiProduct.price,
+  image_url: uiProduct.imageUrl,
+  product_url: uiProduct.productUrl,
+  is_pinned: uiProduct.isPinned,
+  tags: uiProduct.tags,
+  owner_id: uiProduct.ownerId
+});
+
 interface ProductState {
   products: Product[];
   isLoading: boolean;
   error: string | null;
   viewMode: 'grid' | 'list';
   fetchProducts: () => Promise<void>;
-  createProduct: (product: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => Promise<Product>;
+  createProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'ownerId'>) => Promise<Product>;
   updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   togglePin: (id: string) => Promise<void>;
@@ -32,7 +59,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      set({ products: data || [] });
+      
+      const mappedProducts = (data || []).map(mapDbProductToUiProduct);
+      set({ products: mappedProducts });
       
     } catch (error) {
       set({ error: (error as Error).message });
@@ -48,16 +77,19 @@ export const useProductStore = create<ProductState>((set, get) => ({
       const userId = useAuthStore.getState().user?.id;
       if (!userId) throw new Error('User not authenticated');
 
+      const dbProduct = mapUiProductToDbProduct({ ...product, ownerId: userId });
+
       const { data, error } = await supabase
         .from('products')
-        .insert([{ ...product, owner_id: userId }])
+        .insert([dbProduct])
         .select()
         .single();
 
       if (error) throw error;
       
-      set(state => ({ products: [data, ...state.products] }));
-      return data;
+      const mappedProduct = mapDbProductToUiProduct(data);
+      set(state => ({ products: [mappedProduct, ...state.products] }));
+      return mappedProduct;
       
     } catch (error) {
       set({ error: (error as Error).message });
@@ -71,17 +103,21 @@ export const useProductStore = create<ProductState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
+      const dbUpdates = mapUiProductToDbProduct(updates);
+      
       const { data, error } = await supabase
         .from('products')
-        .update(updates)
+        .update(dbUpdates)
         .eq('id', id)
         .select()
         .single();
 
       if (error) throw error;
+      
+      const mappedProduct = mapDbProductToUiProduct(data);
       set(state => ({
         products: state.products.map(product => 
-          product.id === id ? { ...product, ...data } : product
+          product.id === id ? mappedProduct : product
         )
       }));
       
@@ -124,15 +160,17 @@ export const useProductStore = create<ProductState>((set, get) => ({
       
       const { data, error } = await supabase
         .from('products')
-        .update({ is_pinned: !product.is_pinned })
+        .update({ is_pinned: !product.isPinned })
         .eq('id', id)
         .select()
         .single();
 
       if (error) throw error;
+      
+      const mappedProduct = mapDbProductToUiProduct(data);
       set(state => ({
         products: state.products.map(p => 
-          p.id === id ? { ...p, is_pinned: !p.is_pinned } : p
+          p.id === id ? mappedProduct : p
         )
       }));
       

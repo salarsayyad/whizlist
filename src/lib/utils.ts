@@ -5,7 +5,9 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDate(date: Date | string): string {
+export function formatDate(date: Date | string | null | undefined): string {
+  if (!date) return '';
+  
   const d = typeof date === 'string' ? new Date(date) : date;
   return d.toLocaleDateString('en-US', {
     month: 'short',
@@ -39,10 +41,10 @@ export async function extractProductDetails(url: string) {
     return {
       title,
       description,
-      image_url: null,
+      imageUrl: null,
       price: null,
-      product_url: url,
-      is_pinned: false,
+      productUrl: url,
+      isPinned: false,
       tags: [],
     };
   } catch (error) {
