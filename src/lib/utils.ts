@@ -48,10 +48,15 @@ export async function extractProductDetails(url: string) {
     const { data } = await response.json();
     const { title, description, originalPrice, salePrice, imageUrl } = data;
 
+    // Ensure title is never null
+    if (!title) {
+      throw new Error('Could not extract product title');
+    }
+
     return {
-      title,
-      description,
-      imageUrl,
+      title: title.trim(),
+      description: description || '',
+      imageUrl: imageUrl || null,
       price: salePrice || originalPrice || null,
       productUrl: url,
       isPinned: false,

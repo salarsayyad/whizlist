@@ -53,7 +53,12 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
       
       onClose();
     } catch (err) {
-      setError('Failed to extract product details. Please try again.');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to extract product details';
+      if (errorMessage === 'Could not extract product title') {
+        setError('Could not extract product title from the URL. Please try a different URL or check if the product page is accessible.');
+      } else {
+        setError(`Failed to add product: ${errorMessage}`);
+      }
       console.error('Error adding product:', err);
     } finally {
       setIsLoading(false);
