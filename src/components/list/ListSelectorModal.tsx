@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Modal from '../ui/Modal';
 import { useListStore } from '../../store/listStore';
 import Button from '../ui/Button';
-import { Plus, Check, FolderPlus } from 'lucide-react';
+import { Plus, Check } from 'lucide-react';
 
 interface ListSelectorModalProps {
   productId: string;
@@ -10,7 +10,7 @@ interface ListSelectorModalProps {
 }
 
 const ListSelectorModal = ({ productId, onClose }: ListSelectorModalProps) => {
-  const { lists, addProductToList, removeProductFromList } = useListStore();
+  const { lists, addProductToList, removeProductFromList, createList } = useListStore();
   const [selectedLists, setSelectedLists] = useState<string[]>(
     lists.filter(list => list.products.includes(productId)).map(list => list.id)
   );
@@ -27,39 +27,43 @@ const ListSelectorModal = ({ productId, onClose }: ListSelectorModalProps) => {
     });
   };
   
-  const handleSave = () => {
-    // Remove from lists that are no longer selected
-    lists.forEach(list => {
-      if (list.products.includes(productId) && !selectedLists.includes(list.id)) {
-        removeProductFromList(list.id, productId);
-      }
-    });
-    
-    // Add to newly selected lists
-    selectedLists.forEach(listId => {
-      if (!lists.find(list => list.id === listId)?.products.includes(productId)) {
-        addProductToList(listId, productId);
-      }
-    });
-    
-    onClose();
+  const handleSave = async () => {
+    try {
+      // Remove from lists that are no longer selected
+      const removePromises = lists
+        .filter(list => list.products.includes(productId) && !selectedLists.includes(list.id))
+        .map(list => removeProductFromList(list.id, productId));
+
+      // Add to newly selected lists
+      const addPromises = selectedLists
+        .filter(listId => !lists.find(list => list.id === listId)?.products.includes(productId))
+        .map(listId => addProductToList(listId, productId));
+
+      await Promise.all([...removePromises, ...addPromises]);
+      onClose();
+    } catch (error) {
+      console.error('Error saving list selections:', error);
+    }
   };
   
-  const handleCreateNewList = () => {
+  const handleCreateNewList = async () => {
     if (!newListName.trim()) return;
     
-    const newList = {
-      name: newListName.trim(),
-      isPublic: false,
-      isPinned: false,
-      products: [productId],
-      createdBy: 'user1',
-      collaborators: [],
-    };
-    
-    useListStore.getState().addList(newList);
-    setNewListName('');
-    setShowNewListInput(false);
+    try {
+      const newList = await createList({
+        name: newListName.trim(),
+        isPublic: false,
+        description: null,
+        folderId: null,
+      });
+
+      await addProductToList(newList.id, productId);
+      setSelectedLists(prev => [...prev, newList.id]);
+      setNewListName('');
+      setShowNewListInput(false);
+    } catch (error) {
+      console.error('Error creating new list:', error);
+    }
   };
   
   return (
