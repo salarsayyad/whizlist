@@ -61,7 +61,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: "You are a web data extractor. Extract the requested information and return ONLY valid JSON."
+            content: "You are a web data extractor. Extract the requested information and return ONLY valid JSON. For prices, always return them in a standardized format (e.g., '99.99' or '1299.00'). Remove currency symbols and use decimal points."
           },
           {
             role: "user",
@@ -127,6 +127,9 @@ function extractTextFromHTML(html: string): string {
     /<meta\s+name="description"\s+content="([^"]+)"/i,
     /<meta\s+property="og:title"\s+content="([^"]+)"/i,
     /<meta\s+property="og:description"\s+content="([^"]+)"/i,
+    /<meta\s+property="product:price:amount"\s+content="([^"]+)"/i,
+    /<meta\s+property="product:sale_price:amount"\s+content="([^"]+)"/i,
+    /<meta\s+property="og:image"\s+content="([^"]+)"/i,
   ];
 
   let extractedText = "";
@@ -143,6 +146,23 @@ function extractTextFromHTML(html: string): string {
     extractedText += `Description: ${metaMatch[1].trim()}\n\n`;
   }
 
+  // Extract price information
+  const priceMatch = html.match(/<meta\s+property="product:price:amount"\s+content="([^"]+)"/i);
+  if (priceMatch) {
+    extractedText += `Original Price: ${priceMatch[1].trim()}\n`;
+  }
+
+  const salePriceMatch = html.match(/<meta\s+property="product:sale_price:amount"\s+content="([^"]+)"/i);
+  if (salePriceMatch) {
+    extractedText += `Sale Price: ${salePriceMatch[1].trim()}\n`;
+  }
+
+  // Extract image URL
+  const imageMatch = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i);
+  if (imageMatch) {
+    extractedText += `Image URL: ${imageMatch[1].trim()}\n`;
+  }
+
   // Remove all HTML tags and get plain text
   text = text.replace(/<[^>]+>/g, " ");
   text = text.replace(/\s+/g, " ").trim();
@@ -153,7 +173,7 @@ function extractTextFromHTML(html: string): string {
     text = text.substring(0, maxLength) + "...";
   }
 
-  return extractedText + "Content:\n" + text;
+  return extractedText + "\nContent:\n" + text;
 }
 
 // Create extraction prompt
@@ -170,42 +190,12 @@ ${fieldDescriptions}
 
 Return the data as a JSON object with these exact field names.
 For missing fields, use null.
-Ensure numbers are returned as numbers, not strings.
+For prices:
+- Remove currency symbols
+- Use decimal points (e.g., "99.99" instead of "99,99")
+- Return as strings
+- For sale prices, only include if there's a clear discount/sale
 
 Webpage content:
 ${content}`;
 }
-
-/* 
-Example usage:
-
-POST /functions/v1/simple-extractor
-{
-  "url": "https://example.com/product",
-  "fields": {
-    "title": {
-      "type": "string",
-      "description": "Product title"
-    },
-    "price": {
-      "type": "number", 
-      "description": "Product price as a number"
-    },
-    "available": {
-      "type": "boolean",
-      "description": "Is the product in stock?"
-    }
-  }
-}
-
-Response:
-{
-  "success": true,
-  "data": {
-    "title": "Example Product",
-    "price": 99.99,
-    "available": true
-  },
-  "url": "https://example.com/product"
-}
-*/

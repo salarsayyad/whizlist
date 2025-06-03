@@ -32,10 +32,11 @@ export async function extractProductDetails(url: string) {
       body: JSON.stringify({
         url,
         fields: {
-          title: { type: 'string', description: 'Product title' },
-          description: { type: 'string', description: 'Product description' },
-          imageUrl: { type: 'string', description: 'Product image URL' },
-          price: { type: 'string', description: 'Product price' }
+          title: { type: 'string', description: 'Product name/title' },
+          description: { type: 'string', description: 'Full product description' },
+          originalPrice: { type: 'string', description: 'Original/regular price of the product' },
+          salePrice: { type: 'string', description: 'Current sale price if the product is discounted, null if not on sale' },
+          imageUrl: { type: 'string', description: 'URL of the main/primary product image' }
         }
       }),
     });
@@ -45,13 +46,13 @@ export async function extractProductDetails(url: string) {
     }
 
     const { data } = await response.json();
-    const { title, description, imageUrl, price } = data;
+    const { title, description, originalPrice, salePrice, imageUrl } = data;
 
     return {
       title,
       description,
       imageUrl,
-      price: price || null,
+      price: salePrice || originalPrice || null,
       productUrl: url,
       isPinned: false,
       tags: [],
