@@ -38,10 +38,16 @@ export const useListStore = create<ListState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
-      // Fetch lists
+      // Fetch lists with folder information
       const { data: listsData, error: listsError } = await supabase
         .from('lists')
-        .select('*')
+        .select(`
+          *,
+          folders (
+            id,
+            name
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (listsError) throw listsError;
@@ -92,7 +98,13 @@ export const useListStore = create<ListState>((set, get) => ({
           folder_id: list.folderId,
           owner_id: userId
         }])
-        .select()
+        .select(`
+          *,
+          folders (
+            id,
+            name
+          )
+        `)
         .single();
 
       if (error) throw error;
@@ -124,7 +136,13 @@ export const useListStore = create<ListState>((set, get) => ({
         .from('lists')
         .update(dbUpdates)
         .eq('id', id)
-        .select()
+        .select(`
+          *,
+          folders (
+            id,
+            name
+          )
+        `)
         .single();
 
       if (error) throw error;

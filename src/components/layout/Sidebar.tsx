@@ -35,11 +35,11 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   };
   
   const getFolderLists = (folderId: string) => {
-    return lists.filter(list => list.folder_id === folderId);
+    return lists.filter(list => list.folderId === folderId);
   };
   
   const getUnorganizedLists = () => {
-    return lists.filter(list => !list.folder_id);
+    return lists.filter(list => !list.folderId);
   };
   
   const handleCreateFolder = () => {
