@@ -23,7 +23,7 @@
 // Response:
 // { "data": { "title": "…", "price": 12.9, "inStock": true }, "tookMs": 1412 }
 //
-import { serve } from "https://deno.land/x/edge_functions@1.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.204.0/http/server.ts";
 import { Stagehand } from "https://esm.sh/@browserbasehq/stagehand@1.3.7?target=denonext";
 import { z } from "https://esm.sh/zod@3.22.4?target=denonext";
 
