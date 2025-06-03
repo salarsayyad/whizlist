@@ -379,7 +379,7 @@ serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "gpt-4o-mini", // Use mini for cost efficiency
+          model: "gpt-4o", // Use mini for cost efficiency
           messages: [
             {
               role: "system",
