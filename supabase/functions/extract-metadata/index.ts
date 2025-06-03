@@ -1,7 +1,4 @@
 import { DOMParser } from 'https://deno.land/x/deno_dom/deno-dom-wasm.ts';
-import { HyperAgent } from 'npm:@hyperbrowser/agent';
-import { ChatOpenAI } from 'npm:@langchain/openai';
-import { z } from 'npm:zod';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,40 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-const productSchema = z.object({
-  title: z.string().describe("The product title or name"),
-  description: z.string().describe("A description of the product"),
-  price: z.string().nullable().describe("The product price if available"),
-  imageUrl: z.string().nullable().describe("URL of the product image if available"),
-});
-
-async function extractWithHyperAgent(url: string) {
-  try {
-    const llm = new ChatOpenAI({
-      apiKey: Deno.env.get('OPENAI_API_KEY'),
-      model: 'gpt-4',
-    });
-
-    const agent = new HyperAgent({
-      llm,
-      debug: false,
-    });
-
-    const task = `Navigate to ${url} and extract the product information including title, description, price, and image URL`;
-
-    const result = await agent.executeTask(task, {
-      outputSchema: productSchema,
-    });
-
-    await agent.closeAgent();
-    return result.output;
-  } catch (error) {
-    console.error('HyperAgent extraction failed:', error);
-    return null;
-  }
-}
-
-async function extractWithDOMParser(url: string) {
+async function extractMetadata(url: string) {
   try {
     const response = await fetch(url);
     const html = await response.text();
@@ -70,7 +34,7 @@ async function extractWithDOMParser(url: string) {
       imageUrl,
     };
   } catch (error) {
-    console.error('DOM Parser extraction failed:', error);
+    console.error('Metadata extraction failed:', error);
     return null;
   }
 }
@@ -96,13 +60,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Try HyperAgent first
-    let productData = await extractWithHyperAgent(url);
-
-    // Fall back to DOM Parser if HyperAgent fails
-    if (!productData) {
-      productData = await extractWithDOMParser(url);
-    }
+    const productData = await extractMetadata(url);
 
     if (!productData) {
       throw new Error('Failed to extract product data');
