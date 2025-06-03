@@ -1,6 +1,6 @@
-import { HyperAgent } from '@hyperbrowser/agent';
-import { ChatOpenAI } from '@langchain/openai';
-import { z } from 'zod';
+import { HyperAgent } from 'npm:@hyperbrowser/agent';
+import { ChatOpenAI } from 'npm:@langchain/openai';
+import { z } from 'npm:zod';
 import * as cheerio from 'npm:cheerio';
 
 const corsHeaders = {
