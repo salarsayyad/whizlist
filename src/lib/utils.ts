@@ -20,35 +20,33 @@ export function truncateText(text: string, maxLength: number): string {
 }
 
 export async function extractProductDetails(url: string) {
-  // In a real app, this would call a backend service to scrape the URL
-  // For now, let's simulate a response after a short delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // Mock response based on URL
-  if (url.includes('amazon')) {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-metadata`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ url }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to extract metadata');
+    }
+
+    const { title, description } = await response.json();
+
     return {
-      title: 'Amazon Product',
-      price: '$99.99',
-      image: 'https://images.pexels.com/photos/1667088/pexels-photo-1667088.jpeg?auto=compress&cs=tinysrgb&w=600',
-      description: 'This is a sample product description for an Amazon product.',
-      url,
+      title,
+      description,
+      image_url: null,
+      price: null,
+      product_url: url,
+      is_pinned: false,
+      tags: [],
     };
-  } else if (url.includes('etsy')) {
-    return {
-      title: 'Handmade Craft Item',
-      price: '$45.00',
-      image: 'https://images.pexels.com/photos/4041285/pexels-photo-4041285.jpeg?auto=compress&cs=tinysrgb&w=600',
-      description: 'Beautiful handmade item with unique craftsmanship.',
-      url,
-    };
-  } else {
-    // Generic response for any other URL
-    return {
-      title: 'Product from the web',
-      price: '$XX.XX',
-      image: 'https://images.pexels.com/photos/5632402/pexels-photo-5632402.jpeg?auto=compress&cs=tinysrgb&w=600',
-      description: 'A product you saved from the web.',
-      url,
-    };
+  } catch (error) {
+    console.error('Error extracting product details:', error);
+    throw error;
   }
 }
