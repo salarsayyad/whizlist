@@ -19,8 +19,8 @@ const productSchema = z.object({
 async function extractWithHyperAgent(url: string) {
   try {
     const llm = new ChatOpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-      model: 'gpt-4',
+      apiKey: Deno.env.get('OPENAI_API_KEY'),
+      model: 'gpt-4o',
     });
 
     const agent = new HyperAgent({
