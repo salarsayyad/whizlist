@@ -39,7 +39,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   
   const handleOpenExternalLink = (e: React.MouseEvent) => {
     e.stopPropagation();
-    window.open(product.url, '_blank', 'noopener,noreferrer');
+    window.open(product.productUrl, '_blank', 'noopener,noreferrer');
   };
   
   return (

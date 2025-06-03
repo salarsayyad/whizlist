@@ -96,7 +96,7 @@ const ProductList = () => {
               </button>
               <button 
                 className="p-1.5 rounded-full bg-primary-100 text-primary-800 hover:bg-primary-200"
-                onClick={() => window.open(product.url, '_blank', 'noopener,noreferrer')}
+                onClick={() => window.open(product.productUrl, '_blank', 'noopener,noreferrer')}
               >
                 <ExternalLink size={16} />
               </button>

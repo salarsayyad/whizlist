@@ -99,7 +99,7 @@ const ProductDetail = () => {
             <Button
               variant="secondary"
               className="flex items-center gap-1"
-              onClick={() => window.open(product.url, '_blank', 'noopener,noreferrer')}
+              onClick={() => window.open(product.productUrl, '_blank', 'noopener,noreferrer')}
             >
               <ExternalLink size={16} />
               <span>Visit</span>
@@ -149,12 +149,12 @@ const ProductDetail = () => {
               <div className="pt-2 border-t border-primary-100 flex justify-between text-sm text-primary-500">
                 <span>Saved on {formatDate(product.createdAt)}</span>
                 <a 
-                  href={product.url} 
+                  href={product.productUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-accent-600 hover:text-accent-700 hover:underline"
                 >
-                  {new URL(product.url).hostname}
+                  {new URL(product.productUrl).hostname}
                 </a>
               </div>
             </div>

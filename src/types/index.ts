@@ -11,7 +11,7 @@ export interface Product {
   description: string;
   price?: string;
   image?: string;
-  url: string;
+  productUrl: string;
   isPinned: boolean;
   createdAt: string;
   updatedAt: string;
