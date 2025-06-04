@@ -25,30 +25,47 @@ export function truncateText(text: string, maxLength: number): string {
 
 export async function extractProductDetails(url: string) {
   try {
-    // First try extract-gpt for quick initial data
-    const { data: gptData, error: gptError } = await supabase.functions.invoke('extract-gpt', {
+    // First try extract-markdown-llm for quick initial data
+    const { data: markdownData, error: markdownError } = await supabase.functions.invoke('extract-markdown-llm', {
       body: { 
         url,
-        fields: [
-          { name: 'title', type: 'string', description: 'Product title or name' },
-          { name: 'description', type: 'string', description: 'Product description' },
-          { name: 'price', type: 'string', description: 'Product price with currency symbol' },
-          { name: 'image_url', type: 'string', description: 'Main product image URL' }
-        ]
+        extractionPrompt: "Extract product information including title, description, price, and main image URL.",
+        extractionSchema: {
+          type: "object",
+          properties: {
+            title: {
+              type: "string",
+              description: "Product title or name"
+            },
+            description: {
+              type: "string",
+              description: "Product description"
+            },
+            price: {
+              type: "string",
+              description: "Product price with currency symbol"
+            },
+            image_url: {
+              type: "string",
+              description: "Main product image URL"
+            }
+          },
+          required: ["title"]
+        }
       }
     });
 
-    if (gptError) {
-      console.warn('GPT extraction failed:', gptError);
-      throw gptError;
+    if (markdownError) {
+      console.warn('Markdown extraction failed:', markdownError);
+      throw markdownError;
     }
 
-    // Initial product data from GPT
+    // Initial product data from markdown extraction
     const initialProduct = {
-      title: gptData?.data?.title || new URL(url).hostname,
-      description: gptData?.data?.description || url,
-      price: gptData?.data?.price || null,
-      imageUrl: gptData?.data?.image_url || null,
+      title: markdownData?.extractedData?.title || new URL(url).hostname,
+      description: markdownData?.extractedData?.description || url,
+      price: markdownData?.extractedData?.price || null,
+      imageUrl: markdownData?.extractedData?.image_url || null,
       productUrl: url,
       isPinned: false,
       tags: []
