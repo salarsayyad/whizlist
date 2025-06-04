@@ -60,6 +60,7 @@ serve(async (req) => {
       schema: zodSchema,
       sessionOptions: {
         useStealth: true,
+        useProxy: true,
         solveCaptchas: true,
       },
     })
