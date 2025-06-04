@@ -24,12 +24,12 @@ export function truncateText(text: string, maxLength: number): string {
 
 export async function extractProductDetails(url: string) {
   try {
-    const { data, error } = await supabase.functions.invoke('extract-metadata', {
+    const { data, error } = await supabase.functions.invoke('extract-firecrawl', {
       body: { url }
     });
 
     if (error) {
-      throw new Error(`Error calling extract-metadata function: ${error.message}`);
+      throw new Error(`Error calling extract-firecrawl function: ${error.message}`);
     }
 
     if (!data || !data.title) {
