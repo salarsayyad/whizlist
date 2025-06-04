@@ -56,7 +56,7 @@ export async function extractProductDetails(url: string) {
     }
 
     if (!responseJson.data) {
-      throw new Error('No data returned from metadata extraction');
+      throw new Error(`No data returned from metadata extraction: ${data}`);
     }
 
     const { data } = responseJson;
