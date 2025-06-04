@@ -16,6 +16,7 @@ interface ProductState {
   togglePin: (id: string) => Promise<void>;
   setViewMode: (mode: 'grid' | 'list') => void;
   setExtracting: (productId: string, isExtracting: boolean) => void;
+  updateProductInStore: (product: Product) => void;
 }
 
 // Helper function to map database product to UI product
@@ -192,6 +193,14 @@ export const useProductStore = create<ProductState>((set, get) => ({
       extractingProducts: isExtracting 
         ? [...state.extractingProducts, productId]
         : state.extractingProducts.filter(id => id !== productId)
+    }));
+  },
+
+  updateProductInStore: (product) => {
+    set(state => ({
+      products: state.products.map(p => 
+        p.id === product.id ? product : p
+      )
     }));
   },
 }));

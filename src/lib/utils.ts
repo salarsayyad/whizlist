@@ -72,7 +72,7 @@ export async function extractProductDetails(url: string) {
 
           if (firecrawlData) {
             // Update the product with enhanced details
-            const { error: updateError } = await supabase
+            const { data: updatedProduct, error: updateError } = await supabase
               .from('products')
               .update({
                 title: firecrawlData.title || initialProduct.title,
@@ -80,10 +80,15 @@ export async function extractProductDetails(url: string) {
                 price: firecrawlData.price || initialProduct.price,
                 image_url: firecrawlData.image_url || initialProduct.imageUrl
               })
-              .eq('id', productId);
+              .eq('id', productId)
+              .select()
+              .single();
 
             if (updateError) {
               console.error('Failed to update product with enhanced details:', updateError);
+            } else if (updatedProduct) {
+              // Update the store with the new product details
+              useProductStore.getState().updateProductInStore(mapDbProductToUiProduct(updatedProduct));
             }
           }
         } catch (error) {
@@ -105,4 +110,21 @@ export async function extractProductDetails(url: string) {
     
     throw new Error('Could not extract product details. Please check if the product page is accessible and try again.');
   }
+}
+
+// Helper function to map database product to UI product
+function mapDbProductToUiProduct(dbProduct: any): Product {
+  return {
+    id: dbProduct.id,
+    title: dbProduct.title,
+    description: dbProduct.description,
+    price: dbProduct.price,
+    imageUrl: dbProduct.image_url,
+    productUrl: dbProduct.product_url,
+    isPinned: dbProduct.is_pinned || false,
+    tags: dbProduct.tags || [],
+    ownerId: dbProduct.owner_id,
+    createdAt: dbProduct.created_at,
+    updatedAt: dbProduct.updated_at
+  };
 }
