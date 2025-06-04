@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { FireCrawlApp } from "npm:@mendable/firecrawl-js";
+import { FirecrawlApp } from "npm:@mendable/firecrawl-js";
 import { z } from "npm:zod";
 
 const corsHeaders = {
