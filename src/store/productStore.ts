@@ -3,6 +3,21 @@ import { supabase } from '../lib/supabase';
 import { Product } from '../types/database';
 import { useAuthStore } from './authStore';
 
+interface ProductState {
+  products: Product[];
+  isLoading: boolean;
+  error: string | null;
+  viewMode: 'grid' | 'list';
+  extractingProducts: string[];
+  fetchProducts: () => Promise<void>;
+  createProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'ownerId'>) => Promise<Product>;
+  updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
+  togglePin: (id: string) => Promise<void>;
+  setViewMode: (mode: 'grid' | 'list') => void;
+  setExtracting: (productId: string, isExtracting: boolean) => void;
+}
+
 // Helper function to map database product to UI product
 const mapDbProductToUiProduct = (dbProduct: any): Product => ({
   id: dbProduct.id,
@@ -30,24 +45,12 @@ const mapUiProductToDbProduct = (uiProduct: Partial<Product>) => ({
   owner_id: uiProduct.ownerId
 });
 
-interface ProductState {
-  products: Product[];
-  isLoading: boolean;
-  error: string | null;
-  viewMode: 'grid' | 'list';
-  fetchProducts: () => Promise<void>;
-  createProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'ownerId'>) => Promise<Product>;
-  updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
-  deleteProduct: (id: string) => Promise<void>;
-  togglePin: (id: string) => Promise<void>;
-  setViewMode: (mode: 'grid' | 'list') => void;
-}
-
 export const useProductStore = create<ProductState>((set, get) => ({
   products: [],
   isLoading: false,
   error: null,
   viewMode: 'grid',
+  extractingProducts: [],
 
   fetchProducts: async () => {
     try {
@@ -183,4 +186,12 @@ export const useProductStore = create<ProductState>((set, get) => ({
   },
 
   setViewMode: (mode) => set({ viewMode: mode }),
+
+  setExtracting: (productId, isExtracting) => {
+    set(state => ({
+      extractingProducts: isExtracting 
+        ? [...state.extractingProducts, productId]
+        : state.extractingProducts.filter(id => id !== productId)
+    }));
+  },
 }));

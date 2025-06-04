@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { supabase } from './supabase';
+import { useProductStore } from '../store/productStore';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -57,6 +58,9 @@ export async function extractProductDetails(url: string) {
       product: initialProduct,
       updateDetails: async (productId: string) => {
         try {
+          // Set extracting state
+          useProductStore.getState().setExtracting(productId, true);
+
           const { data: firecrawlData, error: firecrawlError } = await supabase.functions.invoke('extract-firecrawl', {
             body: { url }
           });
@@ -84,6 +88,9 @@ export async function extractProductDetails(url: string) {
           }
         } catch (error) {
           console.error('Error updating product details:', error);
+        } finally {
+          // Clear extracting state
+          useProductStore.getState().setExtracting(productId, false);
         }
       }
     };

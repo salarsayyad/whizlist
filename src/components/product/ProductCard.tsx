@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Star, Share2, MoreVertical, Pin, Trash2, ExternalLink, MessageSquare, List } from 'lucide-react';
+import { Star, Share2, MoreVertical, Pin, Trash2, ExternalLink, MessageSquare, List, RefreshCw } from 'lucide-react';
 import { Product } from '../../types';
 import { useProductStore } from '../../store/productStore';
 import { truncateText } from '../../lib/utils';
@@ -14,9 +14,11 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const navigate = useNavigate();
-  const { togglePin, deleteProduct } = useProductStore();
+  const { togglePin, deleteProduct, extractingProducts } = useProductStore();
   const [showOptions, setShowOptions] = useState(false);
   const [showListSelector, setShowListSelector] = useState(false);
+  
+  const isExtracting = extractingProducts.includes(product.id);
   
   const handleClick = () => {
     navigate(`/product/${product.id}`);
@@ -64,6 +66,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </div>
         )}
         <div className="absolute top-2 right-2 flex gap-1">
+          {isExtracting && (
+            <div className="p-1.5 rounded-full bg-white text-primary-800">
+              <RefreshCw size={16} className="animate-spin" />
+            </div>
+          )}
           <button 
             className={`p-1.5 rounded-full ${product.isPinned ? 'bg-primary-800 text-white' : 'bg-white text-primary-800'}`}
             onClick={handleTogglePin}
@@ -126,7 +133,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           {truncateText(product.description, 120)}
         </p>
         
-        <div className="mt-3 flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-1 mt-2">
           {product.tags.map((tag) => (
             <span 
               key={tag} 
