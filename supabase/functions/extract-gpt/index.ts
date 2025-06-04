@@ -183,7 +183,7 @@ async function extractWithOpenAI(content: string, fields: Field[], apiKey: strin
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'gpt-4o-mini',
+      model: 'gpt-o4-mini',
       messages: [
         {
           role: 'system',
