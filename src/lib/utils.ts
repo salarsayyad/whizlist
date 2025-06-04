@@ -1,7 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import FireCrawlApp from '@mendable/firecrawl-js';
-import { z } from 'zod';
+import { supabase } from './supabase';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -25,39 +24,21 @@ export function truncateText(text: string, maxLength: number): string {
 
 export async function extractProductDetails(url: string) {
   try {
-    const apiKey = import.meta.env.VITE_FIRECRAWL_API_KEY;
-    if (!apiKey) {
-      throw new Error('FireCrawl API key is not configured');
-    }
-
-    const app = new FireCrawlApp({ apiKey });
-
-    const schema = z.object({
-      product_name: z.string(),
-      product_description: z.string().optional(),
-      price: z.string().optional(),
-      image_url: z.string().optional()
+    const { data, error } = await supabase.functions.invoke('extract-metadata', {
+      body: { url }
     });
 
-    const extractResult = await app.extract([url], {
-      prompt: "I need to extract the product name, product description, current price, and the main product image url for the main product on the page. Ignore everything else.",
-      schema,
-    });
-
-    if (!extractResult || !extractResult[0]) {
-      throw new Error('No data returned from extraction');
+    if (error) {
+      throw new Error(`Error calling extract-metadata function: ${error.message}`);
     }
 
-    const data = extractResult[0];
-
-    // Ensure product name exists and is not empty after trimming
-    if (!data.product_name || !data.product_name.trim()) {
-      throw new Error('Could not extract product title');
+    if (!data || !data.title) {
+      throw new Error('Could not extract product details');
     }
-    
+
     return {
-      title: data.product_name.trim(),
-      description: data.product_description || '',
+      title: data.title.trim(),
+      description: data.description || '',
       imageUrl: data.image_url || null,
       price: data.price || null,
       productUrl: url,
