@@ -23,29 +23,15 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     headers: {
       'Content-Type': 'application/json',
     },
-    // Improved error handling for fetch
     fetch: async (...args) => {
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-
-        const response = await fetch(...args, {
-          signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
+        const response = await fetch(...args);
         if (!response.ok) {
-          const errorBody = await response.text();
-          throw new Error(`HTTP error! status: ${response.status}, body: ${errorBody}`);
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-
         return response;
       } catch (err) {
         console.error('Supabase connection error:', err);
-        if (err instanceof DOMException && err.name === 'AbortError') {
-          throw new Error('Request timed out. Please try again.');
-        }
         if (err instanceof TypeError && err.message.includes('NetworkError')) {
           throw new Error('Unable to connect to Supabase. Please check your internet connection and try again.');
         }
