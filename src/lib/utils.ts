@@ -24,22 +24,64 @@ export function truncateText(text: string, maxLength: number): string {
 
 export async function extractProductDetails(url: string) {
   try {
-    const { data, error } = await supabase.functions.invoke('extract-firecrawl', {
-      body: { url }
+    // First try extract-metadata for quick initial data
+    const { data: metaData, error: metaError } = await supabase.functions.invoke('extract-metadata', {
+      body: { 
+        url,
+        fields: [
+          { name: 'title', type: 'string', description: 'Product title or name' },
+          { name: 'description', type: 'string', description: 'Product description' },
+          { name: 'price', type: 'string', description: 'Product price' },
+          { name: 'image_url', type: 'string', description: 'Main product image URL' }
+        ]
+      }
     });
-  
-    if (error) throw error;
-    // For now, return a basic product structure with just the URL
-    // This can be enhanced later with metadata extraction if needed
-    return {
-      title: data.title, // Use the hostname as a temporary title
-      description: data.description, // Use the full URL as the description for now
-      imageUrl: data.image_url,
-      price: data.price,
+
+    if (metaError) {
+      console.warn('Metadata extraction failed:', metaError);
+    }
+
+    // Initial product data from metadata
+    const initialProduct = {
+      title: metaData?.data?.title || new URL(url).hostname,
+      description: metaData?.data?.description || url,
+      price: metaData?.data?.price || null,
+      imageUrl: metaData?.data?.image_url || null,
       productUrl: url,
       isPinned: false,
       tags: []
     };
+
+    // Start Firecrawl extraction asynchronously
+    supabase.functions.invoke('extract-firecrawl', {
+      body: { url }
+    }).then(({ data: firecrawlData, error: firecrawlError }) => {
+      if (firecrawlError) {
+        console.warn('Firecrawl extraction failed:', firecrawlError);
+        return;
+      }
+
+      // Update product with Firecrawl data if available
+      if (firecrawlData) {
+        const productId = initialProduct.id; // We'll need to pass this from the component
+        supabase
+          .from('products')
+          .update({
+            title: firecrawlData.title || initialProduct.title,
+            description: firecrawlData.description || initialProduct.description,
+            price: firecrawlData.price || initialProduct.price,
+            image_url: firecrawlData.image_url || initialProduct.imageUrl
+          })
+          .eq('id', productId)
+          .then(({ error: updateError }) => {
+            if (updateError) {
+              console.warn('Failed to update product with Firecrawl data:', updateError);
+            }
+          });
+      }
+    });
+
+    return initialProduct;
   } catch (error) {
     console.error('Error extracting product details:', error);
     
