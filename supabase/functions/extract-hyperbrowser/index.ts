@@ -69,7 +69,7 @@ function buildExtractionPrompt(fields: Field[]): string {
     return desc
   }).join('\n')
   
-  return `Extract the following data fields of the main product from the page:\n${fieldDescriptions}`
+  return `Extract the data fields in the provided schema of the main product from the page`
 }
 
 serve(async (req) => {
