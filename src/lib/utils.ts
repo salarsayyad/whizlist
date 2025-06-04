@@ -23,7 +23,7 @@ export function truncateText(text: string, maxLength: number): string {
 
 export async function extractProductDetails(url: string) {
   try {
-    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-hyperbrowser`, {
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-metadata`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
@@ -69,6 +69,11 @@ export async function extractProductDetails(url: string) {
     }
 
     const { data } = responseData;
+
+    // Check if title exists and is not empty after trimming
+    if (!data.title || !data.title.trim()) {
+      throw new Error('Could not extract product title');
+    }
     
     return {
       title: data.title.trim(),
