@@ -25,18 +25,80 @@ export function truncateText(text: string, maxLength: number): string {
 
 export async function extractProductDetails(url: string) {
   try {
-    // First try extract-metadata for quick initial data
+    // Try firecrawl first as it's more reliable
+    const { data: firecrawlData, error: firecrawlError } = await supabase.functions.invoke('extract-firecrawl', {
+      body: { url },
+      // Add timeout
+      options: {
+        timeout: 30000 // 30 seconds
+      }
+    });
+
+    if (!firecrawlError && firecrawlData) {
+      const product = {
+        title: firecrawlData.title || new URL(url).hostname,
+        description: firecrawlData.description || url,
+        price: firecrawlData.price || null,
+        imageUrl: firecrawlData.image_url || null,
+        productUrl: url,
+        isPinned: false,
+        tags: []
+      };
+
+      return {
+        product,
+        updateDetails: async (productId: string) => {
+          try {
+            // Set extracting state
+            useProductStore.getState().setExtracting(productId, true);
+
+            // Try to get additional metadata for enhancement
+            const { data: metaData, error: metaError } = await supabase.functions.invoke('extract-metadata', {
+              body: { url },
+              options: {
+                timeout: 30000
+              }
+            });
+
+            if (!metaError && metaData) {
+              // Update the product with any additional details
+              const { data: updatedProduct, error: updateError } = await supabase
+                .from('products')
+                .update({
+                  title: product.title,
+                  description: metaData.description || product.description,
+                  image_url: metaData.imageUrl || product.imageUrl
+                })
+                .eq('id', productId)
+                .select()
+                .single();
+
+              if (!updateError && updatedProduct) {
+                useProductStore.getState().updateProductInStore(mapDbProductToUiProduct(updatedProduct));
+              }
+            }
+          } catch (error) {
+            console.error('Error updating product details:', error);
+          } finally {
+            useProductStore.getState().setExtracting(productId, false);
+          }
+        }
+      };
+    }
+
+    // Fallback to metadata extraction if firecrawl fails
     const { data: metaData, error: metaError } = await supabase.functions.invoke('extract-metadata', {
-      body: { url }
+      body: { url },
+      options: {
+        timeout: 30000
+      }
     });
 
     if (metaError) {
-      console.warn('Metadata extraction failed:', metaError);
-      throw metaError;
+      throw new Error('Failed to extract product details. Please try again.');
     }
 
-    // Initial product data from metadata
-    const initialProduct = {
+    const product = {
       title: metaData.title || new URL(url).hostname,
       description: metaData.description || url,
       price: null,
@@ -47,49 +109,8 @@ export async function extractProductDetails(url: string) {
     };
 
     return {
-      product: initialProduct,
-      updateDetails: async (productId: string) => {
-        try {
-          // Set extracting state
-          useProductStore.getState().setExtracting(productId, true);
-
-          const { data: firecrawlData, error: firecrawlError } = await supabase.functions.invoke('extract-firecrawl', {
-            body: { url }
-          });
-
-          if (firecrawlError) {
-            console.warn('Firecrawl extraction failed:', firecrawlError);
-            return;
-          }
-
-          if (firecrawlData) {
-            // Update the product with enhanced details
-            const { data: updatedProduct, error: updateError } = await supabase
-              .from('products')
-              .update({
-                title: firecrawlData.title || initialProduct.title,
-                description: firecrawlData.description || initialProduct.description,
-                price: firecrawlData.price || initialProduct.price,
-                image_url: firecrawlData.image_url || initialProduct.imageUrl
-              })
-              .eq('id', productId)
-              .select()
-              .single();
-
-            if (updateError) {
-              console.error('Failed to update product with enhanced details:', updateError);
-            } else if (updatedProduct) {
-              // Update the store with the new product details
-              useProductStore.getState().updateProductInStore(mapDbProductToUiProduct(updatedProduct));
-            }
-          }
-        } catch (error) {
-          console.error('Error updating product details:', error);
-        } finally {
-          // Clear extracting state
-          useProductStore.getState().setExtracting(productId, false);
-        }
-      }
+      product,
+      updateDetails: async () => {} // No additional updates needed for fallback case
     };
   } catch (error) {
     console.error('Error extracting product details:', error);
@@ -97,6 +118,9 @@ export async function extractProductDetails(url: string) {
     if (error instanceof Error) {
       if (error.message.includes('Invalid URL')) {
         throw new Error('Please enter a valid product URL starting with http:// or https://');
+      }
+      if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
+        throw new Error('Network error occurred. Please check your internet connection and try again.');
       }
     }
     
