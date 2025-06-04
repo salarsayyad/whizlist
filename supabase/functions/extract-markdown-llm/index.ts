@@ -282,6 +282,15 @@ class DataExtractor {
     }
   }
 
+  private cleanJsonResponse(content: string): string {
+    // Remove markdown code block fences if present
+    const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    if (jsonMatch) {
+      return jsonMatch[1].trim();
+    }
+    return content.trim();
+  }
+
   async extract(content: string, prompt: string, schema?: any, systemPrompt?: string): Promise<{
     success: boolean;
     data?: any;
@@ -292,7 +301,7 @@ class DataExtractor {
       const messages = [
         {
           role: 'system',
-          content: systemPrompt || 'You are an expert at extracting structured data from web content. Always respond with valid JSON.'
+          content: systemPrompt || 'You are an expert at extracting structured data from web content. Always respond with valid JSON without markdown code block fences.'
         },
         {
           role: 'user',
@@ -307,9 +316,13 @@ class DataExtractor {
       }
 
       try {
-        const extractedData = JSON.parse(response.content);
+        // Clean the response content before parsing
+        const cleanedContent = this.cleanJsonResponse(response.content);
+        const extractedData = JSON.parse(cleanedContent);
         return { success: true, data: extractedData };
       } catch (parseError) {
+        console.error('JSON Parse Error:', parseError);
+        console.error('Content:', response.content);
         return { 
           success: false, 
           error: `Failed to parse LLM response as JSON: ${parseError}` 
@@ -331,7 +344,7 @@ class DataExtractor {
       fullPrompt += `Please extract the data according to this JSON schema:\n${JSON.stringify(schema, null, 2)}\n\n`;
     }
     
-    fullPrompt += 'Respond with a valid JSON object containing the extracted data.';
+    fullPrompt += 'Respond with ONLY a valid JSON object containing the extracted data. Do not include markdown code block fences or any other formatting.';
     return fullPrompt;
   }
 
@@ -552,7 +565,7 @@ serve(async (req) => {
     const contentToExtract = scrapeResult.markdown || scrapeResult.html || '';
     const promptToUse = extractionPrompt || "Extract all relevant information from this webpage including title, description, main content, author, dates, contact information, and any other important details.";
     const schemaToUse = extractionSchema || DEFAULT_EXTRACTION_SCHEMA;
-    const systemPromptToUse = systemPrompt || "You are an expert at extracting structured data from web content. Extract the requested information accurately and comprehensively. Always respond with valid JSON.";
+    const systemPromptToUse = systemPrompt || "You are an expert at extracting structured data from web content. Extract the requested information accurately and comprehensively. Always respond with valid JSON without markdown code block fences.";
 
     const extractResult = await extractor.extract(
       contentToExtract,
