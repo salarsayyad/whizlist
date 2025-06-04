@@ -5,6 +5,7 @@ import {
   MessageSquare, Plus, Send, List as ListIcon 
 } from 'lucide-react';
 import { useProductStore } from '../store/productStore';
+import { useListStore } from '../store/listStore';
 import Button from '../components/ui/Button';
 import { formatDate } from '../lib/utils';
 import ListSelectorModal from '../components/list/ListSelectorModal';
@@ -14,10 +15,14 @@ const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { products, togglePin, deleteProduct } = useProductStore();
+  const { lists } = useListStore();
   const product = products.find(p => p.id === id);
   
   const [comment, setComment] = useState('');
   const [showListSelector, setShowListSelector] = useState(false);
+  
+  // Get lists that contain this product
+  const productLists = lists.filter(list => list.products.includes(id || ''));
   
   if (!product) {
     return (
@@ -213,6 +218,22 @@ const ProductDetail = () => {
           
           <div className="card p-4 mt-6">
             <h3 className="text-primary-900 font-medium mb-2">Lists</h3>
+            {productLists.length > 0 ? (
+              <div className="space-y-2">
+                {productLists.map(list => (
+                  <button
+                    key={list.id}
+                    className="flex items-center gap-2 w-full p-2 rounded-md hover:bg-primary-50 text-left"
+                    onClick={() => navigate(`/list/${list.id}`)}
+                  >
+                    <ListIcon size={16} className="text-primary-500" />
+                    <span className="text-primary-700">{list.name}</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-primary-500 text-sm">Not added to any lists yet</p>
+            )}
             <button 
               className="flex items-center gap-2 text-accent-600 hover:text-accent-700 w-full mt-2"
               onClick={() => setShowListSelector(true)}
