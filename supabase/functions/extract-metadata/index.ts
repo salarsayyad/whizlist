@@ -36,21 +36,27 @@ Deno.serve(async (req) => {
       throw new Error('Failed to parse HTML');
     }
 
-    const title = doc.querySelector('title')?.textContent || '';
-    const description = doc.querySelector('meta[name="description"]')?.getAttribute('content') || 
-                       doc.querySelector('meta[property="og:description"]')?.getAttribute('content') || '';
-    
-    // Try to get the image URL from various meta tags
-    const imageUrl = doc.querySelector('meta[property="og:image"]')?.getAttribute('content') ||
-                    doc.querySelector('meta[name="twitter:image"]')?.getAttribute('content') ||
-                    doc.querySelector('meta[property="product:image"]')?.getAttribute('content') ||
-                    doc.querySelector('link[rel="image_src"]')?.getAttribute('href') || null;
+    // Get title from meta tags first (usually more accurate) then fallback to title tag
+    const title = 
+      doc.querySelector('meta[property="og:title"]')?.getAttribute('content') ||
+      doc.querySelector('meta[name="twitter:title"]')?.getAttribute('content') ||
+      doc.querySelector('title')?.textContent || '';
+
+    // Get description from meta tags
+    const description = 
+      doc.querySelector('meta[property="og:description"]')?.getAttribute('content') ||
+      doc.querySelector('meta[name="description"]')?.getAttribute('content') || '';
+
+    // Get image from meta tags
+    const imageUrl = 
+      doc.querySelector('meta[property="og:image"]')?.getAttribute('content') ||
+      doc.querySelector('meta[name="twitter:image"]')?.getAttribute('content') || null;
 
     return new Response(
       JSON.stringify({ 
         title: title.trim(),
         description: description.trim(),
-        imageUrl: imageUrl?.trim() || null
+        imageUrl
       }),
       { 
         headers: {
