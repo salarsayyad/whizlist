@@ -57,7 +57,10 @@ serve(async (req) => {
     const result = await client.extract.startAndWait({
       urls,
       prompt,
-      schema: zodSchema
+      schema: zodSchema,
+      sessionOptions: {
+      solveCaptchas: true,
+      },
     })
 
     // Return extracted data
