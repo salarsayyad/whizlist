@@ -13,23 +13,6 @@ if (!supabaseUrl.startsWith('https://')) {
   throw new Error('Invalid Supabase URL format. Must start with https://');
 }
 
-// Add retry logic for failed requests
-const retryFetch = async (url: string, options: RequestInit, retries = 3, backoff = 300): Promise<Response> => {
-  try {
-    const response = await fetch(url, options);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response;
-  } catch (err) {
-    if (retries > 0) {
-      await new Promise(resolve => setTimeout(resolve, backoff));
-      return retryFetch(url, options, retries - 1, backoff * 2);
-    }
-    throw err;
-  }
-};
-
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
@@ -42,15 +25,15 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     },
     fetch: async (...args) => {
       try {
-        const response = await retryFetch(...args);
+        const response = await fetch(...args);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         return response;
       } catch (err) {
         console.error('Supabase connection error:', err);
         if (err instanceof TypeError && err.message.includes('NetworkError')) {
           throw new Error('Unable to connect to Supabase. Please check your internet connection and try again.');
-        }
-        if (err instanceof TypeError && err.message.includes('Failed to fetch')) {
-          throw new Error('Connection to Supabase failed. Please check your network connection and try again.');
         }
         throw new Error(`Failed to connect to Supabase: ${err instanceof Error ? err.message : 'Unknown error'}`);
       }
