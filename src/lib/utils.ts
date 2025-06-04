@@ -32,8 +32,8 @@ export async function extractProductDetails(url: string) {
     // For now, return a basic product structure with just the URL
     // This can be enhanced later with metadata extraction if needed
     return {
-      title: data.product_name, // Use the hostname as a temporary title
-      description: data.product_description, // Use the full URL as the description for now
+      title: data.title, // Use the hostname as a temporary title
+      description: data.description, // Use the full URL as the description for now
       imageUrl: null,
       price: null,
       productUrl: url,
