@@ -59,7 +59,7 @@ export async function extractProductDetails(url: string) {
       throw new Error(`No data returned from metadata extraction: ${data}`);
     }
 
-    const { data } = responseJson;
+    const { data } = responseJson.data;
 
     // Ensure title exists and is not empty after trimming
     if (!data.title || !data.title.trim()) {
