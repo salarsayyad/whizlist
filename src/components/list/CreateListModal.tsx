@@ -20,8 +20,8 @@ const CreateListModal = ({ folderId, onClose }: CreateListModalProps) => {
       await createList({
         name,
         description,
-        is_public: false,
-        folder_id: folderId || null,
+        isPublic: false,
+        folderId: folderId || null,
       });
       onClose();
     } catch (err) {
