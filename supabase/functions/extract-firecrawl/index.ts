@@ -26,7 +26,7 @@ serve(async (req) => {
       throw new Error("FIRECRAWL_API_KEY not configured");
     }
 
-    const app = new FireCrawlApp({ apiKey });
+    const app = new FirecrawlApp({ apiKey });
 
     const schema = z.object({
       product_name: z.string(),
