@@ -53,11 +53,17 @@ export async function extractProductDetails(url: string) {
       }),
     });
 
-    if (!response.ok) {
-      throw new Error('Failed to extract metadata');
+    const responseJson = await response.json();
+
+    if (!response.ok || !responseJson.success) {
+      throw new Error(responseJson.error || responseJson.details || 'Failed to extract metadata');
     }
 
-    const { data } = await response.json();
+    if (!responseJson.data) {
+      throw new Error('No data returned from metadata extraction');
+    }
+
+    const { data } = responseJson;
 
     // Ensure title exists and is not empty after trimming
     if (!data.title || !data.title.trim()) {
