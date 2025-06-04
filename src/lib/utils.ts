@@ -38,16 +38,15 @@ export async function extractProductDetails(url: string) {
     });
 
     if (error) {
-      if (error.message.includes('Failed to send')) {
-        throw new Error('Unable to connect to the product extraction service. Please check your connection and try again.');
-      }
-      throw new Error(`Error extracting product details: ${error.message}`);
+      console.error('Extraction error:', error);
+      throw new Error(`Failed to extract product details: ${error.message}`);
     }
 
     if (!data || !data.title) {
       throw new Error('Could not extract product details from the provided URL');
     }
 
+    // Map the extracted data to our product format
     return {
       title: data.title.trim(),
       description: data.description || '',
@@ -59,13 +58,19 @@ export async function extractProductDetails(url: string) {
     };
   } catch (error) {
     console.error('Error extracting product details:', error);
+    
+    // Provide user-friendly error messages
     if (error instanceof Error) {
-      // Provide more user-friendly error messages
       if (error.message.includes('NetworkError')) {
         throw new Error('Network connection error. Please check your internet connection and try again.');
+      } else if (error.message.includes('Failed to extract')) {
+        throw new Error('Could not extract product details. Please check if the product page is accessible and try again.');
+      } else if (error.message.includes('Invalid URL')) {
+        throw new Error('Please enter a valid product URL starting with http:// or https://');
       }
       throw error;
     }
+    
     throw new Error('An unexpected error occurred while extracting product details');
   }
 }
