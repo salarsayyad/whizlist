@@ -52,12 +52,6 @@ export async function extractProductDetails(url: string) {
             name: 'imageUrl',
             description: 'URL of the main/primary product image',
             dataType: 'string'
-          },
-          {
-            name: 'features',
-            description: 'List of product features or highlights',
-            dataType: 'array',
-            arrayItemType: 'string'
           }
         ],
         extractionMethod: 'gpt'
@@ -83,8 +77,7 @@ export async function extractProductDetails(url: string) {
       imageUrl: data.imageUrl || null,
       price: data.price || null,
       productUrl: url,
-      isPinned: false,
-      tags: data.features || [], // Use extracted features as initial tags
+      isPinned: false,// Use extracted features as initial tags
     };
   } catch (error) {
     console.error('Error extracting product details:', error);
