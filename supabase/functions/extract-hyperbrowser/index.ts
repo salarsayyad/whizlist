@@ -59,7 +59,8 @@ serve(async (req) => {
       prompt,
       schema: zodSchema,
       sessionOptions: {
-      solveCaptchas: true,
+        useStealth: true,
+        solveCaptchas: true,
       },
     })
 
