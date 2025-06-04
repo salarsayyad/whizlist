@@ -34,20 +34,16 @@ export async function extractProductDetails(url: string) {
         prompt: "Extract the product name, description, price, and main image URL from the page.",
         schema: {
           title: {
-            type: "string",
-            description: "The product name or title"
+            type: "string"
           },
           description: {
-            type: "string",
-            description: "Full product description"
+            type: "string"
           },
           price: {
-            type: "string",
-            description: "Current price of the product"
+            type: "string"
           },
           imageUrl: {
-            type: "string",
-            description: "URL of the main product image"
+            type: "string"
           }
         }
       }),
