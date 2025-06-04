@@ -44,7 +44,15 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
     setError('');
     
     try {
-      const productDetails = await extractProductDetails(url);
+      // Add timeout to the request
+      const timeoutDuration = 30000; // 30 seconds
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timed out')), timeoutDuration);
+      });
+
+      const productDetailsPromise = extractProductDetails(url);
+      const productDetails = await Promise.race([productDetailsPromise, timeoutPromise]);
+      
       const createdProduct = await createProduct(productDetails);
       
       if (selectedListId) {
@@ -53,12 +61,21 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
       
       onClose();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to extract product details';
-      if (errorMessage === 'Could not extract product title') {
-        setError('Could not extract product title from the URL. Please try a different URL or check if the product page is accessible.');
-      } else {
-        setError(`Failed to add product: ${errorMessage}`);
+      let errorMessage = 'An unexpected error occurred';
+      
+      if (err instanceof Error) {
+        if (err.message.includes('NetworkError') || err.message.includes('Failed to send')) {
+          errorMessage = 'Unable to connect to the server. Please check your internet connection and try again.';
+        } else if (err.message.includes('timed out')) {
+          errorMessage = 'The request took too long to complete. Please try again.';
+        } else if (err.message.includes('Could not extract product')) {
+          errorMessage = 'Could not extract product details from the URL. Please check if the product page is accessible.';
+        } else {
+          errorMessage = err.message;
+        }
       }
+      
+      setError(errorMessage);
       console.error('Error adding product:', err);
     } finally {
       setIsLoading(false);

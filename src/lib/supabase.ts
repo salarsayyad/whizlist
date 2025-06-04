@@ -8,6 +8,11 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
+// Validate URL format
+if (!supabaseUrl.startsWith('https://')) {
+  throw new Error('Invalid Supabase URL format. Must start with https://');
+}
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
@@ -15,13 +20,23 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     storageKey: 'whizlist_auth_token',
   },
   global: {
-    fetch: (...args) => {
-      return fetch(...args).catch(err => {
-        // Log the error for debugging
-        console.error('Supabase fetch error:', err);
-        // Throw a more descriptive error
-        throw new Error(`Failed to connect to Supabase: ${err.message}`);
-      });
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    fetch: async (...args) => {
+      try {
+        const response = await fetch(...args);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response;
+      } catch (err) {
+        console.error('Supabase connection error:', err);
+        if (err instanceof TypeError && err.message.includes('NetworkError')) {
+          throw new Error('Unable to connect to Supabase. Please check your internet connection and try again.');
+        }
+        throw new Error(`Failed to connect to Supabase: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      }
     },
   },
 });
@@ -35,7 +50,6 @@ supabase.auth.onAuthStateChange((event, session) => {
     });
   } catch (error) {
     console.error('Auth state change error:', error);
-    // Handle the error gracefully without breaking the app
     useAuthStore.setState({ 
       user: null,
       isLoading: false,

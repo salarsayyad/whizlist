@@ -24,16 +24,28 @@ export function truncateText(text: string, maxLength: number): string {
 
 export async function extractProductDetails(url: string) {
   try {
+    // Validate URL before making the request
+    const validUrl = new URL(url);
+    if (!validUrl.protocol.startsWith('http')) {
+      throw new Error('Invalid URL format. Must start with http:// or https://');
+    }
+
     const { data, error } = await supabase.functions.invoke('extract-firecrawl', {
-      body: { url }
+      body: { url },
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
     if (error) {
-      throw new Error(`Error calling extract-firecrawl function: ${error.message}`);
+      if (error.message.includes('Failed to send')) {
+        throw new Error('Unable to connect to the product extraction service. Please check your connection and try again.');
+      }
+      throw new Error(`Error extracting product details: ${error.message}`);
     }
 
     if (!data || !data.title) {
-      throw new Error('Could not extract product details');
+      throw new Error('Could not extract product details from the provided URL');
     }
 
     return {
@@ -47,6 +59,13 @@ export async function extractProductDetails(url: string) {
     };
   } catch (error) {
     console.error('Error extracting product details:', error);
-    throw error;
+    if (error instanceof Error) {
+      // Provide more user-friendly error messages
+      if (error.message.includes('NetworkError')) {
+        throw new Error('Network connection error. Please check your internet connection and try again.');
+      }
+      throw error;
+    }
+    throw new Error('An unexpected error occurred while extracting product details');
   }
 }
