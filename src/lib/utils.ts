@@ -25,33 +25,13 @@ export function truncateText(text: string, maxLength: number): string {
 
 export async function extractProductDetails(url: string) {
   try {
-    // First try extract-markdown-llm for quick initial data
-    const { data: markdownData, error: markdownError } = await supabase.functions.invoke('extract-markdown-llm', {
+    // First try extract-markdown for quick initial data
+    const { data: markdownData, error: markdownError } = await supabase.functions.invoke('extract-markdown', {
       body: { 
         url,
-        extractionPrompt: "Extract product information including title, description, price, and main image URL.",
-        extractionSchema: {
-          type: "object",
-          properties: {
-            title: {
-              type: "string",
-              description: "Product title or name"
-            },
-            description: {
-              type: "string",
-              description: "Product description"
-            },
-            price: {
-              type: "string",
-              description: "Product price with currency symbol"
-            },
-            image_url: {
-              type: "string",
-              description: "Main product image URL"
-            }
-          },
-          required: ["title"]
-        }
+        fields: ['title', 'description', 'price', 'images'],
+        includeMarkdown: false,
+        includeMetadata: true
       }
     });
 
@@ -65,7 +45,7 @@ export async function extractProductDetails(url: string) {
       title: markdownData?.extractedData?.title || new URL(url).hostname,
       description: markdownData?.extractedData?.description || url,
       price: markdownData?.extractedData?.price || null,
-      imageUrl: markdownData?.extractedData?.image_url || null,
+      imageUrl: markdownData?.extractedData?.images?.[0] || markdownData?.metadata?.ogImage || null,
       productUrl: url,
       isPinned: false,
       tags: []
