@@ -23,9 +23,9 @@
 // Response:
 // { "data": { "title": "…", "price": 12.9, "inStock": true }, "tookMs": 1412 }
 //
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { Stagehand } from "npm:@browserbasehq/stagehand";
-import { z } from "zod";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { Stagehand } from "https://esm.sh/@browserbasehq/stagehand"
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts"
 
 // ▸ Types ----------------------------------------------------------------------
 interface FieldSpec {
