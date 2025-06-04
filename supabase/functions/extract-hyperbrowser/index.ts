@@ -86,7 +86,10 @@ serve(async (req) => {
     // Validate inputs
     if (!url || !fields || !Array.isArray(fields) || fields.length === 0) {
       return new Response(
-        JSON.stringify({ error: 'Invalid request. Please provide url and fields array.' }),
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid request. Please provide url and fields array.' 
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -95,7 +98,10 @@ serve(async (req) => {
     const apiKey = Deno.env.get('HYPERBROWSER_API_KEY')
     if (!apiKey) {
       return new Response(
-        JSON.stringify({ error: 'Hyperbrowser API key not configured' }),
+        JSON.stringify({ 
+          success: false, 
+          error: 'Hyperbrowser API key not configured' 
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -114,6 +120,20 @@ serve(async (req) => {
       schema: schema,
     })
 
+    // Validate required fields
+    if (!result || !result.title || result.title.trim() === '') {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Could not extract product title'
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
     // Return extracted data
     return new Response(
       JSON.stringify({
@@ -131,6 +151,7 @@ serve(async (req) => {
     console.error('Extraction error:', error)
     return new Response(
       JSON.stringify({ 
+        success: false, 
         error: 'Failed to extract data', 
         details: error.message 
       }),
@@ -141,46 +162,3 @@ serve(async (req) => {
     )
   }
 })
-
-// Example request body:
-/*
-{
-  "url": "https://example.com/product",
-  "fields": [
-    {
-      "name": "productName",
-      "description": "The name of the product",
-      "dataType": "string"
-    },
-    {
-      "name": "price",
-      "description": "The price of the product",
-      "dataType": "number"
-    },
-    {
-      "name": "features",
-      "description": "List of product features",
-      "dataType": "array",
-      "arrayItemType": "string"
-    },
-    {
-      "name": "specifications",
-      "description": "Technical specifications",
-      "dataType": "array",
-      "arrayItemType": "object",
-      "objectSchema": [
-        {
-          "name": "spec",
-          "description": "Specification name",
-          "dataType": "string"
-        },
-        {
-          "name": "value",
-          "description": "Specification value",
-          "dataType": "string"
-        }
-      ]
-    }
-  ]
-}
-*/
