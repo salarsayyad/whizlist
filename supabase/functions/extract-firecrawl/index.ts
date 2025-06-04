@@ -72,15 +72,43 @@ async function pollForResults(jobId: string, apiKey: string): Promise<any> {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
-
   try {
-    const body = await req.json();
-    const { url } = body;
+    console.log(`Received ${req.method} request`);
+    console.log("Headers:", Object.fromEntries(req.headers.entries()));
     
+    // Handle CORS preflight requests
+    if (req.method === "OPTIONS") {
+      return new Response("ok", { headers: corsHeaders });
+    }
+
+    // Only accept POST requests
+    if (req.method !== "POST") {
+      return new Response(
+        JSON.stringify({ error: "Method not allowed. Use POST." }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 405 
+        }
+      );
+    }
+
+    // Main processing logic
+    try {
+    // Safely parse request body
+    let body;
+    try {
+      const text = await req.text();
+      console.log("Raw request body:", text);
+      if (!text) {
+        throw new Error("Empty request body");
+      }
+      body = JSON.parse(text);
+    } catch (error) {
+      console.error("Failed to parse request body:", error);
+      throw new Error("Invalid request body. Please send valid JSON with a 'url' field.");
+    }
+    
+    const { url } = body;
     console.log("Received request for URL:", url);
     
     if (!url) {
@@ -187,6 +215,18 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         error: error.message || "Failed to extract product details"
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      }
+    );
+  }
+  } catch (unexpectedError) {
+    console.error("Unexpected error:", unexpectedError);
+    return new Response(
+      JSON.stringify({
+        error: "An unexpected error occurred"
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
