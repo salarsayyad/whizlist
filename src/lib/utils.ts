@@ -21,71 +21,8 @@ export function truncateText(text: string, maxLength: number): string {
   return text.substring(0, maxLength).trim() + '...';
 }
 
-interface ProductField {
-  name: string;
-  description: string;
-  dataType: 'string' | 'number' | 'boolean' | 'array' | 'object';
-  required?: boolean;
-  selector?: string;
-  fallbackSelectors?: string[];
-}
-
 export async function extractProductDetails(url: string) {
   try {
-    // Define the fields to extract with detailed selectors and fallbacks
-    const fields: ProductField[] = [
-      {
-        name: 'title',
-        description: 'Product name/title',
-        dataType: 'string',
-        required: true,
-        selector: 'h1',
-        fallbackSelectors: [
-          'title',
-          '[itemprop="name"]',
-          '.product-title',
-          '.product-name',
-          '#product-title'
-        ]
-      },
-      {
-        name: 'description',
-        description: 'Product description',
-        dataType: 'string',
-        selector: '[itemprop="description"]',
-        fallbackSelectors: [
-          'meta[name="description"]',
-          '.product-description',
-          '#product-description',
-          '.description'
-        ]
-      },
-      {
-        name: 'price',
-        description: 'Current price of the product',
-        dataType: 'string',
-        selector: '[itemprop="price"]',
-        fallbackSelectors: [
-          '.price',
-          '.product-price',
-          '#product-price',
-          '[class*="price"]'
-        ]
-      },
-      {
-        name: 'imageUrl',
-        description: 'Main product image URL',
-        dataType: 'string',
-        selector: '[itemprop="image"]',
-        fallbackSelectors: [
-          'meta[property="og:image"]',
-          '.product-image img',
-          '#product-image img',
-          '.gallery img:first-child'
-        ]
-      }
-    ];
-
     const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-hyperbrowser`, {
       method: 'POST',
       headers: {
@@ -93,26 +30,36 @@ export async function extractProductDetails(url: string) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        url,
-        fields,
-        options: {
-          // Additional extraction options
-          waitForSelectors: fields.map(f => f.selector).filter(Boolean),
-          timeout: 30000,
-          retries: 2
+        urls: [url],
+        prompt: "Extract the product name, description, price, and main image URL from the page.",
+        schema: {
+          title: {
+            type: "string",
+            description: "The product name or title"
+          },
+          description: {
+            type: "string",
+            description: "Full product description"
+          },
+          price: {
+            type: "string",
+            description: "Current price of the product"
+          },
+          imageUrl: {
+            type: "string",
+            description: "URL of the main product image"
+          }
         }
       }),
     });
 
-    const responseData = await response.json();
-
-    if (!responseData.success) {
-      throw new Error(responseData.error || 'Failed to extract metadata');
+    if (!response.ok) {
+      throw new Error('Failed to extract metadata');
     }
 
-    const { data } = responseData;
+    const { data } = await response.json();
 
-    // Check if title exists and is not empty after trimming
+    // Ensure title exists and is not empty after trimming
     if (!data.title || !data.title.trim()) {
       throw new Error('Could not extract product title');
     }

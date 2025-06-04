@@ -1,29 +1,11 @@
 // Supabase Edge Function ▸ URL Field Extractor (Hyperbrowser)
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { Hyperbrowser } from "https://esm.sh/@hyperbrowser/sdk"
+import { Hyperbrowser } from "npm:@hyperbrowser/sdk"
+import { z } from "npm:zod"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-interface Field {
-  name: string
-  description: string
-  dataType: string
-  required?: boolean
-  selector?: string
-  fallbackSelectors?: string[]
-}
-
-interface RequestBody {
-  url: string
-  fields: Field[]
-  options?: {
-    waitForSelectors?: string[]
-    timeout?: number
-    retries?: number
-  }
 }
 
 serve(async (req) => {
@@ -34,15 +16,15 @@ serve(async (req) => {
 
   try {
     // Parse request body
-    const body: RequestBody = await req.json()
-    const { url, fields, options = {} } = body
+    const body = await req.json()
+    const { urls, prompt, schema } = body
 
     // Validate inputs
-    if (!url || !fields || !Array.isArray(fields) || fields.length === 0) {
+    if (!urls || !Array.isArray(urls) || urls.length === 0 || !prompt || !schema) {
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'Invalid request. Please provide url and fields array.' 
+          error: 'Invalid request. Please provide urls array, prompt, and schema.' 
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
@@ -63,27 +45,26 @@ serve(async (req) => {
     // Initialize Hyperbrowser client
     const client = new Hyperbrowser({ apiKey })
 
-    // Extract data from URL using provided selectors
+    // Create Zod schema from the provided schema object
+    const zodSchema = z.object(
+      Object.entries(schema).reduce((acc, [key, value]) => ({
+        ...acc,
+        [key]: value.type === "string" ? z.string().nullable() : z.any()
+      }), {})
+    )
+
+    // Extract data from URL
     const result = await client.extract.startAndWait({
-      urls: [url],
-      selectors: fields.map(field => ({
-        name: field.name,
-        selector: field.selector,
-        fallbackSelectors: field.fallbackSelectors,
-        required: field.required
-      })),
-      options: {
-        waitForSelectors: options.waitForSelectors,
-        timeout: options.timeout,
-        retries: options.retries
-      }
+      urls,
+      prompt,
+      schema: zodSchema
     })
 
     // Return extracted data
     return new Response(
       JSON.stringify({
         success: true,
-        data: result
+        data: result[0] // Return first result since we only support one URL for now
       }),
       { 
         status: 200, 
