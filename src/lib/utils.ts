@@ -34,13 +34,13 @@ export async function extractProductDetails(url: string) {
         fields: [
           {
             name: 'title',
-            description: 'Product name/title',
+            description: 'Cleaned up product name/title',
             dataType: 'string',
             required: true
           },
           {
             name: 'description',
-            description: 'Full product description',
+            description: 'Summary of the product description',
             dataType: 'string'
           },
           {
