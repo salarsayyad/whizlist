@@ -10,6 +10,20 @@ const FIRECRAWL_API_BASE = "https://api.firecrawl.dev/v1";
 const MAX_POLL_ATTEMPTS = 60; // 2 minutes max with 2-second intervals
 const POLL_INTERVAL_MS = 2000;
 
+// Helper function to safely parse JSON response
+async function safeJsonParse(response: Response): Promise<any> {
+  const text = await response.text();
+  if (!text) {
+    throw new Error("Empty response body");
+  }
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    console.error("Failed to parse JSON. Response text:", text);
+    throw new Error(`Invalid JSON response: ${text.substring(0, 200)}...`);
+  }
+}
+
 // Helper function to poll for extraction results
 async function pollForResults(jobId: string, apiKey: string): Promise<any> {
   for (let attempt = 0; attempt < MAX_POLL_ATTEMPTS; attempt++) {
@@ -27,12 +41,16 @@ async function pollForResults(jobId: string, apiKey: string): Promise<any> {
         }
       });
 
+      console.log(`Poll attempt ${attempt + 1}: Status ${statusResponse.status}`);
+
       if (!statusResponse.ok) {
-        const error = await statusResponse.json();
-        throw new Error(error.error || "Failed to check extraction status");
+        const errorText = await statusResponse.text();
+        console.error("Poll error response:", errorText);
+        throw new Error(`Status check failed: ${statusResponse.status} - ${errorText}`);
       }
 
-      const result = await statusResponse.json();
+      const result = await safeJsonParse(statusResponse);
+      console.log("Poll result:", JSON.stringify(result).substring(0, 200));
 
       // Check if extraction is complete
       if (result.success && result.data) {
@@ -60,7 +78,10 @@ serve(async (req) => {
   }
 
   try {
-    const { url } = await req.json();
+    const body = await req.json();
+    const { url } = body;
+    
+    console.log("Received request for URL:", url);
     
     if (!url) {
       throw new Error("URL is required");
@@ -95,6 +116,22 @@ serve(async (req) => {
       required: ["product_name"]
     };
 
+    const extractPayload = {
+      urls: [url],
+      prompt: "Extract the product name, description, current price (with currency symbol), and main product image URL. Focus on the primary product being sold on the page.",
+      schema: schema,
+      showSources: false,
+      scrapeOptions: {
+        formats: ["markdown"],
+        onlyMainContent: true,
+        timeout: 30000,
+        waitFor: 2000, // Wait for dynamic content to load
+        blockAds: true
+      }
+    };
+
+    console.log("Sending extract request with payload:", JSON.stringify(extractPayload).substring(0, 500));
+
     // Initiate the extraction job
     const extractResponse = await fetch(`${FIRECRAWL_API_BASE}/extract`, {
       method: "POST",
@@ -102,31 +139,23 @@ serve(async (req) => {
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        urls: [url],
-        prompt: "Extract the product name, description, current price (with currency symbol), and main product image URL. Focus on the primary product being sold on the page.",
-        schema: schema,
-        showSources: false,
-        scrapeOptions: {
-          formats: ["markdown"],
-          onlyMainContent: true,
-          timeout: 30000,
-          waitFor: 2000, // Wait for dynamic content to load
-          blockAds: true
-        }
-      })
+      body: JSON.stringify(extractPayload)
     });
 
+    console.log(`Extract response status: ${extractResponse.status}`);
+
     if (!extractResponse.ok) {
-      const error = await extractResponse.json();
-      throw new Error(error.error || "Failed to initiate extraction");
+      const errorText = await extractResponse.text();
+      console.error("Extract error response:", errorText);
+      throw new Error(`Extract request failed: ${extractResponse.status} - ${errorText}`);
     }
 
-    const extractResult = await extractResponse.json();
+    const extractResult = await safeJsonParse(extractResponse);
+    console.log("Extract result:", JSON.stringify(extractResult));
 
     // Check if the extraction job was created successfully
     if (!extractResult.success || !extractResult.id) {
-      throw new Error("Failed to start extraction job");
+      throw new Error(`Failed to start extraction job: ${JSON.stringify(extractResult)}`);
     }
 
     console.log(`Extraction job created with ID: ${extractResult.id}`);
@@ -137,6 +166,8 @@ serve(async (req) => {
     // The extracted data should match our schema
     // Extract endpoint returns the data directly, not in an array
     const product = extractedData;
+
+    console.log("Final extracted product data:", JSON.stringify(product));
 
     return new Response(
       JSON.stringify({
