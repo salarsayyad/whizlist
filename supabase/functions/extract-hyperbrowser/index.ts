@@ -63,6 +63,7 @@ serve(async (req) => {
         useProxy: true,
         solveCaptchas: true,
       },
+      waitFor: 10000
     })
 
     // Return extracted data
