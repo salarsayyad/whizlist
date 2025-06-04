@@ -23,7 +23,7 @@ export function truncateText(text: string, maxLength: number): string {
 
 export async function extractProductDetails(url: string) {
   try {
-    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-gpt`, {
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-hyperbrowser`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
@@ -53,14 +53,13 @@ export async function extractProductDetails(url: string) {
             description: 'Main product image URL',
             dataType: 'string'
           }
-        ],
-        extractionMethod: 'gpt'
+        ]
       }),
     });
 
     const responseData = await response.json();
 
-    if (!response.ok || !responseData.success) {
+    if (!responseData.success) {
       throw new Error(responseData.error || 'Failed to extract metadata');
     }
 
@@ -77,7 +76,8 @@ export async function extractProductDetails(url: string) {
       imageUrl: data.imageUrl || null,
       price: data.price || null,
       productUrl: url,
-      isPinned: false,// Use extracted features as initial tags
+      isPinned: false,
+      tags: []
     };
   } catch (error) {
     console.error('Error extracting product details:', error);
