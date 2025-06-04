@@ -16,7 +16,7 @@ serve(async (req) => {
 
   try {
     const { url } = await req.json();
-
+    
     if (!url) {
       throw new Error("URL is required");
     }
@@ -35,20 +35,24 @@ serve(async (req) => {
       image_url: z.string().optional()
     });
 
-    const extractResult = await app.extract([url], {
-      prompt: "I need to extract the product name, product description, current price, and the main product image url for the main product on the page. Ignore everything else.",
-      schema,
+    // Use scrapeUrl with extract instead of extract method directly
+    const scrapeResult = await app.scrapeUrl(url, {
+      formats: ["extract"],
+      extract: {
+        prompt: "I need to extract the product name, product description, current price, and the main product image url for the main product on the page. Ignore everything else.",
+        schema: schema
+      }
     });
 
-    if (!extractResult || !extractResult[0]) {
+    if (!scrapeResult || !scrapeResult.extract) {
       throw new Error("Failed to extract product details");
     }
 
-    const product = extractResult[0];
+    const product = scrapeResult.extract;
 
     return new Response(
       JSON.stringify({
-        title: product.product_name,
+        title: product.product_name || "",
         description: product.product_description || "",
         price: product.price || null,
         image_url: product.image_url || null
@@ -58,7 +62,6 @@ serve(async (req) => {
         status: 200,
       }
     );
-
   } catch (error) {
     console.error("Error:", error);
     return new Response(
