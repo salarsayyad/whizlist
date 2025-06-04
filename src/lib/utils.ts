@@ -24,30 +24,30 @@ export function truncateText(text: string, maxLength: number): string {
 
 export async function extractProductDetails(url: string) {
   try {
-    // First try extract-metadata for quick initial data
-    const { data: metaData, error: metaError } = await supabase.functions.invoke('extract-metadata', {
+    // First try extract-gpt for quick initial data
+    const { data: gptData, error: gptError } = await supabase.functions.invoke('extract-gpt', {
       body: { 
         url,
         fields: [
           { name: 'title', type: 'string', description: 'Product title or name' },
           { name: 'description', type: 'string', description: 'Product description' },
-          { name: 'price', type: 'string', description: 'Product price' },
+          { name: 'price', type: 'string', description: 'Product price with currency symbol' },
           { name: 'image_url', type: 'string', description: 'Main product image URL' }
         ]
       }
     });
 
-    if (metaError) {
-      console.warn('Metadata extraction failed:', metaError);
-      throw metaError;
+    if (gptError) {
+      console.warn('GPT extraction failed:', gptError);
+      throw gptError;
     }
 
-    // Initial product data from metadata
+    // Initial product data from GPT
     const initialProduct = {
-      title: metaData?.data?.title || new URL(url).hostname,
-      description: metaData?.data?.description || url,
-      price: metaData?.data?.price || null,
-      imageUrl: metaData?.data?.image_url || null,
+      title: gptData?.data?.title || new URL(url).hostname,
+      description: gptData?.data?.description || url,
+      price: gptData?.data?.price || null,
+      imageUrl: gptData?.data?.image_url || null,
       productUrl: url,
       isPinned: false,
       tags: []
