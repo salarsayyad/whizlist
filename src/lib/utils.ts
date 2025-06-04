@@ -1,5 +1,7 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import FireCrawlApp from '@mendable/firecrawl-js';
+import { z } from 'zod';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -23,53 +25,35 @@ export function truncateText(text: string, maxLength: number): string {
 
 export async function extractProductDetails(url: string) {
   try {
-    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-hyperbrowser`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        urls: [url],
-        prompt: "Extract the product name, description, price, and main image URL from the page.",
-        schema: {
-          title: {
-            type: "string"
-          },
-          description: {
-            type: "string"
-          },
-          price: {
-            type: "string"
-          },
-          imageUrl: {
-            type: "string"
-          }
-        }
-      }),
+    const app = new FireCrawlApp({apiKey: "fc-61821b97585f4ef28578a72c9d9e7491"});
+
+    const schema = z.object({
+      product_name: z.string(),
+      product_description: z.string().optional(),
+      price: z.string().optional(),
+      image_url: z.string().optional()
     });
 
-    const responseJson = await response.json();
+    const extractResult = await app.extract([url], {
+      prompt: "I need to extract the product name, product description, current price, and the main product image url for the main product on the page. Ignore everything else.",
+      schema,
+    });
 
-    if (!response.ok || !responseJson.success) {
-      throw new Error(responseJson.error || responseJson.details || 'Failed to extract metadata');
+    if (!extractResult || !extractResult[0]) {
+      throw new Error('No data returned from extraction');
     }
 
-    if (!responseJson.data) {
-      throw new Error(`No data returned from metadata extraction: ${data}`);
-    }
+    const data = extractResult[0];
 
-    const { data } = responseJson.data;
-
-    // Ensure title exists and is not empty after trimming
-    if (!data.title || !data.title.trim()) {
-      throw new Error(`Could not extract product title ${data}`);
+    // Ensure product name exists and is not empty after trimming
+    if (!data.product_name || !data.product_name.trim()) {
+      throw new Error('Could not extract product title');
     }
     
     return {
-      title: data.title.trim(),
-      description: data.description || '',
-      imageUrl: data.imageUrl || null,
+      title: data.product_name.trim(),
+      description: data.product_description || '',
+      imageUrl: data.image_url || null,
       price: data.price || null,
       productUrl: url,
       isPinned: false,
