@@ -25,7 +25,12 @@ export function truncateText(text: string, maxLength: number): string {
 
 export async function extractProductDetails(url: string) {
   try {
-    const app = new FireCrawlApp({apiKey: "fc-61821b97585f4ef28578a72c9d9e7491"});
+    const apiKey = import.meta.env.VITE_FIRECRAWL_API_KEY;
+    if (!apiKey) {
+      throw new Error('FireCrawl API key is not configured');
+    }
+
+    const app = new FireCrawlApp({ apiKey });
 
     const schema = z.object({
       product_name: z.string(),
