@@ -61,23 +61,9 @@ export async function extractProductDetails(url: string) {
         return;
       }
 
-      // Update product with Firecrawl data if available
+      // Just log the Firecrawl data instead of attempting to update
       if (firecrawlData) {
-        const productId = initialProduct.id; // We'll need to pass this from the component
-        supabase
-          .from('products')
-          .update({
-            title: firecrawlData.title || initialProduct.title,
-            description: firecrawlData.description || initialProduct.description,
-            price: firecrawlData.price || initialProduct.price,
-            image_url: firecrawlData.image_url || initialProduct.imageUrl
-          })
-          .eq('id', productId)
-          .then(({ error: updateError }) => {
-            if (updateError) {
-              console.warn('Failed to update product with Firecrawl data:', updateError);
-            }
-          });
+        console.log('Firecrawl data received:', firecrawlData);
       }
     });
 
