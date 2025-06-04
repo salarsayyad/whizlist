@@ -24,7 +24,7 @@ export function truncateText(text: string, maxLength: number): string {
 
 export async function extractProductDetails(url: string) {
   try {
-    const { data, error } = await supabase.functions.invoke('extract-product', {
+    const { data, error } = await supabase.functions.invoke('extract-firecrawl', {
       body: { url }
     });
   
