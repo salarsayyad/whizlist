@@ -30,8 +30,9 @@ export async function extractProductDetails(url: string) {
       throw new Error('Invalid URL format. Must start with http:// or https://');
     }
 
+    // Call the Edge Function with proper error handling
     const { data, error } = await supabase.functions.invoke('extract-firecrawl', {
-      body: { url },
+      body: JSON.stringify({ url }), // Ensure body is properly stringified
       headers: {
         'Content-Type': 'application/json',
       },
@@ -39,10 +40,17 @@ export async function extractProductDetails(url: string) {
 
     if (error) {
       console.error('Extraction error:', error);
+      if (error.message.includes('status code 500')) {
+        throw new Error('Server error: The product extraction service is currently unavailable. Please ensure the FIRECRAWL_API_KEY is properly configured.');
+      }
       throw new Error(`Failed to extract product details: ${error.message}`);
     }
 
-    if (!data || !data.title) {
+    if (!data) {
+      throw new Error('No data received from the extraction service');
+    }
+
+    if (!data.title) {
       throw new Error('Could not extract product details from the provided URL');
     }
 
@@ -67,6 +75,8 @@ export async function extractProductDetails(url: string) {
         throw new Error('Could not extract product details. Please check if the product page is accessible and try again.');
       } else if (error.message.includes('Invalid URL')) {
         throw new Error('Please enter a valid product URL starting with http:// or https://');
+      } else if (error.message.includes('FIRECRAWL_API_KEY')) {
+        throw new Error('Product extraction is currently unavailable. Please contact support.');
       }
       throw error;
     }
