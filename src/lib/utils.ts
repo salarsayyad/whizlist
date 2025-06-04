@@ -24,17 +24,16 @@ export function truncateText(text: string, maxLength: number): string {
 
 export async function extractProductDetails(url: string) {
   try {
-    // Validate URL before proceeding
-    const validUrl = new URL(url);
-    if (!validUrl.protocol.startsWith('http')) {
-      throw new Error('Invalid URL format. Must start with http:// or https://');
-    }
-
+    const { data, error } = await supabase.functions.invoke('extract-product', {
+      body: { url }
+    });
+  
+    if (error) throw error;
     // For now, return a basic product structure with just the URL
     // This can be enhanced later with metadata extraction if needed
     return {
-      title: validUrl.hostname, // Use the hostname as a temporary title
-      description: url, // Use the full URL as the description for now
+      title: data.product_name, // Use the hostname as a temporary title
+      description: data.product_description, // Use the full URL as the description for now
       imageUrl: null,
       price: null,
       productUrl: url,
