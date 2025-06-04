@@ -25,27 +25,30 @@ export function truncateText(text: string, maxLength: number): string {
 
 export async function extractProductDetails(url: string) {
   try {
-    // First try extract-markdown for quick initial data
-    const { data: markdownData, error: markdownError } = await supabase.functions.invoke('extract-markdown', {
+    // First try extract-gpt for quick initial data
+    const { data: gptData, error: gptError } = await supabase.functions.invoke('extract-gpt', {
       body: { 
         url,
-        fields: ['title', 'description', 'price', 'images'],
-        includeMarkdown: false,
-        includeMetadata: true
+        fields: [
+          { name: 'title', type: 'string', description: 'Product title or name' },
+          { name: 'description', type: 'string', description: 'Product description' },
+          { name: 'price', type: 'string', description: 'Product price with currency symbol' },
+          { name: 'image_url', type: 'string', description: 'Main product image URL' }
+        ]
       }
     });
 
-    if (markdownError) {
-      console.warn('Markdown extraction failed:', markdownError);
-      throw markdownError;
+    if (gptError) {
+      console.warn('GPT extraction failed:', gptError);
+      throw gptError;
     }
 
-    // Initial product data from markdown extraction
+    // Initial product data from GPT
     const initialProduct = {
-      title: markdownData?.extractedData?.title || new URL(url).hostname,
-      description: markdownData?.extractedData?.description || url,
-      price: markdownData?.extractedData?.price || null,
-      imageUrl: markdownData?.extractedData?.images?.[0] || markdownData?.metadata?.ogImage || null,
+      title: gptData?.data?.title || new URL(url).hostname,
+      description: gptData?.data?.description || url,
+      price: gptData?.data?.price || null,
+      imageUrl: gptData?.data?.image_url || null,
       productUrl: url,
       isPinned: false,
       tags: []
