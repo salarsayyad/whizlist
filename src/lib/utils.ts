@@ -35,7 +35,7 @@ export async function extractProductDetails(url: string) {
       title: data.title, // Use the hostname as a temporary title
       description: data.description, // Use the full URL as the description for now
       imageUrl: null,
-      price: null,
+      price: data.price,
       productUrl: url,
       isPinned: false,
       tags: []
