@@ -27,6 +27,13 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { Stagehand } from "https://esm.sh/@browserbasehq/stagehand"
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts"
 
+// ▸ CORS Headers --------------------------------------------------------------
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
 // ▸ Types ----------------------------------------------------------------------
 interface FieldSpec {
   name: string;
@@ -40,8 +47,16 @@ interface ReqBody {
 
 // ▸ Entry ----------------------------------------------------------------------
 serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+
   if (req.method !== "POST") {
-    return new Response("Method Not Allowed", { status: 405 });
+    return new Response("Method Not Allowed", { 
+      status: 405,
+      headers: corsHeaders 
+    });
   }
 
   // Check for API key
@@ -117,7 +132,10 @@ serve(async (req) => {
 function jsonResponse(obj: unknown, status = 200) {
   return new Response(JSON.stringify(obj), {
     status,
-    headers: { "Content-Type": "application/json; charset=utf-8" },
+    headers: { 
+      "Content-Type": "application/json; charset=utf-8",
+      ...corsHeaders
+    },
   });
 }
 
