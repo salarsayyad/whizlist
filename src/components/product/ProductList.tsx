@@ -1,4 +1,4 @@
-import { useProductStore } from '../store/productStore';
+import { useProductStore } from '../../store/productStore';
 import { useNavigate } from 'react-router-dom';
 import { Share2, Pin, Trash2, ExternalLink, List, MessageSquare } from 'lucide-react';
 import { formatDate, truncateText } from '../../lib/utils';
@@ -47,9 +47,9 @@ const ProductList = () => {
             className="w-16 h-16 flex-shrink-0 rounded-md overflow-hidden cursor-pointer"
             onClick={() => navigate(`/product/${product.id}`)}
           >
-            {product.imageUrl ? (
+            {product.image ? (
               <img 
-                src={product.imageUrl} 
+                src={product.image} 
                 alt={product.title} 
                 className="w-full h-full object-cover"
               />
