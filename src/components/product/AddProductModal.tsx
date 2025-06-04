@@ -44,15 +44,7 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
     setError('');
     
     try {
-      // Add timeout to the request
-      const timeoutDuration = 30000; // 30 seconds
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Request timed out')), timeoutDuration);
-      });
-
-      const productDetailsPromise = extractProductDetails(url);
-      const productDetails = await Promise.race([productDetailsPromise, timeoutPromise]);
-      
+      const productDetails = await extractProductDetails(url);
       const createdProduct = await createProduct(productDetails);
       
       if (selectedListId) {
@@ -66,10 +58,6 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
       if (err instanceof Error) {
         if (err.message.includes('NetworkError') || err.message.includes('Failed to send')) {
           errorMessage = 'Unable to connect to the server. Please check your internet connection and try again.';
-        } else if (err.message.includes('timed out')) {
-          errorMessage = 'The request took too long to complete. Please try again.';
-        } else if (err.message.includes('Could not extract product')) {
-          errorMessage = 'Could not extract product details from the URL. Please check if the product page is accessible.';
         } else {
           errorMessage = err.message;
         }
@@ -175,7 +163,7 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
             isLoading={isLoading}
             disabled={!url.trim() || isLoading}
           >
-            {isLoading ? 'Extracting...' : 'Add Product'}
+            {isLoading ? 'Adding...' : 'Add Product'}
           </Button>
         </div>
       </form>
