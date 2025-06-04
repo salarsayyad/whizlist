@@ -44,12 +44,15 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
     setError('');
     
     try {
-      const productDetails = await extractProductDetails(url);
-      const createdProduct = await createProduct(productDetails);
+      const { product, updateDetails } = await extractProductDetails(url);
+      const createdProduct = await createProduct(product);
       
       if (selectedListId) {
         await addProductToList(selectedListId, createdProduct.id);
       }
+
+      // Start the enhanced details extraction
+      updateDetails(createdProduct.id).catch(console.error);
       
       onClose();
     } catch (err) {

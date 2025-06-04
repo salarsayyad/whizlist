@@ -39,6 +39,7 @@ export async function extractProductDetails(url: string) {
 
     if (metaError) {
       console.warn('Metadata extraction failed:', metaError);
+      throw metaError;
     }
 
     // Initial product data from metadata
@@ -52,22 +53,40 @@ export async function extractProductDetails(url: string) {
       tags: []
     };
 
-    // Start Firecrawl extraction asynchronously
-    supabase.functions.invoke('extract-firecrawl', {
-      body: { url }
-    }).then(({ data: firecrawlData, error: firecrawlError }) => {
-      if (firecrawlError) {
-        console.warn('Firecrawl extraction failed:', firecrawlError);
-        return;
-      }
+    return {
+      product: initialProduct,
+      updateDetails: async (productId: string) => {
+        try {
+          const { data: firecrawlData, error: firecrawlError } = await supabase.functions.invoke('extract-firecrawl', {
+            body: { url }
+          });
 
-      // Just log the Firecrawl data instead of attempting to update
-      if (firecrawlData) {
-        console.log('Firecrawl data received:', firecrawlData);
-      }
-    });
+          if (firecrawlError) {
+            console.warn('Firecrawl extraction failed:', firecrawlError);
+            return;
+          }
 
-    return initialProduct;
+          if (firecrawlData) {
+            // Update the product with enhanced details
+            const { error: updateError } = await supabase
+              .from('products')
+              .update({
+                title: firecrawlData.title || initialProduct.title,
+                description: firecrawlData.description || initialProduct.description,
+                price: firecrawlData.price || initialProduct.price,
+                image_url: firecrawlData.image_url || initialProduct.imageUrl
+              })
+              .eq('id', productId);
+
+            if (updateError) {
+              console.error('Failed to update product with enhanced details:', updateError);
+            }
+          }
+        } catch (error) {
+          console.error('Error updating product details:', error);
+        }
+      }
+    };
   } catch (error) {
     console.error('Error extracting product details:', error);
     
@@ -77,6 +96,6 @@ export async function extractProductDetails(url: string) {
       }
     }
     
-    throw new Error('An unexpected error occurred while processing the URL');
+    throw new Error('Could not extract product details. Please check if the product page is accessible and try again.');
   }
 }
