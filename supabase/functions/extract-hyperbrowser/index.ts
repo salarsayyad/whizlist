@@ -1,7 +1,6 @@
 // Supabase Edge Function ▸ URL Field Extractor (Hyperbrowser)
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { Hyperbrowser } from "https://esm.sh/@hyperbrowser/sdk"
-import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,65 +10,20 @@ const corsHeaders = {
 interface Field {
   name: string
   description: string
-  dataType: 'string' | 'number' | 'boolean' | 'array' | 'object'
-  arrayItemType?: 'string' | 'number' | 'boolean' | 'object'
-  objectSchema?: Field[]
+  dataType: string
+  required?: boolean
+  selector?: string
+  fallbackSelectors?: string[]
 }
 
 interface RequestBody {
   url: string
   fields: Field[]
-}
-
-// Helper function to build Zod schema from field definitions
-function buildZodSchema(fields: Field[]): z.ZodObject<any> {
-  const schemaObj: Record<string, any> = {}
-  
-  for (const field of fields) {
-    switch (field.dataType) {
-      case 'string':
-        schemaObj[field.name] = z.string()
-        break
-      case 'number':
-        schemaObj[field.name] = z.number()
-        break
-      case 'boolean':
-        schemaObj[field.name] = z.boolean()
-        break
-      case 'array':
-        if (field.arrayItemType === 'string') {
-          schemaObj[field.name] = z.array(z.string())
-        } else if (field.arrayItemType === 'number') {
-          schemaObj[field.name] = z.array(z.number())
-        } else if (field.arrayItemType === 'boolean') {
-          schemaObj[field.name] = z.array(z.boolean())
-        } else if (field.arrayItemType === 'object' && field.objectSchema) {
-          schemaObj[field.name] = z.array(buildZodSchema(field.objectSchema))
-        }
-        break
-      case 'object':
-        if (field.objectSchema) {
-          schemaObj[field.name] = buildZodSchema(field.objectSchema)
-        }
-        break
-    }
+  options?: {
+    waitForSelectors?: string[]
+    timeout?: number
+    retries?: number
   }
-  
-  return z.object(schemaObj)
-}
-
-// Helper function to build extraction prompt from field definitions
-function buildExtractionPrompt(fields: Field[]): string {
-  const fieldDescriptions = fields.map(field => {
-    let desc = `- ${field.name}: ${field.description}`
-    if (field.dataType === 'array' && field.arrayItemType === 'object' && field.objectSchema) {
-      const subFields = field.objectSchema.map(f => `  - ${f.name}: ${f.description}`).join('\n')
-      desc += `\n${subFields}`
-    }
-    return desc
-  }).join('\n')
-  
-  return `Extract the data fields in the provided schema of the main product from the page`
 }
 
 serve(async (req) => {
@@ -81,7 +35,7 @@ serve(async (req) => {
   try {
     // Parse request body
     const body: RequestBody = await req.json()
-    const { url, fields } = body
+    const { url, fields, options = {} } = body
 
     // Validate inputs
     if (!url || !fields || !Array.isArray(fields) || fields.length === 0) {
@@ -109,37 +63,27 @@ serve(async (req) => {
     // Initialize Hyperbrowser client
     const client = new Hyperbrowser({ apiKey })
 
-    // Build Zod schema and extraction prompt
-    const schema = buildZodSchema(fields)
-    const prompt = buildExtractionPrompt(fields)
-
-    // Extract data from URL
+    // Extract data from URL using provided selectors
     const result = await client.extract.startAndWait({
       urls: [url],
-      prompt: prompt,
-      schema: schema,
+      selectors: fields.map(field => ({
+        name: field.name,
+        selector: field.selector,
+        fallbackSelectors: field.fallbackSelectors,
+        required: field.required
+      })),
+      options: {
+        waitForSelectors: options.waitForSelectors,
+        timeout: options.timeout,
+        retries: options.retries
+      }
     })
-
-    // Validate required fields
-    if (!result || !result.title || result.title.trim() === '') {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Could not extract product title'
-        }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
-    }
 
     // Return extracted data
     return new Response(
       JSON.stringify({
         success: true,
-        data: result,
-        extractedFields: fields.map(f => f.name)
+        data: result
       }),
       { 
         status: 200, 

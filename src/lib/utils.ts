@@ -21,8 +21,71 @@ export function truncateText(text: string, maxLength: number): string {
   return text.substring(0, maxLength).trim() + '...';
 }
 
+interface ProductField {
+  name: string;
+  description: string;
+  dataType: 'string' | 'number' | 'boolean' | 'array' | 'object';
+  required?: boolean;
+  selector?: string;
+  fallbackSelectors?: string[];
+}
+
 export async function extractProductDetails(url: string) {
   try {
+    // Define the fields to extract with detailed selectors and fallbacks
+    const fields: ProductField[] = [
+      {
+        name: 'title',
+        description: 'Product name/title',
+        dataType: 'string',
+        required: true,
+        selector: 'h1',
+        fallbackSelectors: [
+          'title',
+          '[itemprop="name"]',
+          '.product-title',
+          '.product-name',
+          '#product-title'
+        ]
+      },
+      {
+        name: 'description',
+        description: 'Product description',
+        dataType: 'string',
+        selector: '[itemprop="description"]',
+        fallbackSelectors: [
+          'meta[name="description"]',
+          '.product-description',
+          '#product-description',
+          '.description'
+        ]
+      },
+      {
+        name: 'price',
+        description: 'Current price of the product',
+        dataType: 'string',
+        selector: '[itemprop="price"]',
+        fallbackSelectors: [
+          '.price',
+          '.product-price',
+          '#product-price',
+          '[class*="price"]'
+        ]
+      },
+      {
+        name: 'imageUrl',
+        description: 'Main product image URL',
+        dataType: 'string',
+        selector: '[itemprop="image"]',
+        fallbackSelectors: [
+          'meta[property="og:image"]',
+          '.product-image img',
+          '#product-image img',
+          '.gallery img:first-child'
+        ]
+      }
+    ];
+
     const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-hyperbrowser`, {
       method: 'POST',
       headers: {
@@ -31,29 +94,13 @@ export async function extractProductDetails(url: string) {
       },
       body: JSON.stringify({
         url,
-        fields: [
-          {
-            name: 'title',
-            description: 'Cleaned up product name/title',
-            dataType: 'string',
-            required: true
-          },
-          {
-            name: 'description',
-            description: 'Summary of the product description',
-            dataType: 'string'
-          },
-          {
-            name: 'price',
-            description: 'Current price of the product',
-            dataType: 'string'
-          },
-          {
-            name: 'imageUrl',
-            description: 'Main product image URL',
-            dataType: 'string'
-          }
-        ]
+        fields,
+        options: {
+          // Additional extraction options
+          waitForSelectors: fields.map(f => f.selector).filter(Boolean),
+          timeout: 30000,
+          retries: 2
+        }
       }),
     });
 
