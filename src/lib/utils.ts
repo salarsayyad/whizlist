@@ -63,7 +63,7 @@ export async function extractProductDetails(url: string) {
 
     // Ensure title exists and is not empty after trimming
     if (!data.title || !data.title.trim()) {
-      throw new Error('Could not extract product title');
+      throw new Error(`Could not extract product title ${data}`);
     }
     
     return {
