@@ -50,7 +50,7 @@ export async function extractProductDetails(url: string) {
           },
           {
             name: 'imageUrl',
-            description: 'URL of the main/primary product image',
+            description: 'Main product image URL',
             dataType: 'string'
           }
         ],
