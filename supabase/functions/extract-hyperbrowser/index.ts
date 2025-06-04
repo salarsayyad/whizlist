@@ -64,7 +64,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        data: result[0] // Return first result since we only support one URL for now
+        data: result // Return first result since we only support one URL for now
       }),
       { 
         status: 200, 
