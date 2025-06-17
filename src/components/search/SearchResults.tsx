@@ -205,9 +205,6 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
   const handleResultClick = (result: SearchResult) => {
     console.log('🔍 Search result clicked:', result);
     
-    // Close search results immediately
-    onResultClick();
-    
     // Navigate based on result type
     let targetPath = '';
     switch (result.type) {
@@ -228,10 +225,30 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
     
     console.log('🚀 Attempting to navigate to:', targetPath);
     
-    // Use a more direct navigation approach
+    // Try multiple navigation approaches
     if (targetPath) {
-      // Force navigation using window.location to ensure it works
-      window.location.href = targetPath;
+      try {
+        // First try React Router navigation
+        console.log('📍 Trying React Router navigate...');
+        navigate(targetPath);
+        
+        // Close search results after a short delay to allow navigation
+        setTimeout(() => {
+          console.log('🔒 Closing search results...');
+          onResultClick();
+        }, 50);
+        
+      } catch (error) {
+        console.error('❌ React Router navigation failed:', error);
+        
+        // Fallback to window.location
+        console.log('🔄 Falling back to window.location...');
+        onResultClick(); // Close search first
+        window.location.href = targetPath;
+      }
+    } else {
+      console.warn('⚠️ No target path determined for result:', result);
+      onResultClick();
     }
   };
 
