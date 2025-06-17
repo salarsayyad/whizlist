@@ -202,9 +202,14 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
     return results;
   }, [query, products, lists, folders]);
 
-  const handleResultClick = (result: SearchResult) => {
+  const handleResultClick = (result: SearchResult, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // Call the callback to close search results
     onResultClick();
     
+    // Navigate based on result type
     switch (result.type) {
       case 'product':
         navigate(`/product/${result.id}`);
@@ -220,12 +225,6 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
         navigate('/dashboard');
         break;
     }
-  };
-
-  const handleTagSearch = (tag: string) => {
-    onResultClick();
-    // You could implement a tag filter on the dashboard
-    navigate('/dashboard');
   };
 
   const totalResults = 
@@ -272,8 +271,8 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
             {searchResults.products.map((result) => (
               <button
                 key={result.id}
-                className="w-full text-left px-3 py-2 hover:bg-primary-50 rounded-md flex items-center gap-3"
-                onClick={() => handleResultClick(result)}
+                className="w-full text-left px-3 py-2 hover:bg-primary-50 rounded-md flex items-center gap-3 transition-colors"
+                onClick={(e) => handleResultClick(result, e)}
               >
                 <div className="flex-shrink-0">
                   <Package size={16} className="text-primary-500" />
@@ -313,8 +312,8 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
             {searchResults.lists.map((result) => (
               <button
                 key={result.id}
-                className="w-full text-left px-3 py-2 hover:bg-primary-50 rounded-md flex items-center gap-3"
-                onClick={() => handleResultClick(result)}
+                className="w-full text-left px-3 py-2 hover:bg-primary-50 rounded-md flex items-center gap-3 transition-colors"
+                onClick={(e) => handleResultClick(result, e)}
               >
                 <div className="flex-shrink-0">
                   <ListIcon size={16} className="text-primary-500" />
@@ -347,8 +346,8 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
             {searchResults.folders.map((result) => (
               <button
                 key={result.id}
-                className="w-full text-left px-3 py-2 hover:bg-primary-50 rounded-md flex items-center gap-3"
-                onClick={() => handleResultClick(result)}
+                className="w-full text-left px-3 py-2 hover:bg-primary-50 rounded-md flex items-center gap-3 transition-colors"
+                onClick={(e) => handleResultClick(result, e)}
               >
                 <div className="flex-shrink-0">
                   <FolderOpen size={16} className="text-primary-500" />
@@ -381,8 +380,8 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
             {searchResults.tags.map((result) => (
               <button
                 key={result.id}
-                className="w-full text-left px-3 py-2 hover:bg-primary-50 rounded-md flex items-center gap-3"
-                onClick={() => handleTagSearch(result.title)}
+                className="w-full text-left px-3 py-2 hover:bg-primary-50 rounded-md flex items-center gap-3 transition-colors"
+                onClick={(e) => handleResultClick(result, e)}
               >
                 <div className="flex-shrink-0">
                   <Tag size={16} className="text-primary-500" />
