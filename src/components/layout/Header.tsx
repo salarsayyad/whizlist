@@ -1,8 +1,10 @@
-import { Menu, Bell, Search, Plus, Zap } from 'lucide-react';
-import { useState } from 'react';
+import { Menu, Bell, Search, Plus, Zap, X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddProductModal from '../product/AddProductModal';
+import SearchResults from '../search/SearchResults';
 import { useAuthStore } from '../../store/authStore';
+import { useClickOutside } from '../../hooks/useClickOutside';
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -10,18 +12,44 @@ interface HeaderProps {
 
 const Header = ({ onMenuToggle }: HeaderProps) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchResults, setShowSearchResults] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const searchRef = useRef<HTMLDivElement>(null);
+  
+  // Close search results when clicking outside
+  useClickOutside(searchRef, () => {
+    setShowSearchResults(false);
+  });
+
+  // Show/hide search results based on query
+  useEffect(() => {
+    setShowSearchResults(searchQuery.trim().length > 0);
+  }, [searchQuery]);
   
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Implementation of search functionality would go here
-    console.log('Searching for:', searchQuery);
+    // The search is handled in real-time, but we can add additional logic here if needed
+  };
+
+  const handleSearchResultClick = () => {
+    setShowSearchResults(false);
+    setSearchQuery('');
   };
   
   const handleLogoClick = () => {
     navigate(user ? '/dashboard' : '/');
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setShowSearchResults(false);
+  };
+
+  const getInitials = (name: string | null) => {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
   
   return (
@@ -41,19 +69,36 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
           </div>
         </div>
         
-        <div className="hidden md:block flex-1 max-w-lg mx-8">
+        <div className="hidden md:block flex-1 max-w-lg mx-8 relative" ref={searchRef}>
           <form onSubmit={handleSearch} className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search size={16} className="text-primary-400" />
             </div>
             <input
               type="text"
-              placeholder="Search products and lists..."
-              className="input pl-10"
+              placeholder="Search products, lists, folders, and tags..."
+              className="input pl-10 pr-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-primary-400 hover:text-primary-600"
+              >
+                <X size={16} />
+              </button>
+            )}
           </form>
+
+          {/* Search Results Dropdown */}
+          {showSearchResults && (
+            <SearchResults 
+              query={searchQuery} 
+              onResultClick={handleSearchResultClick}
+            />
+          )}
         </div>
         
         <div className="flex items-center space-x-4">
@@ -71,13 +116,23 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
           </button>
           
           <div className="h-8 w-8 rounded-full bg-primary-200 flex items-center justify-center text-primary-700 font-medium">
-            JS
+            {user?.user_metadata?.avatar_url ? (
+              <img
+                src={user.user_metadata.avatar_url}
+                alt={user.user_metadata?.full_name || 'User'}
+                className="w-8 h-8 rounded-full"
+              />
+            ) : (
+              <span className="text-sm">
+                {getInitials(user?.user_metadata?.full_name)}
+              </span>
+            )}
           </div>
         </div>
       </div>
       
       {/* Mobile search bar */}
-      <div className="md:hidden px-4 pb-3">
+      <div className="md:hidden px-4 pb-3" ref={searchRef}>
         <form onSubmit={handleSearch} className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search size={16} className="text-primary-400" />
@@ -85,11 +140,30 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
           <input
             type="text"
             placeholder="Search..."
-            className="input pl-10"
+            className="input pl-10 pr-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={clearSearch}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-primary-400 hover:text-primary-600"
+            >
+              <X size={16} />
+            </button>
+          )}
         </form>
+
+        {/* Mobile Search Results */}
+        {showSearchResults && (
+          <div className="mt-2">
+            <SearchResults 
+              query={searchQuery} 
+              onResultClick={handleSearchResultClick}
+            />
+          </div>
+        )}
       </div>
       
       {showAddModal && <AddProductModal onClose={() => setShowAddModal(false)} />}
