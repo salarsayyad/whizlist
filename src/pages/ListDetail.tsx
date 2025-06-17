@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Edit2, Share2, Users, Pin, Trash2, 
-  Lock, Globe, MoreHorizontal, Grid, List as ListIcon 
+  Lock, Globe, MoreHorizontal, Grid, List as ListIcon, FolderOpen 
 } from 'lucide-react';
 import { useListStore } from '../store/listStore';
+import { useFolderStore } from '../store/folderStore';
 import { useProductStore } from '../store/productStore';
 import Button from '../components/ui/Button';
 import ProductCard from '../components/product/ProductCard';
@@ -14,10 +15,14 @@ const ListDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { lists, togglePin, deleteList } = useListStore();
+  const { folders } = useFolderStore();
   const { products, viewMode, setViewMode } = useProductStore();
   
   const list = lists.find(l => l.id === id);
   const listProducts = products.filter(p => list?.products.includes(p.id));
+  
+  // Find the folder this list belongs to
+  const parentFolder = list?.folderId ? folders.find(f => f.id === list.folderId) : null;
   
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(list?.name || '');
@@ -29,7 +34,7 @@ const ListDetail = () => {
         <h2 className="text-xl font-medium text-primary-700 mb-2">List not found</h2>
         <p className="text-primary-600 mb-6">The list you're looking for doesn't exist or has been removed.</p>
         <Button 
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/dashboard')}
           variant="secondary"
         >
           Back to Dashboard
@@ -40,13 +45,19 @@ const ListDetail = () => {
   
   const handleRemove = () => {
     deleteList(list.id);
-    navigate('/');
+    navigate('/dashboard');
   };
   
   const handleSaveEdit = () => {
     // In a real app, this would update the list
     console.log('Saving list changes:', { name, description });
     setIsEditing(false);
+  };
+
+  const handleFolderClick = () => {
+    if (parentFolder) {
+      navigate(`/folder/${parentFolder.id}`);
+    }
   };
   
   return (
@@ -89,6 +100,21 @@ const ListDetail = () => {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
               >
+                {/* Folder Breadcrumb */}
+                {parentFolder && (
+                  <div className="mb-2">
+                    <button
+                      onClick={handleFolderClick}
+                      className="flex items-center text-primary-600 hover:text-primary-800 transition-colors group"
+                    >
+                      <FolderOpen size={16} className="mr-1 group-hover:text-primary-700" />
+                      <span className="text-sm font-medium group-hover:underline">
+                        {parentFolder.name}
+                      </span>
+                    </button>
+                  </div>
+                )}
+
                 <div className="flex items-center">
                   <h1 className="text-2xl font-medium text-primary-900">{list.name}</h1>
                   <button
@@ -187,7 +213,7 @@ const ListDetail = () => {
           <h3 className="text-xl font-medium text-primary-700 mb-2">No products in this list yet</h3>
           <p className="text-primary-600 mb-6">Add products to this list to start organizing.</p>
           <Button 
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/dashboard')}
             className="mx-auto"
           >
             Browse Products
