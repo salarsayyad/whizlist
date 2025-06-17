@@ -24,10 +24,6 @@ const CommentSection = ({ productId }: CommentSectionProps) => {
     setReplyingTo(parentId);
   };
 
-  const handleReplySubmit = () => {
-    setReplyingTo(null);
-  };
-
   const handleReplyCancel = () => {
     setReplyingTo(null);
   };
@@ -59,26 +55,14 @@ const CommentSection = ({ productId }: CommentSectionProps) => {
       ) : (
         <div className="space-y-4">
           {comments.map((comment) => (
-            <div key={comment.id}>
-              <CommentItem
-                comment={comment}
-                productId={productId}
-                onReply={handleReply}
-              />
-              
-              {replyingTo === comment.id && (
-                <div className="ml-11 mt-3">
-                  <CommentForm
-                    productId={productId}
-                    parentId={comment.id}
-                    placeholder="Write a reply..."
-                    onSubmit={handleReplySubmit}
-                    onCancel={handleReplyCancel}
-                    autoFocus
-                  />
-                </div>
-              )}
-            </div>
+            <CommentItem
+              key={comment.id}
+              comment={comment}
+              productId={productId}
+              replyingTo={replyingTo}
+              onReply={handleReply}
+              onReplyCancel={handleReplyCancel}
+            />
           ))}
         </div>
       )}
