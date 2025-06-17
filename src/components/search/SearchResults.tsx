@@ -203,25 +203,34 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
   }, [query, products, lists, folders]);
 
   const handleResultClick = (result: SearchResult) => {
-    // Close search results first
-    onResultClick();
+    console.log('Search result clicked:', result);
     
     // Navigate based on result type
+    let targetPath = '';
     switch (result.type) {
       case 'product':
-        navigate(`/product/${result.id}`);
+        targetPath = `/product/${result.id}`;
         break;
       case 'list':
-        navigate(`/list/${result.id}`);
+        targetPath = `/list/${result.id}`;
         break;
       case 'folder':
-        navigate(`/folder/${result.id}`);
+        targetPath = `/folder/${result.id}`;
         break;
       case 'tag':
-        // Navigate to dashboard with tag filter (you might want to implement this)
-        navigate('/dashboard');
+        targetPath = '/dashboard';
         break;
     }
+    
+    console.log('Navigating to:', targetPath);
+    
+    // Navigate first, then close search results
+    navigate(targetPath);
+    
+    // Small delay to ensure navigation happens before closing
+    setTimeout(() => {
+      onResultClick();
+    }, 100);
   };
 
   const totalResults = 
