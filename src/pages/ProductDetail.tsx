@@ -117,7 +117,7 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* Product Header Section - Image, Title, Price, Description */}
+      {/* Product Header Section - Image, Title, Price, Tags, Description */}
       <div className="card p-6 mb-8">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Product Image */}
@@ -137,14 +137,38 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          {/* Product Title, Price, and Description */}
+          {/* Product Title, Price, Tags, and Description */}
           <div className="lg:w-2/3 flex flex-col justify-start">
             <h1 className="text-3xl font-bold text-primary-900 mb-4">{product.title}</h1>
             {product.price && (
               <p className="text-2xl font-semibold text-primary-800 mb-4">{product.price}</p>
             )}
+            
+            {/* Tags Section */}
+            <div className="mb-4">
+              <div className="flex flex-wrap gap-1">
+                {product.tags.map((tag) => (
+                  <button
+                    key={tag} 
+                    className="badge-primary hover:bg-primary-200 transition-colors"
+                    onClick={() => handleTagClick(tag)}
+                  >
+                    {tag}
+                  </button>
+                ))}
+                <button 
+                  className="badge bg-primary-50 text-primary-600 hover:bg-primary-100 flex items-center transition-colors"
+                  onClick={() => setShowAddTagModal(true)}
+                >
+                  <Plus size={12} className="mr-1" />
+                  Add Tag
+                </button>
+              </div>
+            </div>
+
+            {/* Description */}
             {product.description && (
-              <div className="mt-2">
+              <div>
                 <p className="text-primary-700 leading-relaxed">
                   {product.description}
                 </p>
@@ -166,28 +190,6 @@ const ProductDetail = () => {
             </div>
             
             <div className="space-y-4">
-              <div>
-                <h4 className="text-sm font-medium text-primary-700 mb-2">Tags</h4>
-                <div className="flex flex-wrap gap-1">
-                  {product.tags.map((tag) => (
-                    <button
-                      key={tag} 
-                      className="badge-primary hover:bg-primary-200 transition-colors"
-                      onClick={() => handleTagClick(tag)}
-                    >
-                      {tag}
-                    </button>
-                  ))}
-                  <button 
-                    className="badge bg-primary-50 text-primary-600 hover:bg-primary-100 flex items-center transition-colors"
-                    onClick={() => setShowAddTagModal(true)}
-                  >
-                    <Plus size={12} className="mr-1" />
-                    Add Tag
-                  </button>
-                </div>
-              </div>
-              
               <div className="pt-4 border-t border-primary-100 flex flex-col sm:flex-row justify-between text-sm text-primary-500 gap-2">
                 <span>Saved on {formatDate(product.createdAt)}</span>
                 <a 
