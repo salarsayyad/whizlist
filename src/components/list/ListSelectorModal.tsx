@@ -159,6 +159,9 @@ const ListSelectorModal = ({ productId, onClose }: ListSelectorModalProps) => {
 
   const hasSearchResults = filteredLists.length > 0;
   const isSearching = searchQuery.trim().length > 0;
+  const searchQueryExists = lists.some(list => 
+    list.name.toLowerCase() === searchQuery.toLowerCase().trim()
+  );
 
   return (
     <Modal isOpen={true} onClose={onClose} title="Add to List" size="lg">
@@ -342,6 +345,30 @@ const ListSelectorModal = ({ productId, onClose }: ListSelectorModalProps) => {
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Create new list option when searching (even with results) */}
+              {isSearching && searchQuery.trim() && !searchQueryExists && (
+                <div className="border border-accent-200 rounded-lg bg-accent-50 p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Plus size={16} className="text-accent-600" />
+                      <span className="text-accent-800 font-medium">
+                        Create "{searchQuery}" list
+                      </span>
+                    </div>
+                    <Button
+                      variant="accent"
+                      size="sm"
+                      onClick={handleCreateListFromSearch}
+                    >
+                      Create & Add Product
+                    </Button>
+                  </div>
+                  <p className="text-accent-600 text-sm mt-1 ml-6">
+                    Create a new list with this name and add the product to it
+                  </p>
                 </div>
               )}
 
