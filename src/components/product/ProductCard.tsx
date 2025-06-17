@@ -86,6 +86,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
       </div>
       
       <div className="p-4 flex-1 flex flex-col">
+        {/* Product URL - above title */}
+        <div className="mb-2">
+          <span className="text-xs text-primary-500">
+            {new URL(product.productUrl).hostname}
+          </span>
+        </div>
+
         <div className="flex items-start justify-between">
           <h3 className="font-medium text-primary-900 line-clamp-1">{product.title}</h3>
           <div className="relative">
