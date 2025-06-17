@@ -243,22 +243,6 @@ const ProductDetail = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-2 space-y-6">
-          {/* Details Section */}
-          <div className="card p-6">
-            <div className="flex justify-between items-start mb-4">
-              <h2 className="text-lg font-medium text-primary-900">Details</h2>
-              <button className="text-primary-500 hover:text-primary-700 p-1 rounded-md hover:bg-primary-100">
-                <Edit2 size={18} />
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="pt-4 border-t border-primary-100 flex flex-col sm:flex-row justify-between text-sm text-primary-500 gap-2">
-                <span>Saved on {formatDate(product.createdAt)}</span>
-              </div>
-            </div>
-          </div>
-          
           {/* Comments Section */}
           <div className="card p-6">
             <CommentSection 
