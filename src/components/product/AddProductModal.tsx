@@ -5,7 +5,7 @@ import { extractProductDetails } from '../../lib/utils';
 import { useProductStore } from '../../store/productStore';
 import { useListStore } from '../../store/listStore';
 import Button from '../ui/Button';
-import { Link2, ChevronDown } from 'lucide-react';
+import { Link2, ChevronDown, X, Plus } from 'lucide-react';
 import { Menu } from '@headlessui/react';
 import { cn } from '../../lib/utils';
 
@@ -16,6 +16,8 @@ interface AddProductModalProps {
 const AddProductModal = ({ onClose }: AddProductModalProps) => {
   const { id: currentListId } = useParams<{ id: string }>();
   const [url, setUrl] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedListId, setSelectedListId] = useState<string | null>(currentListId || null);
@@ -26,6 +28,28 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
   useEffect(() => {
     fetchLists();
   }, []);
+  
+  const handleAddTag = () => {
+    const trimmedTag = tagInput.trim();
+    if (trimmedTag && !tags.includes(trimmedTag)) {
+      setTags([...tags, trimmedTag]);
+      setTagInput('');
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+
+  const handleTagInputKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddTag();
+    } else if (e.key === 'Backspace' && !tagInput && tags.length > 0) {
+      // Remove last tag if input is empty and backspace is pressed
+      setTags(tags.slice(0, -1));
+    }
+  };
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +69,14 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
     
     try {
       const { product, updateDetails } = await extractProductDetails(url);
-      const createdProduct = await createProduct(product);
+      
+      // Include user-added tags with the product
+      const productWithTags = {
+        ...product,
+        tags: [...(product.tags || []), ...tags]
+      };
+      
+      const createdProduct = await createProduct(productWithTags);
       
       if (selectedListId) {
         await addProductToList(selectedListId, createdProduct.id);
@@ -99,6 +130,58 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
             </div>
             <p className="mt-1 text-xs text-primary-500">
               Paste a product URL from any website to save it to your Whizlist
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-primary-700 mb-1">
+              Tags
+            </label>
+            <div className="space-y-2">
+              {/* Tags display */}
+              {tags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {tags.map((tag) => (
+                    <span 
+                      key={tag} 
+                      className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800"
+                    >
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTag(tag)}
+                        className="text-primary-500 hover:text-primary-700"
+                      >
+                        <X size={12} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              
+              {/* Tag input */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Add a tag..."
+                  className="input flex-1"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={handleTagInputKeyPress}
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleAddTag}
+                  disabled={!tagInput.trim() || tags.includes(tagInput.trim())}
+                >
+                  <Plus size={16} />
+                </Button>
+              </div>
+            </div>
+            <p className="mt-1 text-xs text-primary-500">
+              Press Enter or click + to add tags. Use Backspace to remove the last tag.
             </p>
           </div>
 
