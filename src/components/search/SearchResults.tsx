@@ -202,12 +202,20 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
     return results;
   }, [query, products, lists, folders]);
 
-  const handleResultClick = (result: SearchResult) => {
-    // Close search results first
+  const handleResultClick = (result: SearchResult, event: React.MouseEvent) => {
+    // Prevent any default behavior
+    event.preventDefault();
+    event.stopPropagation();
+    
+    console.log('Search result clicked:', result); // Debug log
+    
+    // Close search results immediately
     onResultClick();
     
-    // Small delay to ensure the dropdown closes before navigation
-    setTimeout(() => {
+    // Navigate based on result type
+    const navigateToResult = () => {
+      console.log('Navigating to:', result.type, result.id); // Debug log
+      
       switch (result.type) {
         case 'product':
           navigate(`/product/${result.id}`);
@@ -222,8 +230,15 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
           // Navigate to dashboard with tag filter (you might want to implement this)
           navigate('/dashboard');
           break;
+        default:
+          console.warn('Unknown result type:', result.type);
       }
-    }, 100);
+    };
+    
+    // Use requestAnimationFrame for better timing
+    requestAnimationFrame(() => {
+      navigateToResult();
+    });
   };
 
   const totalResults = 
@@ -271,7 +286,7 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
               <button
                 key={result.id}
                 className="w-full text-left px-3 py-2 hover:bg-primary-50 rounded-md flex items-center gap-3 transition-colors"
-                onClick={() => handleResultClick(result)}
+                onClick={(e) => handleResultClick(result, e)}
               >
                 <div className="flex-shrink-0">
                   <Package size={16} className="text-primary-500" />
@@ -312,7 +327,7 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
               <button
                 key={result.id}
                 className="w-full text-left px-3 py-2 hover:bg-primary-50 rounded-md flex items-center gap-3 transition-colors"
-                onClick={() => handleResultClick(result)}
+                onClick={(e) => handleResultClick(result, e)}
               >
                 <div className="flex-shrink-0">
                   <ListIcon size={16} className="text-primary-500" />
@@ -346,7 +361,7 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
               <button
                 key={result.id}
                 className="w-full text-left px-3 py-2 hover:bg-primary-50 rounded-md flex items-center gap-3 transition-colors"
-                onClick={() => handleResultClick(result)}
+                onClick={(e) => handleResultClick(result, e)}
               >
                 <div className="flex-shrink-0">
                   <FolderOpen size={16} className="text-primary-500" />
@@ -380,7 +395,7 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
               <button
                 key={result.id}
                 className="w-full text-left px-3 py-2 hover:bg-primary-50 rounded-md flex items-center gap-3 transition-colors"
-                onClick={() => handleResultClick(result)}
+                onClick={(e) => handleResultClick(result, e)}
               >
                 <div className="flex-shrink-0">
                   <Tag size={16} className="text-primary-500" />
