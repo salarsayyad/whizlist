@@ -9,6 +9,7 @@ import { useListStore } from '../store/listStore';
 import Button from '../components/ui/Button';
 import { formatDate } from '../lib/utils';
 import ListSelectorModal from '../components/list/ListSelectorModal';
+import AddTagModal from '../components/product/AddTagModal';
 import CommentSection from '../components/comment/CommentSection';
 import { motion } from 'framer-motion';
 
@@ -20,6 +21,7 @@ const ProductDetail = () => {
   const product = products.find(p => p.id === id);
   
   const [showListSelector, setShowListSelector] = useState(false);
+  const [showAddTagModal, setShowAddTagModal] = useState(false);
   
   // Get lists that contain this product
   const productLists = lists.filter(list => list.products.includes(id || ''));
@@ -138,7 +140,10 @@ const ProductDetail = () => {
                     {tag}
                   </span>
                 ))}
-                <button className="badge bg-primary-50 text-primary-600 hover:bg-primary-100 flex items-center">
+                <button 
+                  className="badge bg-primary-50 text-primary-600 hover:bg-primary-100 flex items-center transition-colors"
+                  onClick={() => setShowAddTagModal(true)}
+                >
                   <Plus size={12} className="mr-1" />
                   Add Tag
                 </button>
@@ -211,6 +216,14 @@ const ProductDetail = () => {
         <ListSelectorModal 
           productId={product.id}
           onClose={() => setShowListSelector(false)}
+        />
+      )}
+      
+      {showAddTagModal && (
+        <AddTagModal
+          productId={product.id}
+          currentTags={product.tags}
+          onClose={() => setShowAddTagModal(false)}
         />
       )}
     </div>
