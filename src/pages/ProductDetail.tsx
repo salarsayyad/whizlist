@@ -69,11 +69,8 @@ const ProductDetail = () => {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
             >
-              {product.title}
+              Product Details
             </motion.h1>
-            {product.price && (
-              <p className="text-lg text-primary-800 mt-1">{product.price}</p>
-            )}
           </div>
           
           <div className="flex flex-wrap items-center gap-2 mt-4 md:mt-0">
@@ -119,88 +116,93 @@ const ProductDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Product Header Section - Image, Title, Price */}
+      <div className="card p-6 mb-8">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Product Image */}
+          <div className="lg:w-1/3 flex-shrink-0">
+            <div className="aspect-square rounded-lg overflow-hidden bg-primary-100">
+              {product.imageUrl ? (
+                <img 
+                  src={product.imageUrl} 
+                  alt={product.title} 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-primary-500">
+                  <span>No image available</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Product Title and Price */}
+          <div className="lg:w-2/3 flex flex-col justify-center">
+            <h1 className="text-3xl font-bold text-primary-900 mb-4">{product.title}</h1>
+            {product.price && (
+              <p className="text-2xl font-semibold text-primary-800">{product.price}</p>
+            )}
+          </div>
+        </div>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-2 space-y-6">
+          {/* Details Section */}
           <div className="card p-6">
             <div className="flex justify-between items-start mb-4">
-              <h2 className="text-lg font-medium text-primary-900">Product Details</h2>
+              <h2 className="text-lg font-medium text-primary-900">Details</h2>
               <button className="text-primary-500 hover:text-primary-700 p-1 rounded-md hover:bg-primary-100">
                 <Edit2 size={18} />
               </button>
             </div>
             
-            <div className="flex flex-col lg:flex-row gap-6">
-              {/* Product Image */}
-              <div className="lg:w-1/3 flex-shrink-0">
-                <div className="aspect-square rounded-lg overflow-hidden bg-primary-100">
-                  {product.imageUrl ? (
-                    <img 
-                      src={product.imageUrl} 
-                      alt={product.title} 
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-primary-500">
-                      <span>No image available</span>
-                    </div>
-                  )}
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-medium text-primary-700 mb-2">Description</h4>
+                <p className="text-primary-800 leading-relaxed">
+                  {product.description}
+                </p>
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-medium text-primary-700 mb-2">Tags</h4>
+                <div className="flex flex-wrap gap-1">
+                  {product.tags.map((tag) => (
+                    <button
+                      key={tag} 
+                      className="badge-primary hover:bg-primary-200 transition-colors"
+                      onClick={() => handleTagClick(tag)}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                  <button 
+                    className="badge bg-primary-50 text-primary-600 hover:bg-primary-100 flex items-center transition-colors"
+                    onClick={() => setShowAddTagModal(true)}
+                  >
+                    <Plus size={12} className="mr-1" />
+                    Add Tag
+                  </button>
                 </div>
               </div>
-
-              {/* Product Information */}
-              <div className="lg:w-2/3 space-y-4">
-                <div>
-                  <h3 className="text-xl font-medium text-primary-900 mb-2">{product.title}</h3>
-                  {product.price && (
-                    <p className="text-lg font-medium text-primary-800 mb-3">{product.price}</p>
-                  )}
-                </div>
-
-                <div>
-                  <h4 className="text-sm font-medium text-primary-700 mb-2">Description</h4>
-                  <p className="text-primary-800 leading-relaxed">
-                    {product.description}
-                  </p>
-                </div>
-                
-                <div>
-                  <h4 className="text-sm font-medium text-primary-700 mb-2">Tags</h4>
-                  <div className="flex flex-wrap gap-1">
-                    {product.tags.map((tag) => (
-                      <button
-                        key={tag} 
-                        className="badge-primary hover:bg-primary-200 transition-colors"
-                        onClick={() => handleTagClick(tag)}
-                      >
-                        {tag}
-                      </button>
-                    ))}
-                    <button 
-                      className="badge bg-primary-50 text-primary-600 hover:bg-primary-100 flex items-center transition-colors"
-                      onClick={() => setShowAddTagModal(true)}
-                    >
-                      <Plus size={12} className="mr-1" />
-                      Add Tag
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="pt-4 border-t border-primary-100 flex flex-col sm:flex-row justify-between text-sm text-primary-500 gap-2">
-                  <span>Saved on {formatDate(product.createdAt)}</span>
-                  <a 
-                    href={product.productUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-accent-600 hover:text-accent-700 hover:underline"
-                  >
-                    {new URL(product.productUrl).hostname}
-                  </a>
-                </div>
+              
+              <div className="pt-4 border-t border-primary-100 flex flex-col sm:flex-row justify-between text-sm text-primary-500 gap-2">
+                <span>Saved on {formatDate(product.createdAt)}</span>
+                <a 
+                  href={product.productUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-accent-600 hover:text-accent-700 hover:underline"
+                >
+                  {new URL(product.productUrl).hostname}
+                </a>
               </div>
             </div>
           </div>
           
+          {/* Comments Section */}
           <div className="card p-6">
             <CommentSection 
               entityType="product"
@@ -209,6 +211,7 @@ const ProductDetail = () => {
           </div>
         </div>
         
+        {/* Sidebar */}
         <div className="md:col-span-1">
           <div className="card p-4">
             <h3 className="text-primary-900 font-medium mb-2">Lists</h3>
