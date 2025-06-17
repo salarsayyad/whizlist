@@ -20,8 +20,8 @@ const CommentSection = ({ productId }: CommentSectionProps) => {
     };
   }, [productId]);
 
-  const handleReply = (parentId: string) => {
-    setReplyingTo(parentId);
+  const handleReply = (parentId: string, replyToCommentId: string) => {
+    setReplyingTo(replyToCommentId);
   };
 
   const handleReplyCancel = () => {

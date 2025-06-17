@@ -14,7 +14,7 @@ interface CommentItemProps {
   productId: string;
   depth?: number;
   replyingTo?: string | null;
-  onReply?: (parentId: string) => void;
+  onReply?: (parentId: string, replyToCommentId: string) => void;
   onReplyCancel?: () => void;
 }
 
@@ -28,7 +28,7 @@ const CommentItem = ({ comment, productId, depth = 0, replyingTo, onReply, onRep
 
   const isOwner = user?.id === comment.userId;
   const maxDepth = 3;
-  const canReply = depth < maxDepth;
+  const canReply = true; // Always allow replies, but handle depth in the reply logic
   const isReplying = replyingTo === comment.id;
 
   const handleEdit = async () => {
@@ -59,6 +59,20 @@ const CommentItem = ({ comment, productId, depth = 0, replyingTo, onReply, onRep
 
   const handleReplySubmit = () => {
     onReplyCancel?.();
+  };
+
+  const handleReplyClick = () => {
+    if (!onReply) return;
+    
+    // If we're at max depth, reply to the parent instead of this comment
+    if (depth >= maxDepth - 1) {
+      // Find the parent comment ID to reply to
+      const parentId = comment.parentId || comment.id;
+      onReply(parentId, comment.id);
+    } else {
+      // Normal reply - reply directly to this comment
+      onReply(comment.id, comment.id);
+    }
   };
 
   const getInitials = (name: string | null) => {
@@ -189,7 +203,7 @@ const CommentItem = ({ comment, productId, depth = 0, replyingTo, onReply, onRep
 
             {canReply && onReply && (
               <button
-                onClick={() => onReply(comment.id)}
+                onClick={handleReplyClick}
                 className="flex items-center gap-1 text-primary-500 hover:text-primary-700 transition-colors"
               >
                 <Reply size={14} />
@@ -203,8 +217,8 @@ const CommentItem = ({ comment, productId, depth = 0, replyingTo, onReply, onRep
             <div className="mt-3">
               <CommentForm
                 productId={productId}
-                parentId={comment.id}
-                placeholder="Write a reply..."
+                parentId={depth >= maxDepth - 1 ? comment.parentId || comment.id : comment.id}
+                placeholder={`Reply to ${comment.user?.full_name || 'this comment'}...`}
                 onSubmit={handleReplySubmit}
                 onCancel={onReplyCancel}
                 autoFocus
