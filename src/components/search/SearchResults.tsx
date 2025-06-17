@@ -213,8 +213,7 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
         navigate(`/list/${result.id}`);
         break;
       case 'folder':
-        // Navigate to dashboard with folder filter (you might want to implement this)
-        navigate('/dashboard');
+        navigate(`/folder/${result.id}`);
         break;
       case 'tag':
         // Navigate to dashboard with tag filter (you might want to implement this)

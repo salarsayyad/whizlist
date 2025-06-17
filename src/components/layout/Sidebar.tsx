@@ -1,5 +1,5 @@
 import { X, Grid, List as ListIcon, FolderOpen, Share2, Star, Trash2, Settings, Plus, ChevronDown, ChevronRight } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { useState, useEffect } from 'react';
 import { Menu } from '@headlessui/react';
@@ -14,6 +14,7 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
+  const navigate = useNavigate();
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
   const { folders, fetchFolders } = useFolderStore();
   const { lists, fetchLists } = useListStore();
@@ -33,6 +34,19 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         : [...prev, folderId]
     );
   };
+
+  const handleFolderClick = (folderId: string, e: React.MouseEvent) => {
+    // Always toggle the folder expansion
+    toggleFolder(folderId);
+    
+    // Navigate to the folder page
+    navigate(`/folder/${folderId}`);
+    
+    // Close sidebar on mobile
+    if (window.innerWidth < 768) {
+      onClose();
+    }
+  };
   
   const getFolderLists = (folderId: string) => {
     return lists.filter(list => list.folderId === folderId);
@@ -49,6 +63,13 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const handleCreateList = (folderId?: string) => {
     setSelectedFolderId(folderId || null);
     setShowCreateList(true);
+  };
+
+  const handleNavLinkClick = () => {
+    // Close sidebar on mobile when navigating
+    if (window.innerWidth < 768) {
+      onClose();
+    }
   };
   
   return (
@@ -88,6 +109,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                 className={({ isActive }) => 
                   cn("nav-link", isActive && "nav-link-active")
                 }
+                onClick={handleNavLinkClick}
               >
                 <Grid size={18} />
                 <span>All Products</span>
@@ -99,6 +121,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                 className={({ isActive }) => 
                   cn("nav-link", isActive && "nav-link-active")
                 }
+                onClick={handleNavLinkClick}
               >
                 <Star size={18} />
                 <span>Starred</span>
@@ -110,6 +133,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                 className={({ isActive }) => 
                   cn("nav-link", isActive && "nav-link-active")
                 }
+                onClick={handleNavLinkClick}
               >
                 <Share2 size={18} />
                 <span>Shared with me</span>
@@ -121,6 +145,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                 className={({ isActive }) => 
                   cn("nav-link", isActive && "nav-link-active")
                 }
+                onClick={handleNavLinkClick}
               >
                 <Trash2 size={18} />
                 <span>Trash</span>
@@ -174,10 +199,13 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                 <li key={folder.id}>
                   <button 
                     className="nav-link w-full"
-                    onClick={() => toggleFolder(folder.id)}
+                    onClick={(e) => handleFolderClick(folder.id, e)}
                   >
                     <FolderOpen size={18} />
-                    <span className="flex-1">{folder.name}</span>
+                    <span className="flex-1 text-left">{folder.name}</span>
+                    <span className="text-xs text-primary-500 mr-2">
+                      {getFolderLists(folder.id).length}
+                    </span>
                     {expandedFolders.includes(folder.id) ? (
                       <ChevronDown size={16} />
                     ) : (
@@ -194,9 +222,13 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                             className={({ isActive }) => 
                               cn("nav-link text-sm py-1.5", isActive && "nav-link-active")
                             }
+                            onClick={handleNavLinkClick}
                           >
                             <ListIcon size={16} />
-                            <span>{list.name}</span>
+                            <span className="flex-1">{list.name}</span>
+                            <span className="text-xs text-primary-500">
+                              {list.products.length}
+                            </span>
                           </NavLink>
                         </li>
                       ))}
@@ -222,9 +254,13 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                     className={({ isActive }) => 
                       cn("nav-link", isActive && "nav-link-active")
                     }
+                    onClick={handleNavLinkClick}
                   >
                     <ListIcon size={18} />
-                    <span>{list.name}</span>
+                    <span className="flex-1">{list.name}</span>
+                    <span className="text-xs text-primary-500">
+                      {list.products.length}
+                    </span>
                   </NavLink>
                 </li>
               ))}
@@ -238,6 +274,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             className={({ isActive }) => 
               cn("nav-link", isActive && "nav-link-active")
             }
+            onClick={handleNavLinkClick}
           >
             <Settings size={18} />
             <span>Settings</span>

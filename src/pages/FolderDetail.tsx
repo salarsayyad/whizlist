@@ -1,0 +1,300 @@
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { 
+  ArrowLeft, Edit2, Share2, Users, Pin, Trash2, 
+  Lock, Globe, MoreHorizontal, Plus, List as ListIcon 
+} from 'lucide-react';
+import { useFolderStore } from '../store/folderStore';
+import { useListStore } from '../store/listStore';
+import Button from '../components/ui/Button';
+import CreateListModal from '../components/list/CreateListModal';
+import { motion } from 'framer-motion';
+import { formatDate } from '../lib/utils';
+
+const FolderDetail = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { folders, updateFolder, deleteFolder } = useFolderStore();
+  const { lists, fetchLists } = useListStore();
+  
+  const folder = folders.find(f => f.id === id);
+  const folderLists = lists.filter(list => list.folderId === id);
+  
+  const [isEditing, setIsEditing] = useState(false);
+  const [name, setName] = useState(folder?.name || '');
+  const [description, setDescription] = useState(folder?.description || '');
+  const [showCreateListModal, setShowCreateListModal] = useState(false);
+
+  useEffect(() => {
+    fetchLists();
+  }, []);
+
+  useEffect(() => {
+    if (folder) {
+      setName(folder.name);
+      setDescription(folder.description || '');
+    }
+  }, [folder]);
+  
+  if (!folder) {
+    return (
+      <div className="text-center py-16">
+        <h2 className="text-xl font-medium text-primary-700 mb-2">Folder not found</h2>
+        <p className="text-primary-600 mb-6">The folder you're looking for doesn't exist or has been removed.</p>
+        <Button 
+          onClick={() => navigate('/dashboard')}
+          variant="secondary"
+        >
+          Back to Dashboard
+        </Button>
+      </div>
+    );
+  }
+  
+  const handleRemove = async () => {
+    if (window.confirm('Are you sure you want to delete this folder? All lists in this folder will become unorganized.')) {
+      try {
+        await deleteFolder(folder.id);
+        navigate('/dashboard');
+      } catch (error) {
+        console.error('Error deleting folder:', error);
+      }
+    }
+  };
+  
+  const handleSaveEdit = async () => {
+    try {
+      await updateFolder(folder.id, { 
+        name: name.trim(), 
+        description: description.trim() || null 
+      });
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating folder:', error);
+    }
+  };
+
+  const handleListClick = (listId: string) => {
+    navigate(`/list/${listId}`);
+  };
+
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+  
+  return (
+    <div>
+      <div className="mb-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center text-primary-600 hover:text-primary-800 mb-4"
+        >
+          <ArrowLeft size={18} className="mr-1" />
+          <span>Back</span>
+        </button>
+        
+        <div className="flex flex-col md:flex-row justify-between">
+          <div className="flex-1">
+            {isEditing ? (
+              <div className="max-w-xl">
+                <input
+                  type="text"
+                  className="input text-xl font-medium mb-2"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Folder name"
+                />
+                <textarea
+                  className="input resize-none"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Folder description (optional)"
+                  rows={3}
+                />
+                <div className="mt-3 flex gap-2">
+                  <Button onClick={handleSaveEdit} disabled={!name.trim()}>
+                    Save
+                  </Button>
+                  <Button variant="secondary" onClick={() => setIsEditing(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex items-center">
+                  <h1 className="text-2xl font-medium text-primary-900">{folder.name}</h1>
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="ml-2 text-primary-500 hover:text-primary-700 p-1 rounded-md hover:bg-primary-100"
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                </div>
+                {folder.description && (
+                  <p className="text-primary-700 mt-1">{folder.description}</p>
+                )}
+                <p className="text-primary-500 text-sm mt-2">
+                  Created {formatDate(folder.created_at)}
+                </p>
+              </motion.div>
+            )}
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-2 mt-4 md:mt-0">
+            <Button
+              variant="secondary"
+              className="flex items-center gap-1"
+            >
+              {folder.is_public ? (
+                <>
+                  <Globe size={16} />
+                  <span>Public</span>
+                </>
+              ) : (
+                <>
+                  <Lock size={16} />
+                  <span>Private</span>
+                </>
+              )}
+            </Button>
+            <Button
+              variant="secondary"
+              className="flex items-center gap-1"
+            >
+              <Users size={16} />
+              <span>Share</span>
+            </Button>
+            <Button
+              variant="accent"
+              className="flex items-center gap-1"
+              onClick={() => setShowCreateListModal(true)}
+            >
+              <Plus size={16} />
+              <span>New List</span>
+            </Button>
+            <Button
+              variant="error"
+              className="flex items-center gap-1"
+              onClick={handleRemove}
+            >
+              <Trash2 size={16} />
+              <span>Delete</span>
+            </Button>
+          </div>
+        </div>
+      </div>
+      
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-lg font-medium text-primary-900">
+          Lists ({folderLists.length})
+        </h2>
+        
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="secondary"
+            className="flex items-center gap-1"
+          >
+            <MoreHorizontal size={16} />
+            <span>More</span>
+          </Button>
+        </div>
+      </div>
+      
+      {folderLists.length === 0 ? (
+        <div className="text-center py-16 card p-8">
+          <ListIcon size={64} className="mx-auto mb-4 text-primary-300" />
+          <h3 className="text-xl font-medium text-primary-700 mb-2">No lists in this folder yet</h3>
+          <p className="text-primary-600 mb-6">Create your first list to start organizing your products.</p>
+          <Button 
+            onClick={() => setShowCreateListModal(true)}
+            className="mx-auto flex items-center gap-2"
+          >
+            <Plus size={16} />
+            Create First List
+          </Button>
+        </div>
+      ) : (
+        <motion.div 
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-8"
+          variants={container}
+          initial="hidden"
+          animate="show"
+        >
+          {folderLists.map((list) => (
+            <motion.div 
+              key={list.id}
+              className="card cursor-pointer overflow-hidden flex flex-col h-full hover:shadow-elevated transition-shadow duration-300"
+              variants={item}
+              whileHover={{ y: -4 }}
+              onClick={() => handleListClick(list.id)}
+            >
+              <div className="p-6 flex-1 flex flex-col">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <ListIcon size={20} className="text-primary-600 flex-shrink-0" />
+                    <h3 className="font-medium text-primary-900 line-clamp-1">{list.name}</h3>
+                  </div>
+                  {list.isPublic ? (
+                    <Globe size={16} className="text-primary-500 flex-shrink-0" />
+                  ) : (
+                    <Lock size={16} className="text-primary-500 flex-shrink-0" />
+                  )}
+                </div>
+                
+                {list.description && (
+                  <p className="text-primary-600 text-sm mb-3 line-clamp-2 flex-1">
+                    {list.description}
+                  </p>
+                )}
+                
+                <div className="mt-auto">
+                  <div className="flex items-center justify-between text-sm text-primary-500">
+                    <span>{list.products.length} item{list.products.length === 1 ? '' : 's'}</span>
+                    <span>{formatDate(list.createdAt)}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="px-6 py-3 bg-primary-50 border-t border-primary-100">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-primary-600 font-medium">
+                    {list.isPublic ? 'Public List' : 'Private List'}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-accent-500 rounded-full"></div>
+                    <span className="text-xs text-primary-500">Active</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+      )}
+
+      {showCreateListModal && (
+        <CreateListModal 
+          folderId={folder.id}
+          onClose={() => setShowCreateListModal(false)} 
+        />
+      )}
+    </div>
+  );
+};
+
+export default FolderDetail;
