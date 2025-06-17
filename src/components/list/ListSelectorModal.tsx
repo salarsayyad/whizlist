@@ -117,6 +117,28 @@ const ListSelectorModal = ({ productId, onClose }: ListSelectorModalProps) => {
     }
   };
 
+  const handleCreateListFromSearch = async () => {
+    if (!searchQuery.trim()) return;
+
+    try {
+      const newList = await createList({
+        name: searchQuery.trim(),
+        isPublic: false,
+        description: null,
+        folderId: null, // Create as unorganized list
+      });
+
+      await addProductToList(newList.id, productId);
+      setSelectedLists(prev => [...prev, newList.id]);
+      
+      // Clear search and close modal after successful creation
+      setSearchQuery('');
+      onClose();
+    } catch (error) {
+      console.error('Error creating list from search:', error);
+    }
+  };
+
   const handleShowNewListInput = (folderId?: string) => {
     setSelectedFolderId(folderId || null);
     setShowNewListInput(true);
@@ -180,17 +202,14 @@ const ListSelectorModal = ({ productId, onClose }: ListSelectorModalProps) => {
             <div className="text-center py-8 text-primary-600">
               <Search size={48} className="mx-auto mb-3 text-primary-300" />
               <p className="mb-2">No lists found for "{searchQuery}"</p>
-              <p className="text-sm text-primary-500 mb-4">Try a different search term or create a new list</p>
+              <p className="text-sm text-primary-500 mb-4">Create a new list with this name and add the product to it</p>
               <Button
                 variant="accent"
-                onClick={() => {
-                  setNewListName(searchQuery);
-                  handleShowNewListInput();
-                }}
+                onClick={handleCreateListFromSearch}
                 className="mx-auto"
               >
                 <Plus size={16} className="mr-1" />
-                Create "{searchQuery}" List
+                Create "{searchQuery}" List & Add Product
               </Button>
             </div>
           ) : (
