@@ -56,8 +56,8 @@ const organizeCommentsIntoThreads = (comments: Comment[]): Comment[] => {
     }
   });
 
-  // Sort root comments by creation date (newest first)
-  rootComments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  // Sort root comments by creation date (oldest first)
+  rootComments.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
   // Sort replies by creation date (oldest first)
   const sortReplies = (comment: Comment) => {
@@ -92,7 +92,7 @@ export const useCommentStore = create<CommentState>((set, get) => ({
           )
         `)
         .eq('product_id', productId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: true }); // Changed to ascending for oldest first
 
       if (error) throw error;
       

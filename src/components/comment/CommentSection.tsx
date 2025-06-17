@@ -45,8 +45,6 @@ const CommentSection = ({ productId }: CommentSectionProps) => {
         </h2>
       </div>
 
-      <CommentForm productId={productId} />
-
       {comments.length === 0 ? (
         <div className="text-center py-8 text-primary-600">
           <MessageSquare size={48} className="mx-auto mb-3 text-primary-300" />
@@ -66,6 +64,10 @@ const CommentSection = ({ productId }: CommentSectionProps) => {
           ))}
         </div>
       )}
+
+      <div className="border-t border-primary-200 pt-4">
+        <CommentForm productId={productId} />
+      </div>
     </div>
   );
 };
