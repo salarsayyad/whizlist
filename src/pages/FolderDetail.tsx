@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
-  Edit2, Share2, Users, Pin, Trash2, 
+  ArrowLeft, Edit2, Share2, Users, Pin, Trash2, 
   Lock, Globe, MoreHorizontal, Plus, List as ListIcon, FolderOpen 
 } from 'lucide-react';
 import { useFolderStore } from '../store/folderStore';
@@ -96,6 +96,14 @@ const FolderDetail = () => {
   return (
     <div>
       <div className="mb-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center text-primary-600 hover:text-primary-800 mb-4"
+        >
+          <ArrowLeft size={18} className="mr-1" />
+          <span>Back</span>
+        </button>
+        
         <div className="flex flex-col md:flex-row justify-between">
           <div className="flex-1">
             {isEditing ? (
