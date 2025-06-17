@@ -7,8 +7,8 @@ interface CommentState {
   comments: Comment[];
   isLoading: boolean;
   error: string | null;
-  fetchComments: (productId: string) => Promise<void>;
-  createComment: (productId: string, content: string, parentId?: string) => Promise<Comment>;
+  fetchComments: (entityType: 'product' | 'folder' | 'list', entityId: string) => Promise<void>;
+  createComment: (entityType: 'product' | 'folder' | 'list', entityId: string, content: string, parentId?: string) => Promise<Comment>;
   updateComment: (commentId: string, content: string) => Promise<void>;
   deleteComment: (commentId: string) => Promise<void>;
   clearComments: () => void;
@@ -18,7 +18,9 @@ interface CommentState {
 const mapDbCommentToUiComment = (dbComment: any): Comment => ({
   id: dbComment.id,
   content: dbComment.content,
-  productId: dbComment.product_id,
+  productId: dbComment.product_id, // Keep for backward compatibility
+  entityType: dbComment.entity_type || 'product',
+  entityId: dbComment.entity_id,
   userId: dbComment.user_id,
   parentId: dbComment.parent_id,
   createdAt: dbComment.created_at,
@@ -77,7 +79,7 @@ export const useCommentStore = create<CommentState>((set, get) => ({
   isLoading: false,
   error: null,
 
-  fetchComments: async (productId: string) => {
+  fetchComments: async (entityType: 'product' | 'folder' | 'list', entityId: string) => {
     try {
       set({ isLoading: true, error: null });
       
@@ -91,8 +93,9 @@ export const useCommentStore = create<CommentState>((set, get) => ({
             avatar_url
           )
         `)
-        .eq('product_id', productId)
-        .order('created_at', { ascending: true }); // Changed to ascending for oldest first
+        .eq('entity_type', entityType)
+        .eq('entity_id', entityId)
+        .order('created_at', { ascending: true });
 
       if (error) throw error;
       
@@ -108,21 +111,29 @@ export const useCommentStore = create<CommentState>((set, get) => ({
     }
   },
 
-  createComment: async (productId: string, content: string, parentId?: string) => {
+  createComment: async (entityType: 'product' | 'folder' | 'list', entityId: string, content: string, parentId?: string) => {
     try {
       set({ isLoading: true, error: null });
       
       const userId = useAuthStore.getState().user?.id;
       if (!userId) throw new Error('User must be authenticated to create a comment');
 
+      const insertData: any = {
+        content,
+        entity_type: entityType,
+        entity_id: entityId,
+        user_id: userId,
+        parent_id: parentId || null
+      };
+
+      // For backward compatibility with product comments
+      if (entityType === 'product') {
+        insertData.product_id = entityId;
+      }
+
       const { data, error } = await supabase
         .from('comments')
-        .insert([{
-          content,
-          product_id: productId,
-          user_id: userId,
-          parent_id: parentId || null
-        }])
+        .insert([insertData])
         .select(`
           *,
           profiles (
@@ -138,7 +149,7 @@ export const useCommentStore = create<CommentState>((set, get) => ({
       const newComment = mapDbCommentToUiComment(data);
       
       // Refresh comments to get proper threading
-      await get().fetchComments(productId);
+      await get().fetchComments(entityType, entityId);
       
       return newComment;
       

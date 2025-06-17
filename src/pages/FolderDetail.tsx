@@ -8,6 +8,7 @@ import { useFolderStore } from '../store/folderStore';
 import { useListStore } from '../store/listStore';
 import Button from '../components/ui/Button';
 import CreateListModal from '../components/list/CreateListModal';
+import CommentSection from '../components/comment/CommentSection';
 import { motion } from 'framer-motion';
 import { formatDate } from '../lib/utils';
 
@@ -201,92 +202,108 @@ const FolderDetail = () => {
         </div>
       </div>
       
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-medium text-primary-900">
-          Lists ({folderLists.length})
-        </h2>
-        
-        <div className="flex items-center gap-3">
-          <Button 
-            variant="secondary"
-            className="flex items-center gap-1"
-          >
-            <MoreHorizontal size={16} />
-            <span>More</span>
-          </Button>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-medium text-primary-900">
+                Lists ({folderLists.length})
+              </h2>
+              
+              <div className="flex items-center gap-3">
+                <Button 
+                  variant="secondary"
+                  className="flex items-center gap-1"
+                >
+                  <MoreHorizontal size={16} />
+                  <span>More</span>
+                </Button>
+              </div>
+            </div>
+            
+            {folderLists.length === 0 ? (
+              <div className="text-center py-16 card p-8">
+                <ListIcon size={64} className="mx-auto mb-4 text-primary-300" />
+                <h3 className="text-xl font-medium text-primary-700 mb-2">No lists in this folder yet</h3>
+                <p className="text-primary-600 mb-6">Create your first list to start organizing your products.</p>
+                <Button 
+                  onClick={() => setShowCreateListModal(true)}
+                  className="mx-auto flex items-center gap-2"
+                >
+                  <Plus size={16} />
+                  Create First List
+                </Button>
+              </div>
+            ) : (
+              <motion.div 
+                className="grid grid-cols-1 sm:grid-cols-2 gap-6"
+                variants={container}
+                initial="hidden"
+                animate="show"
+              >
+                {folderLists.map((list) => (
+                  <motion.div 
+                    key={list.id}
+                    className="card cursor-pointer overflow-hidden flex flex-col h-full hover:shadow-elevated transition-shadow duration-300"
+                    variants={item}
+                    whileHover={{ y: -4 }}
+                    onClick={() => handleListClick(list.id)}
+                  >
+                    <div className="p-6 flex-1 flex flex-col">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <ListIcon size={20} className="text-primary-600 flex-shrink-0" />
+                          <h3 className="font-medium text-primary-900 line-clamp-1">{list.name}</h3>
+                        </div>
+                        {list.isPublic ? (
+                          <Globe size={16} className="text-primary-500 flex-shrink-0" />
+                        ) : (
+                          <Lock size={16} className="text-primary-500 flex-shrink-0" />
+                        )}
+                      </div>
+                      
+                      {list.description && (
+                        <p className="text-primary-600 text-sm mb-3 line-clamp-2 flex-1">
+                          {list.description}
+                        </p>
+                      )}
+                      
+                      <div className="mt-auto">
+                        <div className="flex items-center justify-between text-sm text-primary-500">
+                          <span>{list.products.length} item{list.products.length === 1 ? '' : 's'}</span>
+                          <span>{formatDate(list.createdAt)}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="px-6 py-3 bg-primary-50 border-t border-primary-100">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-primary-600 font-medium">
+                          {list.isPublic ? 'Public List' : 'Private List'}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 bg-accent-500 rounded-full"></div>
+                          <span className="text-xs text-primary-500">Active</span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </div>
+        </div>
+
+        <div className="lg:col-span-1">
+          <div className="card p-6">
+            <CommentSection 
+              entityType="folder"
+              entityId={folder.id}
+              title={`Folder Comments (${0})`}
+            />
+          </div>
         </div>
       </div>
-      
-      {folderLists.length === 0 ? (
-        <div className="text-center py-16 card p-8">
-          <ListIcon size={64} className="mx-auto mb-4 text-primary-300" />
-          <h3 className="text-xl font-medium text-primary-700 mb-2">No lists in this folder yet</h3>
-          <p className="text-primary-600 mb-6">Create your first list to start organizing your products.</p>
-          <Button 
-            onClick={() => setShowCreateListModal(true)}
-            className="mx-auto flex items-center gap-2"
-          >
-            <Plus size={16} />
-            Create First List
-          </Button>
-        </div>
-      ) : (
-        <motion.div 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-8"
-          variants={container}
-          initial="hidden"
-          animate="show"
-        >
-          {folderLists.map((list) => (
-            <motion.div 
-              key={list.id}
-              className="card cursor-pointer overflow-hidden flex flex-col h-full hover:shadow-elevated transition-shadow duration-300"
-              variants={item}
-              whileHover={{ y: -4 }}
-              onClick={() => handleListClick(list.id)}
-            >
-              <div className="p-6 flex-1 flex flex-col">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <ListIcon size={20} className="text-primary-600 flex-shrink-0" />
-                    <h3 className="font-medium text-primary-900 line-clamp-1">{list.name}</h3>
-                  </div>
-                  {list.isPublic ? (
-                    <Globe size={16} className="text-primary-500 flex-shrink-0" />
-                  ) : (
-                    <Lock size={16} className="text-primary-500 flex-shrink-0" />
-                  )}
-                </div>
-                
-                {list.description && (
-                  <p className="text-primary-600 text-sm mb-3 line-clamp-2 flex-1">
-                    {list.description}
-                  </p>
-                )}
-                
-                <div className="mt-auto">
-                  <div className="flex items-center justify-between text-sm text-primary-500">
-                    <span>{list.products.length} item{list.products.length === 1 ? '' : 's'}</span>
-                    <span>{formatDate(list.createdAt)}</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="px-6 py-3 bg-primary-50 border-t border-primary-100">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-primary-600 font-medium">
-                    {list.isPublic ? 'Public List' : 'Private List'}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 bg-accent-500 rounded-full"></div>
-                    <span className="text-xs text-primary-500">Active</span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
-      )}
 
       {showCreateListModal && (
         <CreateListModal 

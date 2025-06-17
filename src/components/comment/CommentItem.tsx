@@ -11,14 +11,15 @@ import CommentForm from './CommentForm';
 
 interface CommentItemProps {
   comment: Comment;
-  productId: string;
+  entityType: 'product' | 'folder' | 'list';
+  entityId: string;
   depth?: number;
   replyingTo?: string | null;
   onReply?: (parentId: string, replyToCommentId: string) => void;
   onReplyCancel?: () => void;
 }
 
-const CommentItem = ({ comment, productId, depth = 0, replyingTo, onReply, onReplyCancel }: CommentItemProps) => {
+const CommentItem = ({ comment, entityType, entityId, depth = 0, replyingTo, onReply, onReplyCancel }: CommentItemProps) => {
   const { user } = useAuthStore();
   const { updateComment, deleteComment } = useCommentStore();
   const [isEditing, setIsEditing] = useState(false);
@@ -216,7 +217,8 @@ const CommentItem = ({ comment, productId, depth = 0, replyingTo, onReply, onRep
           {isReplying && (
             <div className="mt-3">
               <CommentForm
-                productId={productId}
+                entityType={entityType}
+                entityId={entityId}
                 parentId={depth >= maxDepth - 1 ? comment.parentId || comment.id : comment.id}
                 placeholder={`Reply to ${comment.user?.full_name || 'this comment'}...`}
                 onSubmit={handleReplySubmit}
@@ -233,7 +235,8 @@ const CommentItem = ({ comment, productId, depth = 0, replyingTo, onReply, onRep
                 <CommentItem
                   key={reply.id}
                   comment={reply}
-                  productId={productId}
+                  entityType={entityType}
+                  entityId={entityId}
                   depth={depth + 1}
                   replyingTo={replyingTo}
                   onReply={onReply}

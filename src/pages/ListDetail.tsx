@@ -9,6 +9,7 @@ import { useFolderStore } from '../store/folderStore';
 import { useProductStore } from '../store/productStore';
 import Button from '../components/ui/Button';
 import ProductCard from '../components/product/ProductCard';
+import CommentSection from '../components/comment/CommentSection';
 import { motion } from 'framer-motion';
 
 const ListDetail = () => {
@@ -175,57 +176,73 @@ const ListDetail = () => {
         </div>
       </div>
       
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-medium text-primary-900">
-          Products ({listProducts.length})
-        </h2>
-        
-        <div className="flex items-center gap-3">
-          <div className="flex bg-primary-100 rounded-md p-1">
-            <button
-              className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-white shadow-soft' : 'text-primary-600 hover:text-primary-800'}`}
-              onClick={() => setViewMode('grid')}
-              aria-label="Grid view"
-            >
-              <Grid size={18} />
-            </button>
-            <button
-              className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-white shadow-soft' : 'text-primary-600 hover:text-primary-800'}`}
-              onClick={() => setViewMode('list')}
-              aria-label="List view"
-            >
-              <ListIcon size={18} />
-            </button>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-medium text-primary-900">
+                Products ({listProducts.length})
+              </h2>
+              
+              <div className="flex items-center gap-3">
+                <div className="flex bg-primary-100 rounded-md p-1">
+                  <button
+                    className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-white shadow-soft' : 'text-primary-600 hover:text-primary-800'}`}
+                    onClick={() => setViewMode('grid')}
+                    aria-label="Grid view"
+                  >
+                    <Grid size={18} />
+                  </button>
+                  <button
+                    className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-white shadow-soft' : 'text-primary-600 hover:text-primary-800'}`}
+                    onClick={() => setViewMode('list')}
+                    aria-label="List view"
+                  >
+                    <ListIcon size={18} />
+                  </button>
+                </div>
+                
+                <Button 
+                  variant="secondary"
+                  className="flex items-center gap-1"
+                >
+                  <MoreHorizontal size={16} />
+                  <span>More</span>
+                </Button>
+              </div>
+            </div>
+            
+            {listProducts.length === 0 ? (
+              <div className="text-center py-16 card p-8">
+                <h3 className="text-xl font-medium text-primary-700 mb-2">No products in this list yet</h3>
+                <p className="text-primary-600 mb-6">Add products to this list to start organizing.</p>
+                <Button 
+                  onClick={() => navigate('/dashboard')}
+                  className="mx-auto"
+                >
+                  Browse Products
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {listProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            )}
           </div>
-          
-          <Button 
-            variant="secondary"
-            className="flex items-center gap-1"
-          >
-            <MoreHorizontal size={16} />
-            <span>More</span>
-          </Button>
+        </div>
+
+        <div className="lg:col-span-1">
+          <div className="card p-6">
+            <CommentSection 
+              entityType="list"
+              entityId={list.id}
+              title={`List Comments (${0})`}
+            />
+          </div>
         </div>
       </div>
-      
-      {listProducts.length === 0 ? (
-        <div className="text-center py-16 card p-8">
-          <h3 className="text-xl font-medium text-primary-700 mb-2">No products in this list yet</h3>
-          <p className="text-primary-600 mb-6">Add products to this list to start organizing.</p>
-          <Button 
-            onClick={() => navigate('/dashboard')}
-            className="mx-auto"
-          >
-            Browse Products
-          </Button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-8">
-          {listProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      )}
     </div>
   );
 };

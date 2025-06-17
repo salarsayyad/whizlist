@@ -52,7 +52,9 @@ export interface Folder {
 export interface Comment {
   id: string;
   content: string;
-  productId: string;
+  productId?: string; // Keep for backward compatibility
+  entityType: 'product' | 'folder' | 'list';
+  entityId: string;
   userId: string;
   parentId?: string | null;
   createdAt: string;

@@ -5,7 +5,8 @@ import { useCommentStore } from '../../store/commentStore';
 import Button from '../ui/Button';
 
 interface CommentFormProps {
-  productId: string;
+  entityType: 'product' | 'folder' | 'list';
+  entityId: string;
   parentId?: string;
   placeholder?: string;
   onSubmit?: () => void;
@@ -14,7 +15,8 @@ interface CommentFormProps {
 }
 
 const CommentForm = ({ 
-  productId, 
+  entityType,
+  entityId, 
   parentId, 
   placeholder = "Add a comment...", 
   onSubmit,
@@ -31,7 +33,7 @@ const CommentForm = ({
     if (!content.trim()) return;
     
     try {
-      await createComment(productId, content.trim(), parentId);
+      await createComment(entityType, entityId, content.trim(), parentId);
       setContent('');
       onSubmit?.();
     } catch (error) {

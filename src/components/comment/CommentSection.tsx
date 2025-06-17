@@ -5,20 +5,22 @@ import CommentItem from './CommentItem';
 import CommentForm from './CommentForm';
 
 interface CommentSectionProps {
-  productId: string;
+  entityType: 'product' | 'folder' | 'list';
+  entityId: string;
+  title?: string;
 }
 
-const CommentSection = ({ productId }: CommentSectionProps) => {
+const CommentSection = ({ entityType, entityId, title }: CommentSectionProps) => {
   const { comments, isLoading, fetchComments, clearComments } = useCommentStore();
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchComments(productId);
+    fetchComments(entityType, entityId);
     
     return () => {
       clearComments();
     };
-  }, [productId]);
+  }, [entityType, entityId]);
 
   const handleReply = (parentId: string, replyToCommentId: string) => {
     setReplyingTo(replyToCommentId);
@@ -26,6 +28,15 @@ const CommentSection = ({ productId }: CommentSectionProps) => {
 
   const handleReplyCancel = () => {
     setReplyingTo(null);
+  };
+
+  const getEntityName = () => {
+    switch (entityType) {
+      case 'product': return 'product';
+      case 'folder': return 'folder';
+      case 'list': return 'list';
+      default: return 'item';
+    }
   };
 
   if (isLoading && comments.length === 0) {
@@ -41,14 +52,14 @@ const CommentSection = ({ productId }: CommentSectionProps) => {
       <div className="flex items-center gap-2 mb-4">
         <MessageSquare size={18} className="text-primary-700" />
         <h2 className="text-lg font-medium text-primary-900">
-          Comments ({comments.length})
+          {title || `Comments (${comments.length})`}
         </h2>
       </div>
 
       {comments.length === 0 ? (
         <div className="text-center py-8 text-primary-600">
           <MessageSquare size={48} className="mx-auto mb-3 text-primary-300" />
-          <p>No comments yet. Be the first to comment!</p>
+          <p>No comments yet. Be the first to comment on this {getEntityName()}!</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -56,7 +67,8 @@ const CommentSection = ({ productId }: CommentSectionProps) => {
             <CommentItem
               key={comment.id}
               comment={comment}
-              productId={productId}
+              entityType={entityType}
+              entityId={entityId}
               replyingTo={replyingTo}
               onReply={handleReply}
               onReplyCancel={handleReplyCancel}
@@ -66,7 +78,10 @@ const CommentSection = ({ productId }: CommentSectionProps) => {
       )}
 
       <div className="border-t border-primary-200 pt-4">
-        <CommentForm productId={productId} />
+        <CommentForm 
+          entityType={entityType}
+          entityId={entityId}
+        />
       </div>
     </div>
   );

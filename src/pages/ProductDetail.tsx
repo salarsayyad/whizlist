@@ -169,7 +169,10 @@ const ProductDetail = () => {
           </div>
           
           <div className="card p-6">
-            <CommentSection productId={product.id} />
+            <CommentSection 
+              entityType="product"
+              entityId={product.id}
+            />
           </div>
         </div>
         
