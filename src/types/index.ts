@@ -51,12 +51,19 @@ export interface Folder {
 
 export interface Comment {
   id: string;
-  text: string;
+  content: string;
+  productId: string;
+  userId: string;
+  parentId?: string | null;
   createdAt: string;
   updatedAt: string;
-  productId?: string;
-  listId?: string;
-  userId: string;
+  isEdited: boolean;
+  user?: {
+    id: string;
+    full_name: string | null;
+    avatar_url: string | null;
+  };
+  replies?: Comment[];
 }
 
 export interface Collaborator {

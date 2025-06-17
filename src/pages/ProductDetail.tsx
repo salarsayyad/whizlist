@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Share2, Pin, ExternalLink, Trash2, Edit2, 
-  MessageSquare, Plus, Send, List as ListIcon 
+  Plus, List as ListIcon 
 } from 'lucide-react';
 import { useProductStore } from '../store/productStore';
 import { useListStore } from '../store/listStore';
 import Button from '../components/ui/Button';
 import { formatDate } from '../lib/utils';
 import ListSelectorModal from '../components/list/ListSelectorModal';
+import CommentSection from '../components/comment/CommentSection';
 import { motion } from 'framer-motion';
 
 const ProductDetail = () => {
@@ -18,7 +19,6 @@ const ProductDetail = () => {
   const { lists } = useListStore();
   const product = products.find(p => p.id === id);
   
-  const [comment, setComment] = useState('');
   const [showListSelector, setShowListSelector] = useState(false);
   
   // Get lists that contain this product
@@ -42,13 +42,6 @@ const ProductDetail = () => {
   const handleRemove = () => {
     deleteProduct(product.id);
     navigate('/');
-  };
-  
-  const handleSubmitComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, this would save the comment
-    console.log('Comment submitted:', comment);
-    setComment('');
   };
   
   return (
@@ -122,8 +115,8 @@ const ProductDetail = () => {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="md:col-span-2">
-          <div className="card p-6 mb-6">
+        <div className="md:col-span-2 space-y-6">
+          <div className="card p-6">
             <div className="flex justify-between items-start mb-4">
               <h2 className="text-lg font-medium text-primary-900">Details</h2>
               <button className="text-primary-500 hover:text-primary-700 p-1 rounded-md hover:bg-primary-100">
@@ -166,38 +159,7 @@ const ProductDetail = () => {
           </div>
           
           <div className="card p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <MessageSquare size={18} className="text-primary-700" />
-              <h2 className="text-lg font-medium text-primary-900">Comments</h2>
-            </div>
-            
-            <div className="min-h-24 border-b border-primary-100 pb-4 mb-4">
-              <p className="text-primary-600 text-center py-4">No comments yet. Be the first to comment!</p>
-            </div>
-            
-            <form onSubmit={handleSubmitComment}>
-              <div className="flex gap-3">
-                <div className="h-8 w-8 rounded-full bg-primary-200 flex-shrink-0 flex items-center justify-center text-primary-700 font-medium">
-                  JS
-                </div>
-                <div className="flex-1 relative">
-                  <input
-                    type="text"
-                    placeholder="Add a comment..."
-                    className="input pr-10"
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                  />
-                  <button
-                    type="submit"
-                    disabled={!comment.trim()}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-primary-500 hover:text-primary-700 disabled:text-primary-300"
-                  >
-                    <Send size={18} />
-                  </button>
-                </div>
-              </div>
-            </form>
+            <CommentSection productId={product.id} />
           </div>
         </div>
         
