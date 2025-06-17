@@ -45,6 +45,10 @@ const ProductDetail = () => {
     deleteProduct(product.id);
     navigate('/');
   };
+
+  const handleTagClick = (tag: string) => {
+    navigate(`/tag/${encodeURIComponent(tag)}`);
+  };
   
   return (
     <div>
@@ -133,12 +137,13 @@ const ProductDetail = () => {
               
               <div className="flex flex-wrap gap-1 mt-2">
                 {product.tags.map((tag) => (
-                  <span 
+                  <button
                     key={tag} 
-                    className="badge-primary"
+                    className="badge-primary hover:bg-primary-200 transition-colors"
+                    onClick={() => handleTagClick(tag)}
                   >
                     {tag}
-                  </span>
+                  </button>
                 ))}
                 <button 
                   className="badge bg-primary-50 text-primary-600 hover:bg-primary-100 flex items-center transition-colors"

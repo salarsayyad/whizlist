@@ -43,6 +43,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
     e.stopPropagation();
     window.open(product.productUrl, '_blank', 'noopener,noreferrer');
   };
+
+  const handleTagClick = (e: React.MouseEvent, tag: string) => {
+    e.stopPropagation();
+    navigate(`/tag/${encodeURIComponent(tag)}`);
+  };
   
   return (
     <motion.div 
@@ -135,12 +140,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
         
         <div className="flex flex-wrap gap-1 mt-2">
           {product.tags.map((tag) => (
-            <span 
+            <button
               key={tag} 
-              className="badge-primary"
+              className="badge-primary hover:bg-primary-200 transition-colors"
+              onClick={(e) => handleTagClick(e, tag)}
             >
               {tag}
-            </span>
+            </button>
           ))}
         </div>
         

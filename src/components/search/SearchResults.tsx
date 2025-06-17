@@ -221,8 +221,7 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
         targetPath = `/folder/${result.id}`;
         break;
       case 'tag':
-        // For tags, navigate to dashboard with a filter (we'll implement this later)
-        targetPath = '/dashboard';
+        targetPath = `/tag/${encodeURIComponent(result.id)}`;
         break;
     }
     
