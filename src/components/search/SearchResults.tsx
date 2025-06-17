@@ -203,7 +203,10 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
   }, [query, products, lists, folders]);
 
   const handleResultClick = (result: SearchResult) => {
-    console.log('Search result clicked:', result);
+    console.log('🔍 Search result clicked:', result);
+    
+    // Close search results immediately
+    onResultClick();
     
     // Navigate based on result type
     let targetPath = '';
@@ -222,15 +225,24 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
         break;
     }
     
-    console.log('Navigating to:', targetPath);
+    console.log('🚀 Navigating to:', targetPath);
     
-    // Navigate first, then close search results
-    navigate(targetPath);
-    
-    // Small delay to ensure navigation happens before closing
-    setTimeout(() => {
-      onResultClick();
-    }, 100);
+    // Try multiple navigation approaches
+    try {
+      // Method 1: React Router navigate
+      navigate(targetPath);
+      console.log('✅ React Router navigation attempted');
+    } catch (error) {
+      console.error('❌ React Router navigation failed:', error);
+      
+      // Method 2: Fallback to window.location
+      try {
+        window.location.href = targetPath;
+        console.log('✅ Window location navigation attempted');
+      } catch (locationError) {
+        console.error('❌ Window location navigation failed:', locationError);
+      }
+    }
   };
 
   const totalResults = 
