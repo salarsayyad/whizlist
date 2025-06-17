@@ -32,7 +32,7 @@ const ProductDetail = () => {
         <h2 className="text-xl font-medium text-primary-700 mb-2">Product not found</h2>
         <p className="text-primary-600 mb-6">The product you're looking for doesn't exist or has been removed.</p>
         <Button 
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/dashboard')}
           variant="secondary"
         >
           Back to Dashboard
@@ -43,7 +43,7 @@ const ProductDetail = () => {
   
   const handleRemove = () => {
     deleteProduct(product.id);
-    navigate('/');
+    navigate('/dashboard');
   };
 
   const handleTagClick = (tag: string) => {
@@ -124,46 +124,79 @@ const ProductDetail = () => {
         <div className="md:col-span-2 space-y-6">
           <div className="card p-6">
             <div className="flex justify-between items-start mb-4">
-              <h2 className="text-lg font-medium text-primary-900">Details</h2>
+              <h2 className="text-lg font-medium text-primary-900">Product Details</h2>
               <button className="text-primary-500 hover:text-primary-700 p-1 rounded-md hover:bg-primary-100">
                 <Edit2 size={18} />
               </button>
             </div>
             
-            <div className="space-y-4">
-              <p className="text-primary-800">
-                {product.description}
-              </p>
-              
-              <div className="flex flex-wrap gap-1 mt-2">
-                {product.tags.map((tag) => (
-                  <button
-                    key={tag} 
-                    className="badge-primary hover:bg-primary-200 transition-colors"
-                    onClick={() => handleTagClick(tag)}
-                  >
-                    {tag}
-                  </button>
-                ))}
-                <button 
-                  className="badge bg-primary-50 text-primary-600 hover:bg-primary-100 flex items-center transition-colors"
-                  onClick={() => setShowAddTagModal(true)}
-                >
-                  <Plus size={12} className="mr-1" />
-                  Add Tag
-                </button>
+            <div className="flex flex-col lg:flex-row gap-6">
+              {/* Product Image */}
+              <div className="lg:w-1/3 flex-shrink-0">
+                <div className="aspect-square rounded-lg overflow-hidden bg-primary-100">
+                  {product.imageUrl ? (
+                    <img 
+                      src={product.imageUrl} 
+                      alt={product.title} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-primary-500">
+                      <span>No image available</span>
+                    </div>
+                  )}
+                </div>
               </div>
-              
-              <div className="pt-2 border-t border-primary-100 flex justify-between text-sm text-primary-500">
-                <span>Saved on {formatDate(product.createdAt)}</span>
-                <a 
-                  href={product.productUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-accent-600 hover:text-accent-700 hover:underline"
-                >
-                  {new URL(product.productUrl).hostname}
-                </a>
+
+              {/* Product Information */}
+              <div className="lg:w-2/3 space-y-4">
+                <div>
+                  <h3 className="text-xl font-medium text-primary-900 mb-2">{product.title}</h3>
+                  {product.price && (
+                    <p className="text-lg font-medium text-primary-800 mb-3">{product.price}</p>
+                  )}
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-medium text-primary-700 mb-2">Description</h4>
+                  <p className="text-primary-800 leading-relaxed">
+                    {product.description}
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="text-sm font-medium text-primary-700 mb-2">Tags</h4>
+                  <div className="flex flex-wrap gap-1">
+                    {product.tags.map((tag) => (
+                      <button
+                        key={tag} 
+                        className="badge-primary hover:bg-primary-200 transition-colors"
+                        onClick={() => handleTagClick(tag)}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                    <button 
+                      className="badge bg-primary-50 text-primary-600 hover:bg-primary-100 flex items-center transition-colors"
+                      onClick={() => setShowAddTagModal(true)}
+                    >
+                      <Plus size={12} className="mr-1" />
+                      Add Tag
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="pt-4 border-t border-primary-100 flex flex-col sm:flex-row justify-between text-sm text-primary-500 gap-2">
+                  <span>Saved on {formatDate(product.createdAt)}</span>
+                  <a 
+                    href={product.productUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-accent-600 hover:text-accent-700 hover:underline"
+                  >
+                    {new URL(product.productUrl).hostname}
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -177,21 +210,7 @@ const ProductDetail = () => {
         </div>
         
         <div className="md:col-span-1">
-          <div className="card overflow-hidden">
-            {product.imageUrl ? (
-              <img 
-                src={product.imageUrl} 
-                alt={product.title} 
-                className="w-full aspect-square object-cover"
-              />
-            ) : (
-              <div className="w-full aspect-square bg-primary-200 flex items-center justify-center">
-                <span className="text-primary-500">No image available</span>
-              </div>
-            )}
-          </div>
-          
-          <div className="card p-4 mt-6">
+          <div className="card p-4">
             <h3 className="text-primary-900 font-medium mb-2">Lists</h3>
             {productLists.length > 0 ? (
               <div className="space-y-2">
