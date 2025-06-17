@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Edit2, Share2, Users, Pin, Trash2, 
-  Lock, Globe, MoreHorizontal, Plus, List as ListIcon 
+  Lock, Globe, MoreHorizontal, Plus, List as ListIcon, FolderOpen 
 } from 'lucide-react';
 import { useFolderStore } from '../store/folderStore';
 import { useListStore } from '../store/listStore';
@@ -138,6 +138,7 @@ const FolderDetail = () => {
                 transition={{ duration: 0.3 }}
               >
                 <div className="flex items-center">
+                  <FolderOpen size={28} className="text-primary-600 mr-3" />
                   <h1 className="text-2xl font-medium text-primary-900">{folder.name}</h1>
                   <button
                     onClick={() => setIsEditing(true)}
@@ -147,9 +148,9 @@ const FolderDetail = () => {
                   </button>
                 </div>
                 {folder.description && (
-                  <p className="text-primary-700 mt-1">{folder.description}</p>
+                  <p className="text-primary-700 mt-1 ml-10">{folder.description}</p>
                 )}
-                <p className="text-primary-500 text-sm mt-2">
+                <p className="text-primary-500 text-sm mt-2 ml-10">
                   Created {formatDate(folder.created_at)}
                 </p>
               </motion.div>
