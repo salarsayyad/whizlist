@@ -221,27 +221,17 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
         targetPath = `/folder/${result.id}`;
         break;
       case 'tag':
+        // For tags, navigate to dashboard with a filter (we'll implement this later)
         targetPath = '/dashboard';
         break;
     }
     
-    console.log('🚀 Navigating to:', targetPath);
+    console.log('🚀 Attempting to navigate to:', targetPath);
     
-    // Try multiple navigation approaches
-    try {
-      // Method 1: React Router navigate
-      navigate(targetPath);
-      console.log('✅ React Router navigation attempted');
-    } catch (error) {
-      console.error('❌ React Router navigation failed:', error);
-      
-      // Method 2: Fallback to window.location
-      try {
-        window.location.href = targetPath;
-        console.log('✅ Window location navigation attempted');
-      } catch (locationError) {
-        console.error('❌ Window location navigation failed:', locationError);
-      }
+    // Use a more direct navigation approach
+    if (targetPath) {
+      // Force navigation using window.location to ensure it works
+      window.location.href = targetPath;
     }
   };
 
