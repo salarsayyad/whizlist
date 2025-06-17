@@ -72,40 +72,6 @@ const ProductDetail = () => {
               Product Details
             </motion.h1>
           </div>
-          
-          <div className="flex flex-wrap items-center gap-2 mt-4 md:mt-0">
-            <Button
-              variant={product.isPinned ? 'primary' : 'secondary'}
-              className="flex items-center gap-1"
-              onClick={() => togglePin(product.id)}
-            >
-              <Pin size={16} className={product.isPinned ? 'fill-white' : ''} />
-              <span>{product.isPinned ? 'Pinned' : 'Pin'}</span>
-            </Button>
-            <Button
-              variant="secondary"
-              className="flex items-center gap-1"
-            >
-              <Share2 size={16} />
-              <span>Share</span>
-            </Button>
-            <Button
-              variant="secondary"
-              className="flex items-center gap-1"
-              onClick={() => window.open(product.productUrl, '_blank', 'noopener,noreferrer')}
-            >
-              <ExternalLink size={16} />
-              <span>Visit</span>
-            </Button>
-            <Button
-              variant="error"
-              className="flex items-center gap-1"
-              onClick={handleRemove}
-            >
-              <Trash2 size={16} />
-              <span>Remove</span>
-            </Button>
-          </div>
         </div>
       </div>
 
@@ -185,51 +151,94 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* List Actions Section */}
-      <div className="card p-6 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium text-primary-900">Lists</h3>
-          <Button
-            variant="accent"
-            className="flex items-center gap-1"
-            onClick={() => setShowListSelector(true)}
-          >
-            <Plus size={16} />
-            <span>Add to List</span>
-          </Button>
-        </div>
+      {/* Product Actions Shelf */}
+      <div className="relative mb-8">
+        {/* Shelf Shadow/Base */}
+        <div className="absolute inset-x-0 bottom-0 h-2 bg-gradient-to-b from-transparent to-primary-100 rounded-b-lg"></div>
         
-        {productLists.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {productLists.map(list => (
-              <button
-                key={list.id}
-                className="flex items-center gap-3 p-3 rounded-lg border border-primary-200 hover:border-primary-300 hover:bg-primary-50 text-left transition-colors"
-                onClick={() => navigate(`/list/${list.id}`)}
-              >
-                <ListIcon size={18} className="text-primary-500 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-primary-900 truncate">{list.name}</p>
-                  <p className="text-sm text-primary-500">
-                    {list.products.length} item{list.products.length === 1 ? '' : 's'}
-                  </p>
+        {/* Main Shelf */}
+        <div className="bg-white border border-primary-200 rounded-lg shadow-card p-6 relative">
+          {/* Shelf Edge Effect */}
+          <div className="absolute inset-x-0 -bottom-1 h-1 bg-primary-200 rounded-b-lg"></div>
+          
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            {/* Left Side - Lists Info */}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <ListIcon size={20} className="text-primary-600" />
+                <span className="font-medium text-primary-900">
+                  In {productLists.length} list{productLists.length === 1 ? '' : 's'}
+                </span>
+              </div>
+              
+              {productLists.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {productLists.slice(0, 3).map(list => (
+                    <button
+                      key={list.id}
+                      onClick={() => navigate(`/list/${list.id}`)}
+                      className="text-xs px-2 py-1 bg-primary-100 text-primary-700 rounded-md hover:bg-primary-200 transition-colors"
+                    >
+                      {list.name}
+                    </button>
+                  ))}
+                  {productLists.length > 3 && (
+                    <span className="text-xs px-2 py-1 text-primary-500">
+                      +{productLists.length - 3} more
+                    </span>
+                  )}
                 </div>
-              </button>
-            ))}
+              )}
+            </div>
+
+            {/* Right Side - Action Buttons */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="accent"
+                className="flex items-center gap-1"
+                onClick={() => setShowListSelector(true)}
+              >
+                <Plus size={16} />
+                <span>Add to List</span>
+              </Button>
+              
+              <Button
+                variant={product.isPinned ? 'primary' : 'secondary'}
+                className="flex items-center gap-1"
+                onClick={() => togglePin(product.id)}
+              >
+                <Pin size={16} className={product.isPinned ? 'fill-white' : ''} />
+                <span>{product.isPinned ? 'Pinned' : 'Pin'}</span>
+              </Button>
+              
+              <Button
+                variant="secondary"
+                className="flex items-center gap-1"
+              >
+                <Share2 size={16} />
+                <span>Share</span>
+              </Button>
+              
+              <Button
+                variant="secondary"
+                className="flex items-center gap-1"
+                onClick={() => window.open(product.productUrl, '_blank', 'noopener,noreferrer')}
+              >
+                <ExternalLink size={16} />
+                <span>Visit</span>
+              </Button>
+              
+              <Button
+                variant="error"
+                className="flex items-center gap-1"
+                onClick={handleRemove}
+              >
+                <Trash2 size={16} />
+                <span>Remove</span>
+              </Button>
+            </div>
           </div>
-        ) : (
-          <div className="text-center py-8 text-primary-600">
-            <ListIcon size={48} className="mx-auto mb-3 text-primary-300" />
-            <p className="mb-4">This product isn't in any lists yet</p>
-            <Button
-              variant="secondary"
-              onClick={() => setShowListSelector(true)}
-              className="mx-auto"
-            >
-              Add to First List
-            </Button>
-          </div>
-        )}
+        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
