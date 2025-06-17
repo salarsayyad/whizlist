@@ -86,6 +86,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
       </div>
       
       <div className="p-4 flex-1 flex flex-col">
+        {/* Product URL - above title with reduced padding */}
+        <div className="mb-1">
+          <span className="text-xs text-primary-500">
+            {new URL(product.productUrl).hostname}
+          </span>
+        </div>
+
         <div className="flex items-start justify-between">
           <h3 className="font-medium text-primary-900 line-clamp-1">{product.title}</h3>
           <div className="relative">
@@ -129,16 +136,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
             )}
           </div>
         </div>
-
-        {/* Product URL - between title and price */}
-        <div className="mt-1 mb-1">
-          <span className="text-xs text-primary-500">
-            {new URL(product.productUrl).hostname}
-          </span>
-        </div>
         
         {product.price && (
-          <p className="text-primary-800 font-medium mb-2">{product.price}</p>
+          <p className="text-primary-800 font-medium mt-1">{product.price}</p>
         )}
         
         <p className="text-primary-600 text-sm mt-2 line-clamp-2">
