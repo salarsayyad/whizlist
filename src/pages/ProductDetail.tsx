@@ -139,7 +139,18 @@ const ProductDetail = () => {
 
           {/* Product Title, Price, Tags, and Description */}
           <div className="lg:w-2/3 flex flex-col justify-start">
-            <h1 className="text-3xl font-bold text-primary-900 mb-4">{product.title}</h1>
+            <div className="flex items-baseline gap-2 mb-4">
+              <h1 className="text-3xl font-bold text-primary-900">{product.title}</h1>
+              <a 
+                href={product.productUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-accent-600 hover:text-accent-700 hover:underline text-xs align-super"
+              >
+                {new URL(product.productUrl).hostname}
+              </a>
+            </div>
+            
             {product.price && (
               <p className="text-2xl font-semibold text-primary-800 mb-4">{product.price}</p>
             )}
@@ -192,14 +203,6 @@ const ProductDetail = () => {
             <div className="space-y-4">
               <div className="pt-4 border-t border-primary-100 flex flex-col sm:flex-row justify-between text-sm text-primary-500 gap-2">
                 <span>Saved on {formatDate(product.createdAt)}</span>
-                <a 
-                  href={product.productUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-accent-600 hover:text-accent-700 hover:underline"
-                >
-                  {new URL(product.productUrl).hostname}
-                </a>
               </div>
             </div>
           </div>
