@@ -137,20 +137,24 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          {/* Product Title, Price, Tags, and Description */}
+          {/* Product Title, URL, Price, Tags, and Description */}
           <div className="lg:w-2/3 flex flex-col justify-start">
-            <div className="flex items-baseline gap-2 mb-4">
-              <h1 className="text-3xl font-bold text-primary-900">{product.title}</h1>
+            {/* Product Title */}
+            <h1 className="text-3xl font-bold text-primary-900 mb-2">{product.title}</h1>
+            
+            {/* Product URL */}
+            <div className="mb-4">
               <a 
                 href={product.productUrl} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-accent-600 hover:text-accent-700 hover:underline text-xs align-super"
+                className="text-accent-600 hover:text-accent-700 hover:underline text-sm"
               >
                 {new URL(product.productUrl).hostname}
               </a>
             </div>
             
+            {/* Product Price */}
             {product.price && (
               <p className="text-2xl font-semibold text-primary-800 mb-4">{product.price}</p>
             )}
