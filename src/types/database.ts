@@ -46,7 +46,7 @@ export type Product = {
 export type Comment = {
   id: string;
   content: string;
-  product_id: string;
+  product_id: string | null; // Made nullable to support comments on folders and lists
   user_id: string;
   parent_id: string | null;
   created_at: string;

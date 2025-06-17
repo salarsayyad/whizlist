@@ -123,13 +123,10 @@ export const useCommentStore = create<CommentState>((set, get) => ({
         entity_type: entityType,
         entity_id: entityId,
         user_id: userId,
-        parent_id: parentId || null
+        parent_id: parentId || null,
+        // Only set product_id for product comments, leave null for others
+        product_id: entityType === 'product' ? entityId : null
       };
-
-      // For backward compatibility with product comments
-      if (entityType === 'product') {
-        insertData.product_id = entityId;
-      }
 
       const { data, error } = await supabase
         .from('comments')
