@@ -12,6 +12,8 @@ interface ListState {
   updateList: (id: string, updates: Partial<List>) => Promise<void>;
   deleteList: (id: string) => Promise<void>;
   getProductCount: (listId: string) => Promise<number>;
+  refreshProductCounts: () => Promise<void>;
+  updateListProductCount: (listId: string, count: number) => void;
 }
 
 const mapDbListToUiList = (dbList: any, productCount: number = 0): List => ({
@@ -55,7 +57,7 @@ export const useListStore = create<ListState>((set, get) => ({
       const listsWithCounts = await Promise.all(
         listsData.map(async (list) => {
           const { count, error: countError } = await supabase
-            .from('list_products')
+            .from('products')
             .select('*', { count: 'exact', head: true })
             .eq('list_id', list.id);
 
@@ -75,6 +77,41 @@ export const useListStore = create<ListState>((set, get) => ({
     } finally {
       set({ isLoading: false });
     }
+  },
+
+  refreshProductCounts: async () => {
+    try {
+      const currentLists = get().lists;
+      
+      // Update product counts for all lists
+      const updatedLists = await Promise.all(
+        currentLists.map(async (list) => {
+          const { count, error: countError } = await supabase
+            .from('products')
+            .select('*', { count: 'exact', head: true })
+            .eq('list_id', list.id);
+
+          if (countError) {
+            console.warn(`Error counting products for list ${list.id}:`, countError);
+            return list;
+          }
+
+          return { ...list, productCount: count || 0 };
+        })
+      );
+
+      set({ lists: updatedLists });
+    } catch (error) {
+      console.error('Error refreshing product counts:', error);
+    }
+  },
+
+  updateListProductCount: (listId: string, count: number) => {
+    set(state => ({
+      lists: state.lists.map(list =>
+        list.id === listId ? { ...list, productCount: count } : list
+      )
+    }));
   },
 
   createList: async (list) => {
@@ -164,15 +201,7 @@ export const useListStore = create<ListState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
-      // First, remove all product associations from this list
-      const { error: removeProductsError } = await supabase
-        .from('list_products')
-        .delete()
-        .eq('list_id', id);
-
-      if (removeProductsError) throw removeProductsError;
-
-      // Then delete the list
+      // Products will be automatically deleted due to CASCADE constraint
       const { error } = await supabase
         .from('lists')
         .delete()
@@ -194,7 +223,7 @@ export const useListStore = create<ListState>((set, get) => ({
   getProductCount: async (listId: string) => {
     try {
       const { count, error } = await supabase
-        .from('list_products')
+        .from('products')
         .select('*', { count: 'exact', head: true })
         .eq('list_id', listId);
 

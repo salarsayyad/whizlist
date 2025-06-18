@@ -129,6 +129,13 @@ export const useProductStore = create<ProductState>((set, get) => ({
       
       const mappedProduct = mapDbProductToUiProduct(data);
       set(state => ({ products: [mappedProduct, ...state.products] }));
+
+      // Update list product count if product was assigned to a list
+      if (mappedProduct.listId) {
+        const { useListStore } = await import('./listStore');
+        useListStore.getState().refreshProductCounts();
+      }
+
       return mappedProduct;
       
     } catch (error) {
@@ -173,6 +180,10 @@ export const useProductStore = create<ProductState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
+      // Get the product to know which list it was in
+      const product = get().products.find(p => p.id === id);
+      const oldListId = product?.listId;
+      
       const { error } = await supabase
         .from('products')
         .delete()
@@ -182,6 +193,12 @@ export const useProductStore = create<ProductState>((set, get) => ({
       set(state => ({
         products: state.products.filter(product => product.id !== id)
       }));
+
+      // Update list product count if product was in a list
+      if (oldListId) {
+        const { useListStore } = await import('./listStore');
+        useListStore.getState().refreshProductCounts();
+      }
       
     } catch (error) {
       set({ error: (error as Error).message });
@@ -226,6 +243,10 @@ export const useProductStore = create<ProductState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
+      // Get the current product to know its old list
+      const currentProduct = get().products.find(p => p.id === productId);
+      const oldListId = currentProduct?.listId;
+      
       const { data, error } = await supabase
         .from('products')
         .update({ list_id: listId })
@@ -241,6 +262,10 @@ export const useProductStore = create<ProductState>((set, get) => ({
           product.id === productId ? mappedProduct : product
         )
       }));
+
+      // Update product counts for affected lists
+      const { useListStore } = await import('./listStore');
+      useListStore.getState().refreshProductCounts();
       
     } catch (error) {
       set({ error: (error as Error).message });
@@ -283,6 +308,11 @@ export const useProductStore = create<ProductState>((set, get) => ({
       
       const mappedProduct = mapDbProductToUiProduct(data);
       set(state => ({ products: [mappedProduct, ...state.products] }));
+
+      // Update product counts for the target list
+      const { useListStore } = await import('./listStore');
+      useListStore.getState().refreshProductCounts();
+
       return mappedProduct;
       
     } catch (error) {
