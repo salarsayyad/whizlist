@@ -39,6 +39,7 @@ export type Product = {
   is_pinned: boolean;
   tags: string[];
   owner_id: string;
+  list_id: string | null;
   created_at: string;
   updated_at: string;
 };
