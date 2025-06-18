@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
-  ArrowLeft, Share2, Pin, ExternalLink, Trash2, Edit2, 
+  Share2, Pin, ExternalLink, Trash2, Edit2, 
   Plus, List as ListIcon, X, ChevronRight, FolderOpen
 } from 'lucide-react';
 import { useProductStore } from '../store/productStore';
@@ -85,17 +85,54 @@ const ProductDetail = () => {
       navigate(`/list/${productList.id}`);
     }
   };
+
+  const handleDashboardClick = () => {
+    navigate('/dashboard');
+  };
   
   return (
     <div className="pb-24"> {/* Add bottom padding to prevent content from being hidden behind floating menu */}
+      {/* Breadcrumb Navigation */}
       <div className="mb-6">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center text-primary-600 hover:text-primary-800 mb-4"
-        >
-          <ArrowLeft size={18} className="mr-1" />
-          <span>Back</span>
-        </button>
+        <nav className="flex items-center text-sm text-primary-600 mb-4">
+          <button
+            onClick={handleDashboardClick}
+            className="hover:text-primary-800 transition-colors hover:underline"
+          >
+            Dashboard
+          </button>
+          
+          {parentFolder && (
+            <>
+              <ChevronRight size={14} className="mx-2 text-primary-400" />
+              <button
+                onClick={handleFolderClick}
+                className="flex items-center gap-1 hover:text-primary-800 transition-colors group"
+              >
+                <FolderOpen size={14} className="group-hover:text-primary-700" />
+                <span className="group-hover:underline">{parentFolder.name}</span>
+              </button>
+            </>
+          )}
+          
+          {productList && (
+            <>
+              <ChevronRight size={14} className="mx-2 text-primary-400" />
+              <button
+                onClick={handleListClick}
+                className="flex items-center gap-1 hover:text-primary-800 transition-colors group"
+              >
+                <ListIcon size={14} className="group-hover:text-primary-700" />
+                <span className="group-hover:underline">{productList.name}</span>
+              </button>
+            </>
+          )}
+          
+          <ChevronRight size={14} className="mx-2 text-primary-400" />
+          <span className="text-primary-800 font-medium truncate max-w-xs">
+            {product.title}
+          </span>
+        </nav>
       </div>
 
       {/* Product Header Section - Image on Right, Content on Left */}
@@ -103,36 +140,6 @@ const ProductDetail = () => {
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Left Side - Product Info */}
           <div className="lg:w-2/3 flex flex-col">
-            {/* Breadcrumb Navigation */}
-            {(parentFolder || productList) && (
-              <div className="mb-3">
-                <nav className="flex items-center text-sm text-primary-600">
-                  {parentFolder && (
-                    <>
-                      <button
-                        onClick={handleFolderClick}
-                        className="flex items-center gap-1 hover:text-primary-800 transition-colors group"
-                      >
-                        <FolderOpen size={14} className="group-hover:text-primary-700" />
-                        <span className="group-hover:underline">{parentFolder.name}</span>
-                      </button>
-                      <ChevronRight size={14} className="mx-1 text-primary-400" />
-                    </>
-                  )}
-                  
-                  {productList && (
-                    <button
-                      onClick={handleListClick}
-                      className="flex items-center gap-1 hover:text-primary-800 transition-colors group"
-                    >
-                      <ListIcon size={14} className="group-hover:text-primary-700" />
-                      <span className="group-hover:underline">{productList.name}</span>
-                    </button>
-                  )}
-                </nav>
-              </div>
-            )}
-
             {/* Product Title */}
             <h1 className="text-3xl font-bold text-primary-900 mb-3">{product.title}</h1>
             
