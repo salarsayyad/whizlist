@@ -270,7 +270,7 @@ const FolderDetail = () => {
                       
                       <div className="mt-auto">
                         <div className="flex items-center justify-between text-sm text-primary-500">
-                          <span>{list.products.length} item{list.products.length === 1 ? '' : 's'}</span>
+                          <span>{list.productCount || 0} item{(list.productCount || 0) === 1 ? '' : 's'}</span>
                           <span>{formatDate(list.createdAt)}</span>
                         </div>
                       </div>
