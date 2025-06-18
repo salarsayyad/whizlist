@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Edit2, Share2, Users, Pin, Trash2, 
-  Lock, Globe, MoreHorizontal, Grid, List as ListIcon, FolderOpen 
+  Lock, Globe, MoreHorizontal, Grid, List as ListIcon, FolderOpen, Plus 
 } from 'lucide-react';
 import { useListStore } from '../store/listStore';
 import { useFolderStore } from '../store/folderStore';
@@ -10,6 +10,7 @@ import { useProductStore } from '../store/productStore';
 import Button from '../components/ui/Button';
 import ProductCard from '../components/product/ProductCard';
 import EditListModal from '../components/list/EditListModal';
+import AddProductModal from '../components/product/AddProductModal';
 import CommentSection from '../components/comment/CommentSection';
 import { motion } from 'framer-motion';
 
@@ -26,6 +27,7 @@ const ListDetail = () => {
   const parentFolder = list?.folderId ? folders.find(f => f.id === list.folderId) : null;
   
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
 
   // Fetch products for this list
   useEffect(() => {
@@ -175,10 +177,11 @@ const ListDetail = () => {
                 <h3 className="text-xl font-medium text-primary-700 mb-2">No products in this list yet</h3>
                 <p className="text-primary-600 mb-6">Add products to this list to start organizing.</p>
                 <Button 
-                  onClick={() => navigate('/dashboard')}
-                  className="mx-auto"
+                  onClick={() => setShowAddProductModal(true)}
+                  className="mx-auto flex items-center gap-2"
                 >
-                  Browse Products
+                  <Plus size={16} />
+                  Add Product
                 </Button>
               </div>
             ) : (
@@ -217,6 +220,15 @@ const ListDetail = () => {
                 {/* Mobile: Scrollable horizontal layout with icons only */}
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 sm:hidden">
                   <Button
+                    variant="accent"
+                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
+                    onClick={() => setShowAddProductModal(true)}
+                    title="Add Product"
+                  >
+                    <Plus size={20} />
+                  </Button>
+                  
+                  <Button
                     variant={list.isPinned ? 'primary' : 'secondary'}
                     className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
                     onClick={() => {/* togglePin(list.id) */}}
@@ -245,7 +257,16 @@ const ListDetail = () => {
                 </div>
 
                 {/* Desktop: Grid layout with text */}
-                <div className="hidden sm:grid grid-cols-3 gap-3">
+                <div className="hidden sm:grid grid-cols-4 gap-3">
+                  <Button
+                    variant="accent"
+                    className="flex items-center justify-center gap-2 w-full"
+                    onClick={() => setShowAddProductModal(true)}
+                  >
+                    <Plus size={16} />
+                    <span>Add Product</span>
+                  </Button>
+                  
                   <Button
                     variant={list.isPinned ? 'primary' : 'secondary'}
                     className="flex items-center justify-center gap-2 w-full"
@@ -284,6 +305,10 @@ const ListDetail = () => {
           list={list}
           onClose={() => setShowEditModal(false)}
         />
+      )}
+
+      {showAddProductModal && (
+        <AddProductModal onClose={() => setShowAddProductModal(false)} />
       )}
     </div>
   );
