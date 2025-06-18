@@ -149,20 +149,26 @@ const FolderDetail = () => {
                   </button>
                 </div>
                 
-                {/* Privacy indicator moved under title */}
+                {/* Privacy indicator moved under title with Folder indicator */}
                 <div className="ml-10 mt-1 mb-2">
-                  <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-100 text-primary-700">
-                    {folder.is_public ? (
-                      <>
-                        <Globe size={12} />
-                        <span>Public</span>
-                      </>
-                    ) : (
-                      <>
-                        <Lock size={12} />
-                        <span>Private</span>
-                      </>
-                    )}
+                  <div className="flex items-center gap-2">
+                    <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-200 text-primary-800">
+                      <FolderOpen size={10} />
+                      <span>Folder</span>
+                    </div>
+                    <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-100 text-primary-700">
+                      {folder.is_public ? (
+                        <>
+                          <Globe size={12} />
+                          <span>Public</span>
+                        </>
+                      ) : (
+                        <>
+                          <Lock size={12} />
+                          <span>Private</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
                 
