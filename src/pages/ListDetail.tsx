@@ -15,7 +15,7 @@ import { motion } from 'framer-motion';
 const ListDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { lists, togglePin, deleteList } = useListStore();
+  const { lists, updateList, deleteList, isLoading: listLoading } = useListStore();
   const { folders } = useFolderStore();
   const { fetchProductsByList, products, viewMode, setViewMode } = useProductStore();
   
@@ -25,15 +25,24 @@ const ListDetail = () => {
   const parentFolder = list?.folderId ? folders.find(f => f.id === list.folderId) : null;
   
   const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState(list?.name || '');
-  const [description, setDescription] = useState(list?.description || '');
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Update local state when list changes
+  useEffect(() => {
+    if (list) {
+      setName(list.name);
+      setDescription(list.description || '');
+    }
+  }, [list]);
 
   // Fetch products for this list
   useEffect(() => {
     if (id) {
       fetchProductsByList(id);
     }
-  }, [id]);
+  }, [id, fetchProductsByList]);
   
   if (!list) {
     return (
@@ -50,14 +59,42 @@ const ListDetail = () => {
     );
   }
   
-  const handleRemove = () => {
-    deleteList(list.id);
-    navigate('/dashboard');
+  const handleRemove = async () => {
+    if (window.confirm('Are you sure you want to delete this list? All products in this list will be moved to unassigned.')) {
+      try {
+        await deleteList(list.id);
+        navigate('/dashboard');
+      } catch (error) {
+        console.error('Error deleting list:', error);
+      }
+    }
   };
   
-  const handleSaveEdit = () => {
-    // In a real app, this would update the list
-    console.log('Saving list changes:', { name, description });
+  const handleSaveEdit = async () => {
+    if (!name.trim()) {
+      alert('List name is required');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await updateList(list.id, { 
+        name: name.trim(), 
+        description: description.trim() || null 
+      });
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating list:', error);
+      alert('Failed to save changes. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    // Reset to original values
+    setName(list.name);
+    setDescription(list.description || '');
     setIsEditing(false);
   };
 
@@ -88,6 +125,7 @@ const ListDetail = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="List name"
+                  disabled={isSaving}
                 />
                 <textarea
                   className="input resize-none"
@@ -95,10 +133,23 @@ const ListDetail = () => {
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="List description (optional)"
                   rows={3}
+                  disabled={isSaving}
                 />
                 <div className="mt-3 flex gap-2">
-                  <Button onClick={handleSaveEdit}>Save</Button>
-                  <Button variant="secondary" onClick={() => setIsEditing(false)}>Cancel</Button>
+                  <Button 
+                    onClick={handleSaveEdit} 
+                    disabled={!name.trim() || isSaving}
+                    isLoading={isSaving}
+                  >
+                    Save
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    onClick={handleCancelEdit}
+                    disabled={isSaving}
+                  >
+                    Cancel
+                  </Button>
                 </div>
               </div>
             ) : (
@@ -127,6 +178,7 @@ const ListDetail = () => {
                   <button
                     onClick={() => setIsEditing(true)}
                     className="ml-2 text-primary-500 hover:text-primary-700 p-1 rounded-md hover:bg-primary-100"
+                    disabled={listLoading}
                   >
                     <Edit2 size={16} />
                   </button>
@@ -173,7 +225,7 @@ const ListDetail = () => {
             <Button
               variant={list.isPinned ? 'primary' : 'secondary'}
               className="flex items-center gap-1"
-              onClick={() => togglePin(list.id)}
+              onClick={() => {/* togglePin(list.id) */}}
             >
               <Pin size={16} className={list.isPinned ? 'fill-white' : ''} />
               <span>{list.isPinned ? 'Pinned' : 'Pin'}</span>
@@ -182,6 +234,7 @@ const ListDetail = () => {
               variant="error"
               className="flex items-center gap-1"
               onClick={handleRemove}
+              disabled={listLoading}
             >
               <Trash2 size={16} />
               <span>Delete</span>
