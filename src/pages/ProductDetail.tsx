@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Share2, Pin, ExternalLink, Trash2, Edit2, 
-  Plus, List as ListIcon 
+  Plus, List as ListIcon, X
 } from 'lucide-react';
 import { useProductStore } from '../store/productStore';
 import { useListStore } from '../store/listStore';
@@ -16,7 +16,7 @@ import { motion } from 'framer-motion';
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { products, togglePin, deleteProduct } = useProductStore();
+  const { products, togglePin, deleteProduct, updateProduct } = useProductStore();
   const { lists } = useListStore();
   const product = products.find(p => p.id === id);
   
@@ -48,6 +48,15 @@ const ProductDetail = () => {
 
   const handleTagClick = (tag: string) => {
     navigate(`/tag/${encodeURIComponent(tag)}`);
+  };
+
+  const handleRemoveTag = async (tagToRemove: string) => {
+    try {
+      const updatedTags = product.tags.filter(tag => tag !== tagToRemove);
+      await updateProduct(product.id, { tags: updatedTags });
+    } catch (error) {
+      console.error('Error removing tag:', error);
+    }
   };
   
   return (
@@ -117,17 +126,31 @@ const ProductDetail = () => {
               <p className="text-2xl font-semibold text-primary-800 mb-4">{product.price}</p>
             )}
             
-            {/* Tags Section */}
+            {/* Tags Section with Hover Delete */}
             <div className="mb-4">
               <div className="flex flex-wrap gap-1">
                 {product.tags.map((tag) => (
-                  <button
-                    key={tag} 
-                    className="badge-primary hover:bg-primary-200 transition-colors"
-                    onClick={() => handleTagClick(tag)}
+                  <div
+                    key={tag}
+                    className="group relative inline-flex items-center"
                   >
-                    {tag}
-                  </button>
+                    <button
+                      className="badge-primary hover:bg-primary-200 transition-colors pr-6 group-hover:pr-2"
+                      onClick={() => handleTagClick(tag)}
+                    >
+                      {tag}
+                    </button>
+                    <button
+                      className="absolute right-1 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded-full hover:bg-primary-300 text-primary-600 hover:text-primary-800"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveTag(tag);
+                      }}
+                      title={`Remove ${tag} tag`}
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
                 ))}
                 <button 
                   className="badge bg-primary-50 text-primary-600 hover:bg-primary-100 flex items-center transition-colors"
@@ -162,7 +185,7 @@ const ProductDetail = () => {
           <div className="absolute inset-x-0 -bottom-1 h-1 bg-primary-200 rounded-b-lg"></div>
           
           {/* Action Buttons - Full Width Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             <Button
               variant="accent"
               className="flex items-center justify-center gap-2 w-full"
@@ -200,16 +223,6 @@ const ProductDetail = () => {
               <ExternalLink size={16} />
               <span className="hidden sm:inline">Visit</span>
               <span className="sm:hidden">Visit</span>
-            </Button>
-            
-            <Button
-              variant="secondary"
-              className="flex items-center justify-center gap-2 w-full"
-              onClick={() => setShowAddTagModal(true)}
-            >
-              <Edit2 size={16} />
-              <span className="hidden sm:inline">Edit Tags</span>
-              <span className="sm:hidden">Tags</span>
             </Button>
             
             <Button
