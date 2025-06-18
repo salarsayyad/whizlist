@@ -8,6 +8,7 @@ import { useFolderStore } from '../store/folderStore';
 import { useListStore } from '../store/listStore';
 import Button from '../components/ui/Button';
 import CreateListModal from '../components/list/CreateListModal';
+import EditFolderModal from '../components/folder/EditFolderModal';
 import CommentSection from '../components/comment/CommentSection';
 import { motion } from 'framer-motion';
 import { formatDate } from '../lib/utils';
@@ -15,27 +16,18 @@ import { formatDate } from '../lib/utils';
 const FolderDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { folders, updateFolder, deleteFolder } = useFolderStore();
+  const { folders, deleteFolder } = useFolderStore();
   const { lists, fetchLists } = useListStore();
   
   const folder = folders.find(f => f.id === id);
   const folderLists = lists.filter(list => list.folderId === id);
   
-  const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState(folder?.name || '');
-  const [description, setDescription] = useState(folder?.description || '');
   const [showCreateListModal, setShowCreateListModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   useEffect(() => {
     fetchLists();
   }, []);
-
-  useEffect(() => {
-    if (folder) {
-      setName(folder.name);
-      setDescription(folder.description || '');
-    }
-  }, [folder]);
   
   if (!folder) {
     return (
@@ -60,18 +52,6 @@ const FolderDetail = () => {
       } catch (error) {
         console.error('Error deleting folder:', error);
       }
-    }
-  };
-  
-  const handleSaveEdit = async () => {
-    try {
-      await updateFolder(folder.id, { 
-        name: name.trim(), 
-        description: description.trim() || null 
-      });
-      setIsEditing(false);
-    } catch (error) {
-      console.error('Error updating folder:', error);
     }
   };
 
@@ -107,76 +87,49 @@ const FolderDetail = () => {
         
         <div className="flex flex-col md:flex-row justify-between">
           <div className="flex-1">
-            {isEditing ? (
-              <div className="max-w-xl">
-                <input
-                  type="text"
-                  className="input text-xl font-medium mb-2"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Folder name"
-                />
-                <textarea
-                  className="input resize-none"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Folder description (optional)"
-                  rows={3}
-                />
-                <div className="mt-3 flex gap-2">
-                  <Button onClick={handleSaveEdit} disabled={!name.trim()}>
-                    Save
-                  </Button>
-                  <Button variant="secondary" onClick={() => setIsEditing(false)}>
-                    Cancel
-                  </Button>
-                </div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="flex items-center">
+                <FolderOpen size={28} className="text-primary-600 mr-3" />
+                <h1 className="text-2xl font-medium text-primary-900">{folder.name}</h1>
+                <button
+                  onClick={() => setShowEditModal(true)}
+                  className="ml-2 text-primary-500 hover:text-primary-700 p-1 rounded-md hover:bg-primary-100"
+                >
+                  <Edit2 size={16} />
+                </button>
               </div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="flex items-center">
-                  <FolderOpen size={28} className="text-primary-600 mr-3" />
-                  <h1 className="text-2xl font-medium text-primary-900">{folder.name}</h1>
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="ml-2 text-primary-500 hover:text-primary-700 p-1 rounded-md hover:bg-primary-100"
-                  >
-                    <Edit2 size={16} />
-                  </button>
-                </div>
-                
-                {/* Privacy indicator moved under title with Folder indicator */}
-                <div className="ml-10 mt-1 mb-2">
-                  <div className="flex items-center gap-2">
-                    <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-200 text-primary-800">
-                      <FolderOpen size={10} />
-                      <span>Folder</span>
-                    </div>
-                    <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-100 text-primary-700">
-                      {folder.is_public ? (
-                        <>
-                          <Globe size={12} />
-                          <span>Public</span>
-                        </>
-                      ) : (
-                        <>
-                          <Lock size={12} />
-                          <span>Private</span>
-                        </>
-                      )}
-                    </div>
+              
+              {/* Privacy indicator moved under title with Folder indicator */}
+              <div className="ml-10 mt-1 mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-200 text-primary-800">
+                    <FolderOpen size={10} />
+                    <span>Folder</span>
+                  </div>
+                  <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-100 text-primary-700">
+                    {folder.is_public ? (
+                      <>
+                        <Globe size={12} />
+                        <span>Public</span>
+                      </>
+                    ) : (
+                      <>
+                        <Lock size={12} />
+                        <span>Private</span>
+                      </>
+                    )}
                   </div>
                 </div>
-                
-                {folder.description && (
-                  <p className="text-primary-700 mt-1 ml-10">{folder.description}</p>
-                )}
-              </motion.div>
-            )}
+              </div>
+              
+              {folder.description && (
+                <p className="text-primary-700 mt-1 ml-10">{folder.description}</p>
+              )}
+            </motion.div>
           </div>
           
           <div className="flex flex-wrap items-center gap-2 mt-4 md:mt-0">
@@ -322,6 +275,13 @@ const FolderDetail = () => {
         <CreateListModal 
           folderId={folder.id}
           onClose={() => setShowCreateListModal(false)} 
+        />
+      )}
+
+      {showEditModal && (
+        <EditFolderModal
+          folder={folder}
+          onClose={() => setShowEditModal(false)}
         />
       )}
     </div>

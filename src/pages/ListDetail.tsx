@@ -9,13 +9,14 @@ import { useFolderStore } from '../store/folderStore';
 import { useProductStore } from '../store/productStore';
 import Button from '../components/ui/Button';
 import ProductCard from '../components/product/ProductCard';
+import EditListModal from '../components/list/EditListModal';
 import CommentSection from '../components/comment/CommentSection';
 import { motion } from 'framer-motion';
 
 const ListDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { lists, updateList, deleteList, isLoading: listLoading } = useListStore();
+  const { lists, deleteList, isLoading: listLoading } = useListStore();
   const { folders } = useFolderStore();
   const { fetchProductsByList, products, viewMode, setViewMode } = useProductStore();
   
@@ -24,18 +25,7 @@ const ListDetail = () => {
   // Find the folder this list belongs to
   const parentFolder = list?.folderId ? folders.find(f => f.id === list.folderId) : null;
   
-  const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
-
-  // Update local state when list changes
-  useEffect(() => {
-    if (list) {
-      setName(list.name);
-      setDescription(list.description || '');
-    }
-  }, [list]);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // Fetch products for this list
   useEffect(() => {
@@ -69,34 +59,6 @@ const ListDetail = () => {
       }
     }
   };
-  
-  const handleSaveEdit = async () => {
-    if (!name.trim()) {
-      alert('List name is required');
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      await updateList(list.id, { 
-        name: name.trim(), 
-        description: description.trim() || null 
-      });
-      setIsEditing(false);
-    } catch (error) {
-      console.error('Error updating list:', error);
-      alert('Failed to save changes. Please try again.');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleCancelEdit = () => {
-    // Reset to original values
-    setName(list.name);
-    setDescription(list.description || '');
-    setIsEditing(false);
-  };
 
   const handleFolderClick = () => {
     if (parentFolder) {
@@ -117,101 +79,64 @@ const ListDetail = () => {
         
         <div className="flex flex-col md:flex-row justify-between">
           <div className="flex-1">
-            {isEditing ? (
-              <div className="max-w-xl">
-                <input
-                  type="text"
-                  className="input text-xl font-medium mb-2"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="List name"
-                  disabled={isSaving}
-                />
-                <textarea
-                  className="input resize-none"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="List description (optional)"
-                  rows={3}
-                  disabled={isSaving}
-                />
-                <div className="mt-3 flex gap-2">
-                  <Button 
-                    onClick={handleSaveEdit} 
-                    disabled={!name.trim() || isSaving}
-                    isLoading={isSaving}
-                  >
-                    Save
-                  </Button>
-                  <Button 
-                    variant="secondary" 
-                    onClick={handleCancelEdit}
-                    disabled={isSaving}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                {/* Folder Breadcrumb */}
-                {parentFolder && (
-                  <div className="mb-2">
-                    <button
-                      onClick={handleFolderClick}
-                      className="flex items-center text-primary-600 hover:text-primary-800 transition-colors group"
-                    >
-                      <FolderOpen size={16} className="mr-1 group-hover:text-primary-700" />
-                      <span className="text-sm font-medium group-hover:underline">
-                        {parentFolder.name}
-                      </span>
-                    </button>
-                  </div>
-                )}
-
-                <div className="flex items-center">
-                  <h1 className="text-2xl font-medium text-primary-900">{list.name}</h1>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              {/* Folder Breadcrumb */}
+              {parentFolder && (
+                <div className="mb-2">
                   <button
-                    onClick={() => setIsEditing(true)}
-                    className="ml-2 text-primary-500 hover:text-primary-700 p-1 rounded-md hover:bg-primary-100"
-                    disabled={listLoading}
+                    onClick={handleFolderClick}
+                    className="flex items-center text-primary-600 hover:text-primary-800 transition-colors group"
                   >
-                    <Edit2 size={16} />
+                    <FolderOpen size={16} className="mr-1 group-hover:text-primary-700" />
+                    <span className="text-sm font-medium group-hover:underline">
+                      {parentFolder.name}
+                    </span>
                   </button>
                 </div>
-                
-                {/* List and Privacy indicators moved under title */}
-                <div className="mt-1 mb-2">
-                  <div className="flex items-center gap-2">
-                    <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-200 text-primary-800">
-                      <ListIcon size={10} />
-                      <span>List</span>
-                    </div>
-                    <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-100 text-primary-700">
-                      {list.isPublic ? (
-                        <>
-                          <Globe size={12} />
-                          <span>Public</span>
-                        </>
-                      ) : (
-                        <>
-                          <Lock size={12} />
-                          <span>Private</span>
-                        </>
-                      )}
-                    </div>
+              )}
+
+              <div className="flex items-center">
+                <h1 className="text-2xl font-medium text-primary-900">{list.name}</h1>
+                <button
+                  onClick={() => setShowEditModal(true)}
+                  className="ml-2 text-primary-500 hover:text-primary-700 p-1 rounded-md hover:bg-primary-100"
+                  disabled={listLoading}
+                >
+                  <Edit2 size={16} />
+                </button>
+              </div>
+              
+              {/* List and Privacy indicators moved under title */}
+              <div className="mt-1 mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-200 text-primary-800">
+                    <ListIcon size={10} />
+                    <span>List</span>
+                  </div>
+                  <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-100 text-primary-700">
+                    {list.isPublic ? (
+                      <>
+                        <Globe size={12} />
+                        <span>Public</span>
+                      </>
+                    ) : (
+                      <>
+                        <Lock size={12} />
+                        <span>Private</span>
+                      </>
+                    )}
                   </div>
                 </div>
-                
-                {list.description && (
-                  <p className="text-primary-700 mt-1">{list.description}</p>
-                )}
-              </motion.div>
-            )}
+              </div>
+              
+              {list.description && (
+                <p className="text-primary-700 mt-1">{list.description}</p>
+              )}
+            </motion.div>
           </div>
           
           <div className="flex flex-wrap items-center gap-2 mt-4 md:mt-0">
@@ -310,6 +235,13 @@ const ListDetail = () => {
           </div>
         </div>
       </div>
+
+      {showEditModal && (
+        <EditListModal
+          list={list}
+          onClose={() => setShowEditModal(false)}
+        />
+      )}
     </div>
   );
 };
