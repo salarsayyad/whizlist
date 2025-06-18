@@ -51,11 +51,11 @@ export const useListStore = create<ListState>((set, get) => ({
 
       if (listsError) throw listsError;
 
-      // Get product counts for each list
+      // Get product counts for each list using the junction table
       const listsWithCounts = await Promise.all(
         listsData.map(async (list) => {
           const { count, error: countError } = await supabase
-            .from('products')
+            .from('list_products')
             .select('*', { count: 'exact', head: true })
             .eq('list_id', list.id);
 
@@ -164,13 +164,13 @@ export const useListStore = create<ListState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
-      // First, unassign all products from this list
-      const { error: unassignError } = await supabase
-        .from('products')
-        .update({ list_id: null })
+      // First, remove all product associations from this list
+      const { error: removeProductsError } = await supabase
+        .from('list_products')
+        .delete()
         .eq('list_id', id);
 
-      if (unassignError) throw unassignError;
+      if (removeProductsError) throw removeProductsError;
 
       // Then delete the list
       const { error } = await supabase
@@ -194,7 +194,7 @@ export const useListStore = create<ListState>((set, get) => ({
   getProductCount: async (listId: string) => {
     try {
       const { count, error } = await supabase
-        .from('products')
+        .from('list_products')
         .select('*', { count: 'exact', head: true })
         .eq('list_id', listId);
 
