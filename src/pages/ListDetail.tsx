@@ -131,6 +131,24 @@ const ListDetail = () => {
                     <Edit2 size={16} />
                   </button>
                 </div>
+                
+                {/* Privacy indicator moved under title */}
+                <div className="mt-1 mb-2">
+                  <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-100 text-primary-700">
+                    {list.isPublic ? (
+                      <>
+                        <Globe size={12} />
+                        <span>Public</span>
+                      </>
+                    ) : (
+                      <>
+                        <Lock size={12} />
+                        <span>Private</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                
                 {list.description && (
                   <p className="text-primary-700 mt-1">{list.description}</p>
                 )}
@@ -139,22 +157,6 @@ const ListDetail = () => {
           </div>
           
           <div className="flex flex-wrap items-center gap-2 mt-4 md:mt-0">
-            <Button
-              variant="secondary"
-              className="flex items-center gap-1"
-            >
-              {list.isPublic ? (
-                <>
-                  <Globe size={16} />
-                  <span>Public</span>
-                </>
-              ) : (
-                <>
-                  <Lock size={16} />
-                  <span>Private</span>
-                </>
-              )}
-            </Button>
             <Button
               variant="secondary"
               className="flex items-center gap-1"

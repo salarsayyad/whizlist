@@ -148,6 +148,24 @@ const FolderDetail = () => {
                     <Edit2 size={16} />
                   </button>
                 </div>
+                
+                {/* Privacy indicator moved under title */}
+                <div className="ml-10 mt-1 mb-2">
+                  <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-100 text-primary-700">
+                    {folder.is_public ? (
+                      <>
+                        <Globe size={12} />
+                        <span>Public</span>
+                      </>
+                    ) : (
+                      <>
+                        <Lock size={12} />
+                        <span>Private</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                
                 {folder.description && (
                   <p className="text-primary-700 mt-1 ml-10">{folder.description}</p>
                 )}
@@ -159,22 +177,6 @@ const FolderDetail = () => {
           </div>
           
           <div className="flex flex-wrap items-center gap-2 mt-4 md:mt-0">
-            <Button
-              variant="secondary"
-              className="flex items-center gap-1"
-            >
-              {folder.is_public ? (
-                <>
-                  <Globe size={16} />
-                  <span>Public</span>
-                </>
-              ) : (
-                <>
-                  <Lock size={16} />
-                  <span>Private</span>
-                </>
-              )}
-            </Button>
             <Button
               variant="secondary"
               className="flex items-center gap-1"
@@ -255,11 +257,19 @@ const FolderDetail = () => {
                           <ListIcon size={20} className="text-primary-600 flex-shrink-0" />
                           <h3 className="font-medium text-primary-900 line-clamp-1">{list.name}</h3>
                         </div>
-                        {list.isPublic ? (
-                          <Globe size={16} className="text-primary-500 flex-shrink-0" />
-                        ) : (
-                          <Lock size={16} className="text-primary-500 flex-shrink-0" />
-                        )}
+                        <div className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-100 text-primary-700 flex-shrink-0">
+                          {list.isPublic ? (
+                            <>
+                              <Globe size={10} />
+                              <span>Public</span>
+                            </>
+                          ) : (
+                            <>
+                              <Lock size={10} />
+                              <span>Private</span>
+                            </>
+                          )}
+                        </div>
                       </div>
                       
                       {list.description && (
