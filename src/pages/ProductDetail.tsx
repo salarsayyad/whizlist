@@ -284,9 +284,6 @@ const ProductDetail = () => {
 
       {/* Fixed Floating Actions Menu - Positioned at bottom */}
       <div className="fixed bottom-0 left-0 right-0 z-50">
-        {/* Gradient overlay for depth */}
-        <div className="absolute inset-x-0 -top-4 h-4 bg-gradient-to-t from-white/80 to-transparent pointer-events-none"></div>
-        
         {/* Layout container that matches the page structure */}
         <div className="flex">
           {/* Sidebar spacer - matches the sidebar width */}
