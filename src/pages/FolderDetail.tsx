@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
-  ArrowLeft, Edit2, Share2, Users, Pin, Trash2, 
+  Edit2, Share2, Users, Trash2, 
   Lock, Globe, MoreHorizontal, Plus, List as ListIcon, FolderOpen 
 } from 'lucide-react';
 import { useFolderStore } from '../store/folderStore';
@@ -75,16 +75,8 @@ const FolderDetail = () => {
   };
   
   return (
-    <div>
+    <div className="pb-24"> {/* Add bottom padding to prevent content from being hidden behind floating menu */}
       <div className="mb-6">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center text-primary-600 hover:text-primary-800 mb-4"
-        >
-          <ArrowLeft size={18} className="mr-1" />
-          <span>Back</span>
-        </button>
-        
         <div className="flex flex-col md:flex-row justify-between">
           <div className="flex-1">
             <motion.div
@@ -131,32 +123,6 @@ const FolderDetail = () => {
                 </div>
               </div>
             </motion.div>
-          </div>
-          
-          <div className="flex flex-wrap items-center gap-2 mt-4 md:mt-0">
-            <Button
-              variant="secondary"
-              className="flex items-center gap-1"
-            >
-              <Users size={16} />
-              <span>Share</span>
-            </Button>
-            <Button
-              variant="accent"
-              className="flex items-center gap-1"
-              onClick={() => setShowCreateListModal(true)}
-            >
-              <Plus size={16} />
-              <span>New List</span>
-            </Button>
-            <Button
-              variant="error"
-              className="flex items-center gap-1"
-              onClick={handleRemove}
-            >
-              <Trash2 size={16} />
-              <span>Delete</span>
-            </Button>
           </div>
         </div>
       </div>
@@ -268,6 +234,81 @@ const FolderDetail = () => {
               entityId={folder.id}
               title={`Folder Comments (${0})`}
             />
+          </div>
+        </div>
+      </div>
+
+      {/* Fixed Floating Actions Menu - Positioned at bottom */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
+        {/* Main content area container - positioned to match main content */}
+        <div className="md:ml-64 p-4 md:p-6 pointer-events-auto">
+          <div className="max-w-7xl mx-auto">
+            <motion.div 
+              className="bg-white border border-primary-200 shadow-elevated"
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            >
+              <div className="p-3">
+                {/* Mobile: Scrollable horizontal layout with icons only */}
+                <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 sm:hidden">
+                  <Button
+                    variant="accent"
+                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
+                    onClick={() => setShowCreateListModal(true)}
+                    title="New List"
+                  >
+                    <Plus size={20} />
+                  </Button>
+                  
+                  <Button
+                    variant="secondary"
+                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
+                    title="Share"
+                  >
+                    <Users size={20} />
+                  </Button>
+                  
+                  <Button
+                    variant="error"
+                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
+                    onClick={handleRemove}
+                    title="Delete"
+                  >
+                    <Trash2 size={20} />
+                  </Button>
+                </div>
+
+                {/* Desktop: Grid layout with text */}
+                <div className="hidden sm:grid grid-cols-3 gap-3">
+                  <Button
+                    variant="accent"
+                    className="flex items-center justify-center gap-2 w-full"
+                    onClick={() => setShowCreateListModal(true)}
+                  >
+                    <Plus size={16} />
+                    <span>New List</span>
+                  </Button>
+                  
+                  <Button
+                    variant="secondary"
+                    className="flex items-center justify-center gap-2 w-full"
+                  >
+                    <Users size={16} />
+                    <span>Share</span>
+                  </Button>
+                  
+                  <Button
+                    variant="error"
+                    className="flex items-center justify-center gap-2 w-full"
+                    onClick={handleRemove}
+                  >
+                    <Trash2 size={16} />
+                    <span>Delete</span>
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </div>
