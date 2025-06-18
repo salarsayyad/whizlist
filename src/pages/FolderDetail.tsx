@@ -269,6 +269,9 @@ const FolderDetail = () => {
                     <Users size={20} />
                   </Button>
                   
+                  {/* Spacer to push delete button to the right */}
+                  <div className="flex-1"></div>
+                  
                   <Button
                     variant="error"
                     className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-10 h-12 p-0"
@@ -280,10 +283,10 @@ const FolderDetail = () => {
                 </div>
 
                 {/* Desktop: Grid layout with text */}
-                <div className="hidden sm:grid grid-cols-3 gap-3">
+                <div className="hidden sm:flex gap-3">
                   <Button
                     variant="accent"
-                    className="flex items-center justify-center gap-2 w-full"
+                    className="flex items-center justify-center gap-2"
                     onClick={() => setShowCreateListModal(true)}
                   >
                     <Plus size={16} />
@@ -292,11 +295,14 @@ const FolderDetail = () => {
                   
                   <Button
                     variant="secondary"
-                    className="flex items-center justify-center gap-2 w-full"
+                    className="flex items-center justify-center gap-2"
                   >
                     <Users size={16} />
                     <span>Share</span>
                   </Button>
+                  
+                  {/* Spacer to push delete button to the right */}
+                  <div className="flex-1"></div>
                   
                   <Button
                     variant="error"

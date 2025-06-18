@@ -324,6 +324,9 @@ const ProductDetail = () => {
                     <ExternalLink size={20} />
                   </Button>
                   
+                  {/* Spacer to push delete button to the right */}
+                  <div className="flex-1"></div>
+                  
                   <Button
                     variant="error"
                     className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-10 h-12 p-0"
@@ -335,10 +338,10 @@ const ProductDetail = () => {
                 </div>
 
                 {/* Desktop: Grid layout with text */}
-                <div className="hidden sm:grid grid-cols-5 gap-3">
+                <div className="hidden sm:flex gap-3">
                   <Button
                     variant="warning"
-                    className="flex items-center justify-center gap-2 w-full"
+                    className="flex items-center justify-center gap-2"
                     onClick={() => setShowListSelector(true)}
                   >
                     <ListIcon size={16} />
@@ -347,7 +350,7 @@ const ProductDetail = () => {
                   
                   <Button
                     variant={product.isPinned ? 'primary' : 'secondary'}
-                    className="flex items-center justify-center gap-2 w-full"
+                    className="flex items-center justify-center gap-2"
                     onClick={() => togglePin(product.id)}
                   >
                     <Pin size={16} className={product.isPinned ? 'fill-white' : ''} />
@@ -356,7 +359,7 @@ const ProductDetail = () => {
                   
                   <Button
                     variant="secondary"
-                    className="flex items-center justify-center gap-2 w-full"
+                    className="flex items-center justify-center gap-2"
                   >
                     <Share2 size={16} />
                     <span>Share</span>
@@ -364,12 +367,15 @@ const ProductDetail = () => {
                   
                   <Button
                     variant="secondary"
-                    className="flex items-center justify-center gap-2 w-full"
+                    className="flex items-center justify-center gap-2"
                     onClick={() => window.open(product.productUrl, '_blank', 'noopener,noreferrer')}
                   >
                     <ExternalLink size={16} />
                     <span>Visit</span>
                   </Button>
+                  
+                  {/* Spacer to push delete button to the right */}
+                  <div className="flex-1"></div>
                   
                   <Button
                     variant="error"

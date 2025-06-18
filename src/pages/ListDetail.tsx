@@ -245,6 +245,9 @@ const ListDetail = () => {
                     <Users size={20} />
                   </Button>
                   
+                  {/* Spacer to push delete button to the right */}
+                  <div className="flex-1"></div>
+                  
                   <Button
                     variant="error"
                     className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-10 h-12 p-0"
@@ -257,10 +260,10 @@ const ListDetail = () => {
                 </div>
 
                 {/* Desktop: Grid layout with text */}
-                <div className="hidden sm:grid grid-cols-4 gap-3">
+                <div className="hidden sm:flex gap-3">
                   <Button
                     variant="accent"
-                    className="flex items-center justify-center gap-2 w-full"
+                    className="flex items-center justify-center gap-2"
                     onClick={() => setShowAddProductModal(true)}
                   >
                     <Plus size={16} />
@@ -269,7 +272,7 @@ const ListDetail = () => {
                   
                   <Button
                     variant={list.isPinned ? 'primary' : 'secondary'}
-                    className="flex items-center justify-center gap-2 w-full"
+                    className="flex items-center justify-center gap-2"
                     onClick={() => {/* togglePin(list.id) */}}
                   >
                     <Pin size={16} className={list.isPinned ? 'fill-white' : ''} />
@@ -278,11 +281,14 @@ const ListDetail = () => {
                   
                   <Button
                     variant="secondary"
-                    className="flex items-center justify-center gap-2 w-full"
+                    className="flex items-center justify-center gap-2"
                   >
                     <Users size={16} />
                     <span>Share</span>
                   </Button>
+                  
+                  {/* Spacer to push delete button to the right */}
+                  <div className="flex-1"></div>
                   
                   <Button
                     variant="error"
