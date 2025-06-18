@@ -45,6 +45,7 @@ const CreateListModal = ({ folderId, onClose }: CreateListModalProps) => {
               onChange={(e) => setName(e.target.value)}
               placeholder="My List"
               required
+              autoFocus
             />
           </div>
           

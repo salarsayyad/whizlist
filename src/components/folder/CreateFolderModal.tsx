@@ -44,6 +44,7 @@ const CreateFolderModal = ({ onClose }: CreateFolderModalProps) => {
               onChange={(e) => setName(e.target.value)}
               placeholder="My Folder"
               required
+              autoFocus
             />
           </div>
           
