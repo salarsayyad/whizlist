@@ -49,7 +49,10 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }: ModalProps) =>
             onClick={onClose}
           />
           
-          <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
+          <div 
+            className="fixed inset-0 flex items-center justify-center p-4 z-50"
+            onClick={onClose}
+          >
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -64,7 +67,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }: ModalProps) =>
                   </h3>
                   <button
                     type="button"
-                    className="text-primary-500 hover:text-primary-700 p-1 rounded-md hover:bg-primary-100"
+                    className="text-primary-500 hover:text-primary-700 p-1 rounded-md hover:bg-primary-100 transition-colors"
                     onClick={onClose}
                   >
                     <X size={20} />
