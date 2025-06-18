@@ -296,7 +296,7 @@ const ProductDetail = () => {
           <div className="flex-1 p-4 md:p-6">
             <div className="max-w-7xl mx-auto">
               <motion.div 
-                className="bg-white border border-primary-200 rounded-t-lg shadow-elevated"
+                className="bg-white border border-primary-200 shadow-elevated"
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
