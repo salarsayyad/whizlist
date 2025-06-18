@@ -135,13 +135,13 @@ const ProductDetail = () => {
                     className="group relative inline-flex items-center"
                   >
                     <button
-                      className="badge-primary hover:bg-primary-200 transition-colors pr-6 group-hover:pr-2"
+                      className="badge-primary hover:bg-primary-200 transition-all duration-200 pr-2 group-hover:pr-6"
                       onClick={() => handleTagClick(tag)}
                     >
                       {tag}
                     </button>
                     <button
-                      className="absolute right-1 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded-full hover:bg-primary-300 text-primary-600 hover:text-primary-800"
+                      className="absolute right-1 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-0.5 rounded-full hover:bg-primary-300 text-primary-600 hover:text-primary-800"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRemoveTag(tag);
