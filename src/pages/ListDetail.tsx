@@ -67,7 +67,7 @@ const ListDetail = () => {
   };
   
   return (
-    <div>
+    <div className="pb-24"> {/* Add bottom padding to prevent content from being hidden behind floating menu */}
       <div className="mb-6">
         <button
           onClick={() => navigate(-1)}
@@ -139,33 +139,6 @@ const ListDetail = () => {
               </div>
             </motion.div>
           </div>
-          
-          <div className="flex flex-wrap items-center gap-2 mt-4 md:mt-0">
-            <Button
-              variant="secondary"
-              className="flex items-center gap-1"
-            >
-              <Users size={16} />
-              <span>Share</span>
-            </Button>
-            <Button
-              variant={list.isPinned ? 'primary' : 'secondary'}
-              className="flex items-center gap-1"
-              onClick={() => {/* togglePin(list.id) */}}
-            >
-              <Pin size={16} className={list.isPinned ? 'fill-white' : ''} />
-              <span>{list.isPinned ? 'Pinned' : 'Pin'}</span>
-            </Button>
-            <Button
-              variant="error"
-              className="flex items-center gap-1"
-              onClick={handleRemove}
-              disabled={listLoading}
-            >
-              <Trash2 size={16} />
-              <span>Delete</span>
-            </Button>
-          </div>
         </div>
       </div>
       
@@ -233,6 +206,83 @@ const ListDetail = () => {
               entityId={list.id}
               title={`List Comments (${0})`}
             />
+          </div>
+        </div>
+      </div>
+
+      {/* Fixed Floating Actions Menu - Positioned at bottom */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
+        {/* Main content area container - positioned to match main content */}
+        <div className="md:ml-64 p-4 md:p-6 pointer-events-auto">
+          <div className="max-w-7xl mx-auto">
+            <motion.div 
+              className="bg-white border border-primary-200 shadow-elevated"
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            >
+              <div className="p-3">
+                {/* Mobile: Scrollable horizontal layout with icons only */}
+                <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 sm:hidden">
+                  <Button
+                    variant={list.isPinned ? 'primary' : 'secondary'}
+                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
+                    onClick={() => {/* togglePin(list.id) */}}
+                    title={list.isPinned ? 'Unpin' : 'Pin'}
+                  >
+                    <Pin size={20} className={list.isPinned ? 'fill-white' : ''} />
+                  </Button>
+                  
+                  <Button
+                    variant="secondary"
+                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
+                    title="Share"
+                  >
+                    <Users size={20} />
+                  </Button>
+                  
+                  <Button
+                    variant="error"
+                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
+                    onClick={handleRemove}
+                    disabled={listLoading}
+                    title="Delete"
+                  >
+                    <Trash2 size={20} />
+                  </Button>
+                </div>
+
+                {/* Desktop: Grid layout with text */}
+                <div className="hidden sm:grid grid-cols-3 gap-3">
+                  <Button
+                    variant={list.isPinned ? 'primary' : 'secondary'}
+                    className="flex items-center justify-center gap-2 w-full"
+                    onClick={() => {/* togglePin(list.id) */}}
+                  >
+                    <Pin size={16} className={list.isPinned ? 'fill-white' : ''} />
+                    <span>{list.isPinned ? 'Pinned' : 'Pin'}</span>
+                  </Button>
+                  
+                  <Button
+                    variant="secondary"
+                    className="flex items-center justify-center gap-2 w-full"
+                  >
+                    <Users size={16} />
+                    <span>Share</span>
+                  </Button>
+                  
+                  <Button
+                    variant="error"
+                    className="flex items-center justify-center gap-2 w-full"
+                    onClick={handleRemove}
+                    disabled={listLoading}
+                  >
+                    <Trash2 size={16} />
+                    <span>Delete</span>
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </div>
