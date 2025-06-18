@@ -110,8 +110,13 @@ const ListDetail = () => {
                 </button>
               </div>
               
-              {/* List and Privacy indicators moved under title */}
-              <div className="mt-1 mb-2">
+              {/* Description moved under title */}
+              {list.description && (
+                <p className="text-primary-600 text-sm mt-2">{list.description}</p>
+              )}
+              
+              {/* List and Privacy indicators moved under description */}
+              <div className="mt-3">
                 <div className="flex items-center gap-2">
                   <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-200 text-primary-800">
                     <ListIcon size={10} />
@@ -132,10 +137,6 @@ const ListDetail = () => {
                   </div>
                 </div>
               </div>
-              
-              {list.description && (
-                <p className="text-primary-700 mt-1">{list.description}</p>
-              )}
             </motion.div>
           </div>
           

@@ -103,8 +103,13 @@ const FolderDetail = () => {
                 </button>
               </div>
               
-              {/* Privacy indicator moved under title with Folder indicator */}
-              <div className="ml-10 mt-1 mb-2">
+              {/* Description moved under title */}
+              {folder.description && (
+                <p className="text-primary-600 text-sm mt-2 ml-10">{folder.description}</p>
+              )}
+              
+              {/* Privacy indicator moved under description */}
+              <div className="ml-10 mt-3">
                 <div className="flex items-center gap-2">
                   <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-200 text-primary-800">
                     <FolderOpen size={10} />
@@ -125,10 +130,6 @@ const FolderDetail = () => {
                   </div>
                 </div>
               </div>
-              
-              {folder.description && (
-                <p className="text-primary-700 mt-1 ml-10">{folder.description}</p>
-              )}
             </motion.div>
           </div>
           
