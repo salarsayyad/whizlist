@@ -169,9 +169,6 @@ const FolderDetail = () => {
                 {folder.description && (
                   <p className="text-primary-700 mt-1 ml-10">{folder.description}</p>
                 )}
-                <p className="text-primary-500 text-sm mt-2 ml-10">
-                  Created {formatDate(folder.created_at)}
-                </p>
               </motion.div>
             )}
           </div>
