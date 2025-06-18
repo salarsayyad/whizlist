@@ -11,11 +11,10 @@ interface ListState {
   createList: (list: Pick<List, 'name' | 'description' | 'isPublic' | 'folderId'>) => Promise<List>;
   updateList: (id: string, updates: Partial<List>) => Promise<void>;
   deleteList: (id: string) => Promise<void>;
-  addProductToList: (listId: string, productId: string) => Promise<void>;
-  removeProductFromList: (listId: string, productId: string) => Promise<void>;
+  getProductCount: (listId: string) => Promise<number>;
 }
 
-const mapDbListToUiList = (dbList: any, products: string[] = []): List => ({
+const mapDbListToUiList = (dbList: any, productCount: number = 0): List => ({
   id: dbList.id,
   name: dbList.name,
   description: dbList.description,
@@ -24,7 +23,7 @@ const mapDbListToUiList = (dbList: any, products: string[] = []): List => ({
   createdAt: dbList.created_at,
   updatedAt: dbList.updated_at,
   folderId: dbList.folder_id,
-  products,
+  productCount,
   ownerId: dbList.owner_id,
   collaborators: [], // Fetch separately if needed
 });
@@ -52,28 +51,24 @@ export const useListStore = create<ListState>((set, get) => ({
 
       if (listsError) throw listsError;
 
-      // Fetch list_products relationships
-      const { data: listProductsData, error: listProductsError } = await supabase
-        .from('list_products')
-        .select('list_id, product_id');
+      // Get product counts for each list
+      const listsWithCounts = await Promise.all(
+        listsData.map(async (list) => {
+          const { count, error: countError } = await supabase
+            .from('products')
+            .select('*', { count: 'exact', head: true })
+            .eq('list_id', list.id);
 
-      if (listProductsError) throw listProductsError;
+          if (countError) {
+            console.warn(`Error counting products for list ${list.id}:`, countError);
+            return mapDbListToUiList(list, 0);
+          }
 
-      // Group products by list
-      const productsByList = listProductsData.reduce((acc: { [key: string]: string[] }, curr) => {
-        if (!acc[curr.list_id]) {
-          acc[curr.list_id] = [];
-        }
-        acc[curr.list_id].push(curr.product_id);
-        return acc;
-      }, {});
-
-      // Map DB lists to UI lists with their products
-      const lists = listsData.map((list) => 
-        mapDbListToUiList(list, productsByList[list.id] || [])
+          return mapDbListToUiList(list, count || 0);
+        })
       );
 
-      set({ lists });
+      set({ lists: listsWithCounts });
       
     } catch (error) {
       set({ error: (error as Error).message });
@@ -109,7 +104,7 @@ export const useListStore = create<ListState>((set, get) => ({
 
       if (error) throw error;
 
-      const newList = mapDbListToUiList(data, []);
+      const newList = mapDbListToUiList(data, 0);
       set(state => ({ lists: [newList, ...state.lists] }));
       return newList;
       
@@ -147,9 +142,9 @@ export const useListStore = create<ListState>((set, get) => ({
 
       if (error) throw error;
 
-      // Preserve products array from existing state
+      // Preserve product count from existing state
       const existingList = get().lists.find(list => list.id === id);
-      const updatedList = mapDbListToUiList(data, existingList?.products || []);
+      const updatedList = mapDbListToUiList(data, existingList?.productCount || 0);
       
       set(state => ({
         lists: state.lists.map(list => 
@@ -169,6 +164,15 @@ export const useListStore = create<ListState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
+      // First, unassign all products from this list
+      const { error: unassignError } = await supabase
+        .from('products')
+        .update({ list_id: null })
+        .eq('list_id', id);
+
+      if (unassignError) throw unassignError;
+
+      // Then delete the list
       const { error } = await supabase
         .from('lists')
         .delete()
@@ -187,56 +191,18 @@ export const useListStore = create<ListState>((set, get) => ({
     }
   },
 
-  addProductToList: async (listId, productId) => {
+  getProductCount: async (listId: string) => {
     try {
-      set({ isLoading: true, error: null });
-
-      const { error } = await supabase
-        .from('list_products')
-        .insert([{ list_id: listId, product_id: productId }]);
+      const { count, error } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true })
+        .eq('list_id', listId);
 
       if (error) throw error;
-
-      set(state => ({
-        lists: state.lists.map(list =>
-          list.id === listId
-            ? { ...list, products: [...list.products, productId] }
-            : list
-        )
-      }));
-
+      return count || 0;
     } catch (error) {
-      set({ error: (error as Error).message });
-      throw error;
-    } finally {
-      set({ isLoading: false });
-    }
-  },
-
-  removeProductFromList: async (listId, productId) => {
-    try {
-      set({ isLoading: true, error: null });
-
-      const { error } = await supabase
-        .from('list_products')
-        .delete()
-        .match({ list_id: listId, product_id: productId });
-
-      if (error) throw error;
-
-      set(state => ({
-        lists: state.lists.map(list =>
-          list.id === listId
-            ? { ...list, products: list.products.filter(id => id !== productId) }
-            : list
-        )
-      }));
-
-    } catch (error) {
-      set({ error: (error as Error).message });
-      throw error;
-    } finally {
-      set({ isLoading: false });
+      console.error('Error getting product count:', error);
+      return 0;
     }
   },
 }));

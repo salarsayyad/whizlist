@@ -23,7 +23,7 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
   const [selectedListId, setSelectedListId] = useState<string | null>(currentListId || null);
   
   const { createProduct } = useProductStore();
-  const { lists, fetchLists, addProductToList } = useListStore();
+  const { lists, fetchLists } = useListStore();
   
   useEffect(() => {
     fetchLists();
@@ -73,14 +73,11 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
       // Include user-added tags with the product
       const productWithTags = {
         ...product,
-        tags: [...(product.tags || []), ...tags]
+        tags: [...(product.tags || []), ...tags],
+        listId: selectedListId
       };
       
       const createdProduct = await createProduct(productWithTags);
-      
-      if (selectedListId) {
-        await addProductToList(selectedListId, createdProduct.id);
-      }
 
       // Start the enhanced details extraction
       updateDetails(createdProduct.id).catch(console.error);

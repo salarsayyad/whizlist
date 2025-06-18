@@ -227,7 +227,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                             <ListIcon size={16} />
                             <span className="flex-1">{list.name}</span>
                             <span className="text-xs text-primary-500">
-                              {list.products.length}
+                              {list.productCount}
                             </span>
                           </NavLink>
                         </li>
@@ -259,7 +259,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                     <ListIcon size={18} />
                     <span className="flex-1">{list.name}</span>
                     <span className="text-xs text-primary-500">
-                      {list.products.length}
+                      {list.productCount}
                     </span>
                   </NavLink>
                 </li>

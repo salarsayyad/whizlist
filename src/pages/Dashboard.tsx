@@ -12,6 +12,7 @@ const Dashboard = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   
   useEffect(() => {
+    // Fetch all products for dashboard view
     fetchProducts();
   }, []);
   

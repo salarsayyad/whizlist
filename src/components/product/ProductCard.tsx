@@ -5,7 +5,7 @@ import { Product } from '../../types';
 import { useProductStore } from '../../store/productStore';
 import { truncateText } from '../../lib/utils';
 import Button from '../ui/Button';
-import ListSelectorModal from '../list/ListSelectorModal';
+import ProductListSelector from './ProductListSelector';
 import { motion } from 'framer-motion';
 
 interface ProductCardProps {
@@ -116,7 +116,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
                   onClick={handleOpenListSelector}
                 >
                   <List size={16} />
-                  <span>Add to list</span>
+                  <span>Manage list</span>
                 </button>
                 <button
                   className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50"
@@ -171,8 +171,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
       </div>
       
       {showListSelector && (
-        <ListSelectorModal 
+        <ProductListSelector 
           productId={product.id}
+          currentListId={product.listId}
           onClose={() => setShowListSelector(false)}
         />
       )}

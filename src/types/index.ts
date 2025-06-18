@@ -15,7 +15,7 @@ export interface Product {
   isPinned: boolean;
   createdAt: string;
   updatedAt: string;
-  listId?: string;
+  listId?: string | null; // Single list association
   folderId?: string;
   tags: string[];
   createdBy: string;
@@ -30,7 +30,7 @@ export interface List {
   createdAt: string;
   updatedAt: string;
   folderId?: string | null;
-  products: string[]; // Array of product IDs
+  productCount: number; // Count of products in this list
   ownerId: string;
   collaborators: Collaborator[];
 }

@@ -10,10 +10,13 @@ interface ProductState {
   viewMode: 'grid' | 'list';
   extractingProducts: string[];
   fetchProducts: () => Promise<void>;
+  fetchProductsByList: (listId: string | null) => Promise<void>;
   createProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'ownerId'>) => Promise<Product>;
   updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   togglePin: (id: string) => Promise<void>;
+  moveProductToList: (productId: string, listId: string | null) => Promise<void>;
+  copyProductToList: (productId: string, listId: string | null) => Promise<Product>;
   setViewMode: (mode: 'grid' | 'list') => void;
   setExtracting: (productId: string, isExtracting: boolean) => void;
   updateProductInStore: (product: Product) => void;
@@ -29,6 +32,7 @@ const mapDbProductToUiProduct = (dbProduct: any): Product => ({
   productUrl: dbProduct.product_url,
   isPinned: dbProduct.is_pinned || false,
   tags: dbProduct.tags || [],
+  listId: dbProduct.list_id,
   ownerId: dbProduct.owner_id,
   createdAt: dbProduct.created_at,
   updatedAt: dbProduct.updated_at
@@ -43,6 +47,7 @@ const mapUiProductToDbProduct = (uiProduct: Partial<Product>) => ({
   product_url: uiProduct.productUrl,
   is_pinned: uiProduct.isPinned,
   tags: uiProduct.tags,
+  list_id: uiProduct.listId,
   owner_id: uiProduct.ownerId
 });
 
@@ -61,6 +66,37 @@ export const useProductStore = create<ProductState>((set, get) => ({
         .from('products')
         .select('*')
         .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      const mappedProducts = (data || []).map(mapDbProductToUiProduct);
+      set({ products: mappedProducts });
+      
+    } catch (error) {
+      set({ error: (error as Error).message });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  fetchProductsByList: async (listId: string | null) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      let query = supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (listId === null) {
+        // Fetch unassigned products
+        query = query.is('list_id', null);
+      } else {
+        // Fetch products for specific list
+        query = query.eq('list_id', listId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       
@@ -177,6 +213,77 @@ export const useProductStore = create<ProductState>((set, get) => ({
           p.id === id ? mappedProduct : p
         )
       }));
+      
+    } catch (error) {
+      set({ error: (error as Error).message });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  moveProductToList: async (productId: string, listId: string | null) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('products')
+        .update({ list_id: listId })
+        .eq('id', productId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      const mappedProduct = mapDbProductToUiProduct(data);
+      set(state => ({
+        products: state.products.map(product => 
+          product.id === productId ? mappedProduct : product
+        )
+      }));
+      
+    } catch (error) {
+      set({ error: (error as Error).message });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  copyProductToList: async (productId: string, listId: string | null) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const originalProduct = get().products.find(p => p.id === productId);
+      if (!originalProduct) throw new Error('Product not found');
+
+      const userId = useAuthStore.getState().user?.id;
+      if (!userId) throw new Error('User not authenticated');
+
+      // Create a copy of the product with new list assignment
+      const productCopy = {
+        title: originalProduct.title,
+        description: originalProduct.description,
+        price: originalProduct.price,
+        image_url: originalProduct.imageUrl,
+        product_url: originalProduct.productUrl,
+        is_pinned: false, // Reset pin status for copy
+        tags: [...(originalProduct.tags || [])],
+        list_id: listId,
+        owner_id: userId
+      };
+
+      const { data, error } = await supabase
+        .from('products')
+        .insert([productCopy])
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      const mappedProduct = mapDbProductToUiProduct(data);
+      set(state => ({ products: [mappedProduct, ...state.products] }));
+      return mappedProduct;
       
     } catch (error) {
       set({ error: (error as Error).message });

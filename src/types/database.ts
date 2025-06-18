@@ -38,6 +38,7 @@ export type Product = {
   product_url: string;
   is_pinned: boolean;
   tags: string[];
+  list_id: string | null; // Single list association
   owner_id: string;
   created_at: string;
   updated_at: string;
@@ -52,12 +53,6 @@ export type Comment = {
   created_at: string;
   updated_at: string;
   is_edited: boolean;
-};
-
-export type ListProduct = {
-  list_id: string;
-  product_id: string;
-  added_at: string;
 };
 
 export type FolderShare = {

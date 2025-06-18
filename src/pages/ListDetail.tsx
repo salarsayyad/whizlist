@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Edit2, Share2, Users, Pin, Trash2, 
@@ -17,10 +17,9 @@ const ListDetail = () => {
   const navigate = useNavigate();
   const { lists, togglePin, deleteList } = useListStore();
   const { folders } = useFolderStore();
-  const { products, viewMode, setViewMode } = useProductStore();
+  const { fetchProductsByList, products, viewMode, setViewMode } = useProductStore();
   
   const list = lists.find(l => l.id === id);
-  const listProducts = products.filter(p => list?.products.includes(p.id));
   
   // Find the folder this list belongs to
   const parentFolder = list?.folderId ? folders.find(f => f.id === list.folderId) : null;
@@ -28,6 +27,13 @@ const ListDetail = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(list?.name || '');
   const [description, setDescription] = useState(list?.description || '');
+
+  // Fetch products for this list
+  useEffect(() => {
+    if (id) {
+      fetchProductsByList(id);
+    }
+  }, [id]);
   
   if (!list) {
     return (
@@ -181,7 +187,7 @@ const ListDetail = () => {
           <div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-medium text-primary-900">
-                Products ({listProducts.length})
+                Products ({products.length})
               </h2>
               
               <div className="flex items-center gap-3">
@@ -212,7 +218,7 @@ const ListDetail = () => {
               </div>
             </div>
             
-            {listProducts.length === 0 ? (
+            {products.length === 0 ? (
               <div className="text-center py-16 card p-8">
                 <h3 className="text-xl font-medium text-primary-700 mb-2">No products in this list yet</h3>
                 <p className="text-primary-600 mb-6">Add products to this list to start organizing.</p>
@@ -225,7 +231,7 @@ const ListDetail = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {listProducts.map((product) => (
+                {products.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>

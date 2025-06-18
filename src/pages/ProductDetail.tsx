@@ -8,7 +8,7 @@ import { useProductStore } from '../store/productStore';
 import { useListStore } from '../store/listStore';
 import Button from '../components/ui/Button';
 import { formatDate } from '../lib/utils';
-import ListSelectorModal from '../components/list/ListSelectorModal';
+import ProductListSelector from '../components/product/ProductListSelector';
 import AddTagModal from '../components/product/AddTagModal';
 import CommentSection from '../components/comment/CommentSection';
 import { motion } from 'framer-motion';
@@ -23,8 +23,8 @@ const ProductDetail = () => {
   const [showListSelector, setShowListSelector] = useState(false);
   const [showAddTagModal, setShowAddTagModal] = useState(false);
   
-  // Get lists that contain this product
-  const productLists = lists.filter(list => list.products.includes(id || ''));
+  // Get the list that contains this product
+  const productList = lists.find(list => list.id === product?.listId);
   
   if (!product) {
     return (
@@ -162,32 +162,22 @@ const ProductDetail = () => {
           <div className="absolute inset-x-0 -bottom-1 h-1 bg-primary-200 rounded-b-lg"></div>
           
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            {/* Left Side - Lists Info */}
+            {/* Left Side - List Info */}
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <ListIcon size={20} className="text-primary-600" />
                 <span className="font-medium text-primary-900">
-                  In {productLists.length} list{productLists.length === 1 ? '' : 's'}
+                  {productList ? `In "${productList.name}"` : 'Unassigned'}
                 </span>
               </div>
               
-              {productLists.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {productLists.slice(0, 3).map(list => (
-                    <button
-                      key={list.id}
-                      onClick={() => navigate(`/list/${list.id}`)}
-                      className="text-xs px-2 py-1 bg-primary-100 text-primary-700 rounded-md hover:bg-primary-200 transition-colors"
-                    >
-                      {list.name}
-                    </button>
-                  ))}
-                  {productLists.length > 3 && (
-                    <span className="text-xs px-2 py-1 text-primary-500">
-                      +{productLists.length - 3} more
-                    </span>
-                  )}
-                </div>
+              {productList && (
+                <button
+                  onClick={() => navigate(`/list/${productList.id}`)}
+                  className="text-xs px-2 py-1 bg-primary-100 text-primary-700 rounded-md hover:bg-primary-200 transition-colors"
+                >
+                  View List
+                </button>
               )}
             </div>
 
@@ -199,7 +189,7 @@ const ProductDetail = () => {
                 onClick={() => setShowListSelector(true)}
               >
                 <Plus size={16} />
-                <span>Add to List</span>
+                <span>Manage List</span>
               </Button>
               
               <Button
@@ -305,8 +295,9 @@ const ProductDetail = () => {
       </div>
       
       {showListSelector && (
-        <ListSelectorModal 
+        <ProductListSelector 
           productId={product.id}
+          currentListId={product.listId}
           onClose={() => setShowListSelector(false)}
         />
       )}
