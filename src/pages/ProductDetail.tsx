@@ -290,12 +290,12 @@ const ProductDetail = () => {
                 {/* Mobile: Scrollable horizontal layout with icons only */}
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 sm:hidden">
                   <Button
-                    variant="accent"
+                    variant="primary"
                     className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
                     onClick={() => setShowListSelector(true)}
-                    title="Manage List"
+                    title="Move/Copy to List"
                   >
-                    <Plus size={20} />
+                    <ListIcon size={20} />
                   </Button>
                   
                   <Button
@@ -337,12 +337,12 @@ const ProductDetail = () => {
                 {/* Desktop: Grid layout with text */}
                 <div className="hidden sm:grid grid-cols-5 gap-3">
                   <Button
-                    variant="accent"
+                    variant="primary"
                     className="flex items-center justify-center gap-2 w-full"
                     onClick={() => setShowListSelector(true)}
                   >
-                    <Plus size={16} />
-                    <span>Manage List</span>
+                    <ListIcon size={16} />
+                    <span>Move/Copy to List</span>
                   </Button>
                   
                   <Button
