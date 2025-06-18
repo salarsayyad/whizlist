@@ -294,54 +294,54 @@ const ProductDetail = () => {
               transition={{ duration: 0.3, ease: "easeOut" }}
             >
               <div className="p-3">
-                {/* Mobile: Scrollable horizontal layout */}
+                {/* Mobile: Scrollable horizontal layout with icons only */}
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 sm:hidden">
                   <Button
                     variant="accent"
-                    className="flex items-center gap-2 whitespace-nowrap flex-shrink-0"
+                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
                     onClick={() => setShowListSelector(true)}
+                    title="Manage List"
                   >
-                    <Plus size={16} />
-                    <span>List</span>
+                    <Plus size={20} />
                   </Button>
                   
                   <Button
                     variant={product.isPinned ? 'primary' : 'secondary'}
-                    className="flex items-center gap-2 whitespace-nowrap flex-shrink-0"
+                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
                     onClick={() => togglePin(product.id)}
+                    title={product.isPinned ? 'Unpin' : 'Pin'}
                   >
-                    <Pin size={16} className={product.isPinned ? 'fill-white' : ''} />
-                    <span>Pin</span>
+                    <Pin size={20} className={product.isPinned ? 'fill-white' : ''} />
                   </Button>
                   
                   <Button
                     variant="secondary"
-                    className="flex items-center gap-2 whitespace-nowrap flex-shrink-0"
+                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
+                    title="Share"
                   >
-                    <Share2 size={16} />
-                    <span>Share</span>
+                    <Share2 size={20} />
                   </Button>
                   
                   <Button
                     variant="secondary"
-                    className="flex items-center gap-2 whitespace-nowrap flex-shrink-0"
+                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
                     onClick={() => window.open(product.productUrl, '_blank', 'noopener,noreferrer')}
+                    title="Visit Original"
                   >
-                    <ExternalLink size={16} />
-                    <span>Visit</span>
+                    <ExternalLink size={20} />
                   </Button>
                   
                   <Button
                     variant="error"
-                    className="flex items-center gap-2 whitespace-nowrap flex-shrink-0"
+                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
                     onClick={handleRemove}
+                    title="Remove"
                   >
-                    <Trash2 size={16} />
-                    <span>Remove</span>
+                    <Trash2 size={20} />
                   </Button>
                 </div>
 
-                {/* Desktop: Grid layout */}
+                {/* Desktop: Grid layout with text */}
                 <div className="hidden sm:grid grid-cols-5 gap-3">
                   <Button
                     variant="accent"
