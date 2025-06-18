@@ -85,39 +85,30 @@ const ProductDetail = () => {
       navigate(`/list/${productList.id}`);
     }
   };
-
-  const handleDashboardClick = () => {
-    navigate('/dashboard');
-  };
   
   return (
     <div className="pb-24"> {/* Add bottom padding to prevent content from being hidden behind floating menu */}
-      {/* Breadcrumb Navigation */}
-      <div className="mb-6">
-        <nav className="flex items-center text-sm text-primary-600 mb-4">
-          <button
-            onClick={handleDashboardClick}
-            className="hover:text-primary-800 transition-colors hover:underline"
-          >
-            Dashboard
-          </button>
-          
-          {parentFolder && (
-            <>
-              <ChevronRight size={14} className="mx-2 text-primary-400" />
-              <button
-                onClick={handleFolderClick}
-                className="flex items-center gap-1 hover:text-primary-800 transition-colors group"
-              >
-                <FolderOpen size={14} className="group-hover:text-primary-700" />
-                <span className="group-hover:underline">{parentFolder.name}</span>
-              </button>
-            </>
-          )}
-          
-          {productList && (
-            <>
-              <ChevronRight size={14} className="mx-2 text-primary-400" />
+      {/* Breadcrumb Navigation - Only show if there's a folder or list */}
+      {(parentFolder || productList) && (
+        <div className="mb-6">
+          <nav className="flex items-center text-sm text-primary-600 mb-4">
+            {parentFolder && (
+              <>
+                <button
+                  onClick={handleFolderClick}
+                  className="flex items-center gap-1 hover:text-primary-800 transition-colors group"
+                >
+                  <FolderOpen size={14} className="group-hover:text-primary-700" />
+                  <span className="group-hover:underline">{parentFolder.name}</span>
+                </button>
+                
+                {productList && (
+                  <ChevronRight size={14} className="mx-2 text-primary-400" />
+                )}
+              </>
+            )}
+            
+            {productList && (
               <button
                 onClick={handleListClick}
                 className="flex items-center gap-1 hover:text-primary-800 transition-colors group"
@@ -125,15 +116,10 @@ const ProductDetail = () => {
                 <ListIcon size={14} className="group-hover:text-primary-700" />
                 <span className="group-hover:underline">{productList.name}</span>
               </button>
-            </>
-          )}
-          
-          <ChevronRight size={14} className="mx-2 text-primary-400" />
-          <span className="text-primary-800 font-medium truncate max-w-xs">
-            {product.title}
-          </span>
-        </nav>
-      </div>
+            )}
+          </nav>
+        </div>
+      )}
 
       {/* Product Header Section - Image on Right, Content on Left */}
       <div className="card p-6 mb-6">
