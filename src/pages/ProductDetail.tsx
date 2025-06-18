@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Share2, Pin, ExternalLink, Trash2, Edit2, 
-  Plus, List as ListIcon, X
+  Plus, List as ListIcon, X, ChevronRight, FolderOpen
 } from 'lucide-react';
 import { useProductStore } from '../store/productStore';
 import { useListStore } from '../store/listStore';
+import { useFolderStore } from '../store/folderStore';
 import Button from '../components/ui/Button';
 import { formatDate } from '../lib/utils';
 import ProductListSelector from '../components/product/ProductListSelector';
@@ -18,6 +19,7 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { products, togglePin, deleteProduct, updateProduct } = useProductStore();
   const { lists } = useListStore();
+  const { folders } = useFolderStore();
   const product = products.find(p => p.id === id);
   
   const [showListSelector, setShowListSelector] = useState(false);
@@ -25,6 +27,19 @@ const ProductDetail = () => {
   
   // Get the list that contains this product
   const productList = lists.find(list => list.id === product?.listId);
+  
+  // Get the folder that contains the list (if applicable)
+  const parentFolder = productList?.folderId ? folders.find(folder => folder.id === productList.folderId) : null;
+
+  // Fetch folders if not already loaded
+  useEffect(() => {
+    if (productList?.folderId && folders.length === 0) {
+      // Import and call fetchFolders if needed
+      import('../store/folderStore').then(({ useFolderStore }) => {
+        useFolderStore.getState().fetchFolders();
+      });
+    }
+  }, [productList?.folderId, folders.length]);
   
   if (!product) {
     return (
@@ -56,6 +71,18 @@ const ProductDetail = () => {
       await updateProduct(product.id, { tags: updatedTags });
     } catch (error) {
       console.error('Error removing tag:', error);
+    }
+  };
+
+  const handleFolderClick = () => {
+    if (parentFolder) {
+      navigate(`/folder/${parentFolder.id}`);
+    }
+  };
+
+  const handleListClick = () => {
+    if (productList) {
+      navigate(`/list/${productList.id}`);
     }
   };
   
@@ -93,6 +120,41 @@ const ProductDetail = () => {
 
           {/* Product Title, URL, Price, Tags, and Description */}
           <div className="lg:w-2/3 flex flex-col justify-start">
+            {/* Breadcrumb Navigation */}
+            {(parentFolder || productList) && (
+              <div className="mb-3">
+                <nav className="flex items-center text-sm text-primary-600">
+                  {parentFolder && (
+                    <>
+                      <button
+                        onClick={handleFolderClick}
+                        className="flex items-center gap-1 hover:text-primary-800 transition-colors group"
+                      >
+                        <FolderOpen size={14} className="group-hover:text-primary-700" />
+                        <span className="group-hover:underline">{parentFolder.name}</span>
+                      </button>
+                      <ChevronRight size={14} className="mx-1 text-primary-400" />
+                    </>
+                  )}
+                  
+                  {productList && (
+                    <>
+                      <button
+                        onClick={handleListClick}
+                        className="flex items-center gap-1 hover:text-primary-800 transition-colors group"
+                      >
+                        <ListIcon size={14} className="group-hover:text-primary-700" />
+                        <span className="group-hover:underline">{productList.name}</span>
+                      </button>
+                      <ChevronRight size={14} className="mx-1 text-primary-400" />
+                    </>
+                  )}
+                  
+                  <span className="text-primary-500">Product</span>
+                </nav>
+              </div>
+            )}
+
             {/* Product Title */}
             <h1 className="text-3xl font-bold text-primary-900 mb-2">{product.title}</h1>
             
