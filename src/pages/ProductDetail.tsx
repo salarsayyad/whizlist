@@ -161,53 +161,66 @@ const ProductDetail = () => {
           {/* Shelf Edge Effect */}
           <div className="absolute inset-x-0 -bottom-1 h-1 bg-primary-200 rounded-b-lg"></div>
           
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-end gap-4">
-            {/* Action Buttons */}
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                variant="accent"
-                className="flex items-center gap-1"
-                onClick={() => setShowListSelector(true)}
-              >
-                <Plus size={16} />
-                <span>Manage List</span>
-              </Button>
-              
-              <Button
-                variant={product.isPinned ? 'primary' : 'secondary'}
-                className="flex items-center gap-1"
-                onClick={() => togglePin(product.id)}
-              >
-                <Pin size={16} className={product.isPinned ? 'fill-white' : ''} />
-                <span>{product.isPinned ? 'Pinned' : 'Pin'}</span>
-              </Button>
-              
-              <Button
-                variant="secondary"
-                className="flex items-center gap-1"
-              >
-                <Share2 size={16} />
-                <span>Share</span>
-              </Button>
-              
-              <Button
-                variant="secondary"
-                className="flex items-center gap-1"
-                onClick={() => window.open(product.productUrl, '_blank', 'noopener,noreferrer')}
-              >
-                <ExternalLink size={16} />
-                <span>Visit</span>
-              </Button>
-              
-              <Button
-                variant="error"
-                className="flex items-center gap-1"
-                onClick={handleRemove}
-              >
-                <Trash2 size={16} />
-                <span>Remove</span>
-              </Button>
-            </div>
+          {/* Action Buttons - Full Width Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <Button
+              variant="accent"
+              className="flex items-center justify-center gap-2 w-full"
+              onClick={() => setShowListSelector(true)}
+            >
+              <Plus size={16} />
+              <span className="hidden sm:inline">Manage List</span>
+              <span className="sm:hidden">List</span>
+            </Button>
+            
+            <Button
+              variant={product.isPinned ? 'primary' : 'secondary'}
+              className="flex items-center justify-center gap-2 w-full"
+              onClick={() => togglePin(product.id)}
+            >
+              <Pin size={16} className={product.isPinned ? 'fill-white' : ''} />
+              <span className="hidden sm:inline">{product.isPinned ? 'Pinned' : 'Pin'}</span>
+              <span className="sm:hidden">Pin</span>
+            </Button>
+            
+            <Button
+              variant="secondary"
+              className="flex items-center justify-center gap-2 w-full"
+            >
+              <Share2 size={16} />
+              <span className="hidden sm:inline">Share</span>
+              <span className="sm:hidden">Share</span>
+            </Button>
+            
+            <Button
+              variant="secondary"
+              className="flex items-center justify-center gap-2 w-full"
+              onClick={() => window.open(product.productUrl, '_blank', 'noopener,noreferrer')}
+            >
+              <ExternalLink size={16} />
+              <span className="hidden sm:inline">Visit</span>
+              <span className="sm:hidden">Visit</span>
+            </Button>
+            
+            <Button
+              variant="secondary"
+              className="flex items-center justify-center gap-2 w-full"
+              onClick={() => setShowAddTagModal(true)}
+            >
+              <Edit2 size={16} />
+              <span className="hidden sm:inline">Edit Tags</span>
+              <span className="sm:hidden">Tags</span>
+            </Button>
+            
+            <Button
+              variant="error"
+              className="flex items-center justify-center gap-2 w-full"
+              onClick={handleRemove}
+            >
+              <Trash2 size={16} />
+              <span className="hidden sm:inline">Remove</span>
+              <span className="sm:hidden">Remove</span>
+            </Button>
           </div>
         </div>
       </div>
