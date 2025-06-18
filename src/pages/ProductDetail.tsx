@@ -69,19 +69,6 @@ const ProductDetail = () => {
           <ArrowLeft size={18} className="mr-1" />
           <span>Back</span>
         </button>
-        
-        <div className="flex flex-col md:flex-row justify-between">
-          <div>
-            <motion.h1 
-              className="text-2xl font-medium text-primary-900"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              Product Details
-            </motion.h1>
-          </div>
-        </div>
       </div>
 
       {/* Product Header Section - Image, Title, Price, Tags, Description */}
