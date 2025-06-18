@@ -282,123 +282,121 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* Fixed Floating Actions Menu - Positioned to match main content area */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
+      {/* Fixed Floating Actions Menu - Positioned at bottom */}
+      <div className="fixed bottom-0 left-0 right-0 z-50">
         {/* Gradient overlay for depth */}
-        <div className="absolute inset-x-0 -top-4 h-4 bg-gradient-to-t from-white/80 to-transparent"></div>
+        <div className="absolute inset-x-0 -top-4 h-4 bg-gradient-to-t from-white/80 to-transparent pointer-events-none"></div>
         
-        {/* Outer container that matches the layout structure */}
-        <div className="min-h-screen flex flex-col">
-          <div className="flex flex-1 overflow-hidden">
-            {/* Sidebar spacer - matches the sidebar width */}
-            <div className="hidden md:block w-64 flex-shrink-0"></div>
-            
-            {/* Main content area container */}
-            <div className="flex-1 overflow-y-auto p-4 md:p-6">
-              <div className="max-w-7xl mx-auto">
-                <motion.div 
-                  className="bg-white border border-primary-200 rounded-t-lg shadow-elevated pointer-events-auto"
-                  initial={{ y: 100, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                >
-                  <div className="p-3">
-                    {/* Mobile: Scrollable horizontal layout */}
-                    <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 sm:hidden">
-                      <Button
-                        variant="accent"
-                        className="flex items-center gap-2 whitespace-nowrap flex-shrink-0"
-                        onClick={() => setShowListSelector(true)}
-                      >
-                        <Plus size={16} />
-                        <span>List</span>
-                      </Button>
-                      
-                      <Button
-                        variant={product.isPinned ? 'primary' : 'secondary'}
-                        className="flex items-center gap-2 whitespace-nowrap flex-shrink-0"
-                        onClick={() => togglePin(product.id)}
-                      >
-                        <Pin size={16} className={product.isPinned ? 'fill-white' : ''} />
-                        <span>Pin</span>
-                      </Button>
-                      
-                      <Button
-                        variant="secondary"
-                        className="flex items-center gap-2 whitespace-nowrap flex-shrink-0"
-                      >
-                        <Share2 size={16} />
-                        <span>Share</span>
-                      </Button>
-                      
-                      <Button
-                        variant="secondary"
-                        className="flex items-center gap-2 whitespace-nowrap flex-shrink-0"
-                        onClick={() => window.open(product.productUrl, '_blank', 'noopener,noreferrer')}
-                      >
-                        <ExternalLink size={16} />
-                        <span>Visit</span>
-                      </Button>
-                      
-                      <Button
-                        variant="error"
-                        className="flex items-center gap-2 whitespace-nowrap flex-shrink-0"
-                        onClick={handleRemove}
-                      >
-                        <Trash2 size={16} />
-                        <span>Remove</span>
-                      </Button>
-                    </div>
-
-                    {/* Desktop: Grid layout */}
-                    <div className="hidden sm:grid grid-cols-5 gap-3">
-                      <Button
-                        variant="accent"
-                        className="flex items-center justify-center gap-2 w-full"
-                        onClick={() => setShowListSelector(true)}
-                      >
-                        <Plus size={16} />
-                        <span>Manage List</span>
-                      </Button>
-                      
-                      <Button
-                        variant={product.isPinned ? 'primary' : 'secondary'}
-                        className="flex items-center justify-center gap-2 w-full"
-                        onClick={() => togglePin(product.id)}
-                      >
-                        <Pin size={16} className={product.isPinned ? 'fill-white' : ''} />
-                        <span>{product.isPinned ? 'Pinned' : 'Pin'}</span>
-                      </Button>
-                      
-                      <Button
-                        variant="secondary"
-                        className="flex items-center justify-center gap-2 w-full"
-                      >
-                        <Share2 size={16} />
-                        <span>Share</span>
-                      </Button>
-                      
-                      <Button
-                        variant="secondary"
-                        className="flex items-center justify-center gap-2 w-full"
-                        onClick={() => window.open(product.productUrl, '_blank', 'noopener,noreferrer')}
-                      >
-                        <ExternalLink size={16} />
-                        <span>Visit</span>
-                      </Button>
-                      
-                      <Button
-                        variant="error"
-                        className="flex items-center justify-center gap-2 w-full"
-                        onClick={handleRemove}
-                      >
-                        <Trash2 size={16} />
-                        <span>Remove</span>
-                      </Button>
-                    </div>
+        {/* Layout container that matches the page structure */}
+        <div className="flex">
+          {/* Sidebar spacer - matches the sidebar width */}
+          <div className="hidden md:block w-64 flex-shrink-0"></div>
+          
+          {/* Main content area container */}
+          <div className="flex-1 p-4 md:p-6">
+            <div className="max-w-7xl mx-auto">
+              <motion.div 
+                className="bg-white border border-primary-200 rounded-t-lg shadow-elevated"
+                initial={{ y: 100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                <div className="p-3">
+                  {/* Mobile: Scrollable horizontal layout */}
+                  <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 sm:hidden">
+                    <Button
+                      variant="accent"
+                      className="flex items-center gap-2 whitespace-nowrap flex-shrink-0"
+                      onClick={() => setShowListSelector(true)}
+                    >
+                      <Plus size={16} />
+                      <span>List</span>
+                    </Button>
+                    
+                    <Button
+                      variant={product.isPinned ? 'primary' : 'secondary'}
+                      className="flex items-center gap-2 whitespace-nowrap flex-shrink-0"
+                      onClick={() => togglePin(product.id)}
+                    >
+                      <Pin size={16} className={product.isPinned ? 'fill-white' : ''} />
+                      <span>Pin</span>
+                    </Button>
+                    
+                    <Button
+                      variant="secondary"
+                      className="flex items-center gap-2 whitespace-nowrap flex-shrink-0"
+                    >
+                      <Share2 size={16} />
+                      <span>Share</span>
+                    </Button>
+                    
+                    <Button
+                      variant="secondary"
+                      className="flex items-center gap-2 whitespace-nowrap flex-shrink-0"
+                      onClick={() => window.open(product.productUrl, '_blank', 'noopener,noreferrer')}
+                    >
+                      <ExternalLink size={16} />
+                      <span>Visit</span>
+                    </Button>
+                    
+                    <Button
+                      variant="error"
+                      className="flex items-center gap-2 whitespace-nowrap flex-shrink-0"
+                      onClick={handleRemove}
+                    >
+                      <Trash2 size={16} />
+                      <span>Remove</span>
+                    </Button>
                   </div>
-                </motion.div>
-              </div>
+
+                  {/* Desktop: Grid layout */}
+                  <div className="hidden sm:grid grid-cols-5 gap-3">
+                    <Button
+                      variant="accent"
+                      className="flex items-center justify-center gap-2 w-full"
+                      onClick={() => setShowListSelector(true)}
+                    >
+                      <Plus size={16} />
+                      <span>Manage List</span>
+                    </Button>
+                    
+                    <Button
+                      variant={product.isPinned ? 'primary' : 'secondary'}
+                      className="flex items-center justify-center gap-2 w-full"
+                      onClick={() => togglePin(product.id)}
+                    >
+                      <Pin size={16} className={product.isPinned ? 'fill-white' : ''} />
+                      <span>{product.isPinned ? 'Pinned' : 'Pin'}</span>
+                    </Button>
+                    
+                    <Button
+                      variant="secondary"
+                      className="flex items-center justify-center gap-2 w-full"
+                    >
+                      <Share2 size={16} />
+                      <span>Share</span>
+                    </Button>
+                    
+                    <Button
+                      variant="secondary"
+                      className="flex items-center justify-center gap-2 w-full"
+                      onClick={() => window.open(product.productUrl, '_blank', 'noopener,noreferrer')}
+                    >
+                      <ExternalLink size={16} />
+                      <span>Visit</span>
+                    </Button>
+                    
+                    <Button
+                      variant="error"
+                      className="flex items-center justify-center gap-2 w-full"
+                      onClick={handleRemove}
+                    >
+                      <Trash2 size={16} />
+                      <span>Remove</span>
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
             </div>
           </div>
         </div>
