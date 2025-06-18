@@ -326,7 +326,7 @@ const ProductDetail = () => {
                   
                   <Button
                     variant="error"
-                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
+                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-10 h-12 p-0"
                     onClick={handleRemove}
                     title="Remove"
                   >
@@ -373,11 +373,11 @@ const ProductDetail = () => {
                   
                   <Button
                     variant="error"
-                    className="flex items-center justify-center gap-2 w-full"
+                    className="flex items-center justify-center w-12 h-9"
                     onClick={handleRemove}
+                    title="Remove"
                   >
                     <Trash2 size={16} />
-                    <span>Remove</span>
                   </Button>
                 </div>
               </div>
