@@ -15,16 +15,36 @@ const AddTagModal = ({ productId, currentTags, onClose }: AddTagModalProps) => {
   const [tagInput, setTagInput] = useState('');
   const { updateProduct, isLoading } = useProductStore();
 
-  const handleAddTag = () => {
+  const handleAddTag = async () => {
     const trimmedTag = tagInput.trim();
     if (trimmedTag && !tags.includes(trimmedTag)) {
-      setTags([...tags, trimmedTag]);
+      const newTags = [...tags, trimmedTag];
+      setTags(newTags);
       setTagInput('');
+      
+      // Immediately persist the change
+      try {
+        await updateProduct(productId, { tags: newTags });
+      } catch (error) {
+        console.error('Error adding tag:', error);
+        // Revert on error
+        setTags(tags);
+      }
     }
   };
 
-  const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
+  const handleRemoveTag = async (tagToRemove: string) => {
+    const newTags = tags.filter(tag => tag !== tagToRemove);
+    setTags(newTags);
+    
+    // Immediately persist the change
+    try {
+      await updateProduct(productId, { tags: newTags });
+    } catch (error) {
+      console.error('Error removing tag:', error);
+      // Revert on error
+      setTags(tags);
+    }
   };
 
   const handleTagInputKeyPress = (e: React.KeyboardEvent) => {
@@ -33,20 +53,9 @@ const AddTagModal = ({ productId, currentTags, onClose }: AddTagModalProps) => {
       handleAddTag();
     } else if (e.key === 'Backspace' && !tagInput && tags.length > 0) {
       // Remove last tag if input is empty and backspace is pressed
-      setTags(tags.slice(0, -1));
+      handleRemoveTag(tags[tags.length - 1]);
     }
   };
-
-  const handleSave = async () => {
-    try {
-      await updateProduct(productId, { tags });
-      onClose();
-    } catch (error) {
-      console.error('Error updating product tags:', error);
-    }
-  };
-
-  const hasChanges = JSON.stringify(tags.sort()) !== JSON.stringify(currentTags.sort());
 
   return (
     <Modal isOpen={true} onClose={onClose} title="Manage Tags">
@@ -62,13 +71,14 @@ const AddTagModal = ({ productId, currentTags, onClose }: AddTagModalProps) => {
               {tags.map((tag) => (
                 <span 
                   key={tag} 
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium bg-white text-primary-800 border border-primary-200 shadow-sm"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium bg-white text-primary-800 border border-primary-200 shadow-sm group"
                 >
                   {tag}
                   <button
                     type="button"
                     onClick={() => handleRemoveTag(tag)}
-                    className="text-primary-500 hover:text-primary-700 ml-1"
+                    className="text-primary-500 hover:text-primary-700 ml-1 opacity-70 group-hover:opacity-100 transition-opacity"
+                    disabled={isLoading}
                   >
                     <X size={14} />
                   </button>
@@ -91,39 +101,33 @@ const AddTagModal = ({ productId, currentTags, onClose }: AddTagModalProps) => {
               onChange={(e) => setTagInput(e.target.value)}
               onKeyDown={handleTagInputKeyPress}
               autoFocus
+              disabled={isLoading}
             />
             <Button
               type="button"
               variant="secondary"
               size="sm"
               onClick={handleAddTag}
-              disabled={!tagInput.trim() || tags.includes(tagInput.trim())}
+              disabled={!tagInput.trim() || tags.includes(tagInput.trim()) || isLoading}
+              isLoading={isLoading}
             >
               <Plus size={16} />
             </Button>
           </div>
           
           <p className="mt-2 text-xs text-primary-500">
-            Press Enter or click + to add tags. Click × on tags to remove them.
+            Press Enter or click + to add tags. Click × on tags to remove them. Changes are saved automatically.
           </p>
         </div>
       </div>
       
-      <div className="mt-6 flex justify-end gap-3">
+      <div className="mt-6 flex justify-end">
         <Button 
           type="button" 
           variant="secondary"
           onClick={onClose}
         >
-          Cancel
-        </Button>
-        <Button 
-          type="button"
-          onClick={handleSave}
-          disabled={!hasChanges || isLoading}
-          isLoading={isLoading}
-        >
-          Save Changes
+          Done
         </Button>
       </div>
     </Modal>
