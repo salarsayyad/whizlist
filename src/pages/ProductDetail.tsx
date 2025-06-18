@@ -138,19 +138,14 @@ const ProductDetail = () => {
                   )}
                   
                   {productList && (
-                    <>
-                      <button
-                        onClick={handleListClick}
-                        className="flex items-center gap-1 hover:text-primary-800 transition-colors group"
-                      >
-                        <ListIcon size={14} className="group-hover:text-primary-700" />
-                        <span className="group-hover:underline">{productList.name}</span>
-                      </button>
-                      <ChevronRight size={14} className="mx-1 text-primary-400" />
-                    </>
+                    <button
+                      onClick={handleListClick}
+                      className="flex items-center gap-1 hover:text-primary-800 transition-colors group"
+                    >
+                      <ListIcon size={14} className="group-hover:text-primary-700" />
+                      <span className="group-hover:underline">{productList.name}</span>
+                    </button>
                   )}
-                  
-                  <span className="text-primary-500">Product</span>
                 </nav>
               </div>
             )}
