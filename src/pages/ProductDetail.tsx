@@ -161,27 +161,8 @@ const ProductDetail = () => {
           {/* Shelf Edge Effect */}
           <div className="absolute inset-x-0 -bottom-1 h-1 bg-primary-200 rounded-b-lg"></div>
           
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            {/* Left Side - List Info */}
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <ListIcon size={20} className="text-primary-600" />
-                <span className="font-medium text-primary-900">
-                  {productList ? `In "${productList.name}"` : 'Unassigned'}
-                </span>
-              </div>
-              
-              {productList && (
-                <button
-                  onClick={() => navigate(`/list/${productList.id}`)}
-                  className="text-xs px-2 py-1 bg-primary-100 text-primary-700 rounded-md hover:bg-primary-200 transition-colors"
-                >
-                  View List
-                </button>
-              )}
-            </div>
-
-            {/* Right Side - Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-end gap-4">
+            {/* Action Buttons */}
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 variant="accent"
