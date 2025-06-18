@@ -98,28 +98,11 @@ const ProductDetail = () => {
         </button>
       </div>
 
-      {/* Product Header Section - Image, Title, Price, Tags, Description */}
+      {/* Product Header Section - Image on Right, Content on Left */}
       <div className="card p-6 mb-6">
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* Product Image */}
-          <div className="lg:w-1/3 flex-shrink-0">
-            <div className="aspect-square rounded-lg overflow-hidden bg-primary-100">
-              {product.imageUrl ? (
-                <img 
-                  src={product.imageUrl} 
-                  alt={product.title} 
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-primary-500">
-                  <span>No image available</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Product Title, URL, Price, Tags, and Description */}
-          <div className="lg:w-2/3 flex flex-col justify-start">
+          {/* Left Side - Product Info */}
+          <div className="lg:w-2/3 flex flex-col">
             {/* Breadcrumb Navigation */}
             {(parentFolder || productList) && (
               <div className="mb-3">
@@ -151,10 +134,10 @@ const ProductDetail = () => {
             )}
 
             {/* Product Title */}
-            <h1 className="text-3xl font-bold text-primary-900 mb-2">{product.title}</h1>
+            <h1 className="text-3xl font-bold text-primary-900 mb-3">{product.title}</h1>
             
             {/* Product URL */}
-            <div className="mb-4">
+            <div className="mb-3">
               <a 
                 href={product.productUrl} 
                 target="_blank" 
@@ -171,7 +154,7 @@ const ProductDetail = () => {
             )}
             
             {/* Tags Section with Hover Delete */}
-            <div className="mb-4">
+            <div className="mb-6">
               <div className="flex flex-wrap gap-1">
                 {product.tags.map((tag) => (
                   <div
@@ -205,17 +188,35 @@ const ProductDetail = () => {
                 </button>
               </div>
             </div>
+          </div>
 
-            {/* Description */}
-            {product.description && (
-              <div>
-                <p className="text-primary-700 leading-relaxed">
-                  {product.description}
-                </p>
-              </div>
-            )}
+          {/* Right Side - Product Image */}
+          <div className="lg:w-1/3 flex-shrink-0">
+            <div className="aspect-square rounded-lg overflow-hidden bg-primary-100 sticky top-6">
+              {product.imageUrl ? (
+                <img 
+                  src={product.imageUrl} 
+                  alt={product.title} 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-primary-500">
+                  <span>No image available</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
+
+        {/* Description - Full Width Below */}
+        {product.description && (
+          <div className="mt-6 pt-6 border-t border-primary-200">
+            <h3 className="text-lg font-medium text-primary-900 mb-3">Description</h3>
+            <p className="text-primary-700 leading-relaxed">
+              {product.description}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Product Actions Shelf */}
