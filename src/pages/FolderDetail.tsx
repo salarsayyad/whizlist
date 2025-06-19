@@ -186,17 +186,12 @@ const FolderDetail = () => {
                         <h3 className="font-medium text-primary-900 line-clamp-1">{list.name}</h3>
                       </div>
                       
+                      {/* Description only - removed item count */}
                       {list.description && (
                         <p className="text-primary-600 text-sm mb-3 line-clamp-2 flex-1">
                           {list.description}
                         </p>
                       )}
-                      
-                      <div className="mt-auto">
-                        <div className="flex items-center justify-between text-sm text-primary-500">
-                          <span>{list.productCount || 0} item{(list.productCount || 0) === 1 ? '' : 's'}</span>
-                        </div>
-                      </div>
                     </div>
                     
                     <div className="px-6 py-3 bg-primary-50 border-t border-primary-100">
