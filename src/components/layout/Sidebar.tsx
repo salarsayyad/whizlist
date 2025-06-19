@@ -74,20 +74,22 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   
   return (
     <>
-      {/* Mobile backdrop */}
+      {/* Mobile backdrop - Higher z-index */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-primary-900/20 backdrop-blur-sm z-20 md:hidden"
+          className="fixed inset-0 bg-primary-900/20 backdrop-blur-sm z-40 md:hidden"
           onClick={onClose}
         ></div>
       )}
       
-      {/* Sidebar - Now fixed on desktop */}
+      {/* Sidebar - Highest z-index on mobile */}
       <aside 
         className={cn(
-          "fixed top-0 w-64 bg-white border-r border-primary-200 z-30 transition-transform duration-300 ease-in-out h-screen",
+          "fixed top-0 w-64 bg-white border-r border-primary-200 transition-transform duration-300 ease-in-out h-screen",
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
-          "flex flex-col"
+          "flex flex-col",
+          // Different z-index for mobile vs desktop
+          "z-50 md:z-30"
         )}
       >
         <div className="flex items-center justify-between px-4 py-3 md:hidden">

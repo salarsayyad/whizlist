@@ -275,8 +275,8 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* Fixed Floating Actions Menu - Positioned at bottom */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
+      {/* Fixed Floating Actions Menu - Lower z-index than mobile sidebar */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none">
         {/* Main content area container - positioned to match main content */}
         <div className="md:ml-64 p-4 md:p-6 pointer-events-auto">
           <div className="max-w-7xl mx-auto">
