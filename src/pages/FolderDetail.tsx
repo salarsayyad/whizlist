@@ -11,7 +11,6 @@ import CreateListModal from '../components/list/CreateListModal';
 import EditFolderModal from '../components/folder/EditFolderModal';
 import CommentSection from '../components/comment/CommentSection';
 import { motion } from 'framer-motion';
-import { formatDate } from '../lib/utils';
 
 const FolderDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -196,7 +195,6 @@ const FolderDetail = () => {
                       <div className="mt-auto">
                         <div className="flex items-center justify-between text-sm text-primary-500">
                           <span>{list.productCount || 0} item{(list.productCount || 0) === 1 ? '' : 's'}</span>
-                          <span>{formatDate(list.createdAt)}</span>
                         </div>
                       </div>
                     </div>
@@ -216,9 +214,8 @@ const FolderDetail = () => {
                             </>
                           )}
                         </div>
-                        <div className="flex items-center gap-1">
-                          <div className="w-2 h-2 bg-accent-500 rounded-full"></div>
-                          <span className="text-xs text-primary-500">Active</span>
+                        <div className="text-xs text-primary-500 font-medium">
+                          {list.productCount || 0} items
                         </div>
                       </div>
                     </div>
