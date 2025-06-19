@@ -65,7 +65,7 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
       }
 
       // Check description
-      if (product.description?.toLowerCase().includes(searchTerm)) {
+      if (product.description?.toLowerCase()?.includes(searchTerm)) {
         matchedIn.push('description');
         isMatch = true;
       }
@@ -116,7 +116,7 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
       }
 
       // Check description
-      if (list.description?.toLowerCase().includes(searchTerm)) {
+      if (list.description?.toLowerCase()?.includes(searchTerm)) {
         matchedIn.push('description');
         isMatch = true;
       }
@@ -145,7 +145,7 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
       }
 
       // Check description
-      if (folder.description?.toLowerCase().includes(searchTerm)) {
+      if (folder.description?.toLowerCase()?.includes(searchTerm)) {
         matchedIn.push('description');
         isMatch = true;
       }
