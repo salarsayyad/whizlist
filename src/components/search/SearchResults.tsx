@@ -70,8 +70,8 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
         isMatch = true;
       }
 
-      // Check tags - add null check
-      const productTags = product.tags || [];
+      // Check tags - ensure product.tags is always an array
+      const productTags = Array.isArray(product.tags) ? product.tags : [];
       const matchingTags = productTags.filter(tag => 
         tag.toLowerCase().includes(searchTerm)
       );
@@ -164,10 +164,10 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
       }
     });
 
-    // Search Tags (collect unique tags that match) - add null check
+    // Search Tags (collect unique tags that match) - ensure product.tags is always an array
     const allTags = new Set<string>();
     products.forEach(product => {
-      const productTags = product.tags || [];
+      const productTags = Array.isArray(product.tags) ? product.tags : [];
       productTags.forEach(tag => {
         if (tag.toLowerCase().includes(searchTerm)) {
           allTags.add(tag);
@@ -177,7 +177,7 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
 
     Array.from(allTags).forEach(tag => {
       const productsWithTag = products.filter(product => {
-        const productTags = product.tags || [];
+        const productTags = Array.isArray(product.tags) ? product.tags : [];
         return productTags.some(t => t.toLowerCase() === tag.toLowerCase());
       });
 
