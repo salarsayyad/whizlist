@@ -54,84 +54,86 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
   
   return (
     <header className="bg-white shadow-sm border-b border-primary-200 sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
-        {/* Left Section - Logo and Mobile Menu */}
-        <div className="flex items-center">
-          <button 
-            onClick={onMenuToggle}
-            className="p-2 rounded-md text-primary-500 hover:text-primary-700 hover:bg-primary-100 focus:outline-none md:hidden"
-          >
-            <Menu size={20} />
-          </button>
-          
-          <div className="flex items-center cursor-pointer" onClick={handleLogoClick}>
-            <Zap size={24} className="text-accent-500" />
-            <span className="ml-2 text-xl font-medium text-primary-800">Whizlist</span>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16">
+        <div className="flex items-center justify-between h-full w-full">
+          {/* Left Section - Logo and Mobile Menu */}
+          <div className="flex items-center flex-shrink-0">
+            <button 
+              onClick={onMenuToggle}
+              className="p-2 rounded-md text-primary-500 hover:text-primary-700 hover:bg-primary-100 focus:outline-none md:hidden"
+            >
+              <Menu size={20} />
+            </button>
+            
+            <div className="flex items-center cursor-pointer" onClick={handleLogoClick}>
+              <Zap size={24} className="text-accent-500" />
+              <span className="ml-2 text-xl font-medium text-primary-800">Whizlist</span>
+            </div>
           </div>
-        </div>
-        
-        {/* Center Section - Search Bar and Add Product (Desktop Only) */}
-        <div className="hidden md:flex items-center gap-4 flex-1 justify-center max-w-2xl mx-8">
-          <div className="flex-1 max-w-lg relative" ref={searchRef}>
-            <form onSubmit={handleSearch} className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search size={16} className="text-primary-400" />
-              </div>
-              <input
-                type="text"
-                placeholder="Search products, lists, folders, and tags..."
-                className="input pl-10 pr-10 w-full"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={clearSearch}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-primary-400 hover:text-primary-600"
-                >
-                  <X size={16} />
-                </button>
-              )}
-            </form>
+          
+          {/* Center Section - Search Bar and Add Product (Desktop Only) */}
+          <div className="hidden md:flex items-center gap-4 flex-1 justify-center px-8">
+            <div className="flex-1 max-w-2xl relative" ref={searchRef}>
+              <form onSubmit={handleSearch} className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search size={16} className="text-primary-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search products, lists, folders, and tags..."
+                  className="input pl-10 pr-10 w-full"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={clearSearch}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-primary-400 hover:text-primary-600"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </form>
 
-            {/* Search Results Dropdown */}
-            {showSearchResults && (
-              <SearchResults 
-                query={searchQuery} 
-                onResultClick={handleSearchResultClick}
-              />
-            )}
+              {/* Search Results Dropdown */}
+              {showSearchResults && (
+                <SearchResults 
+                  query={searchQuery} 
+                  onResultClick={handleSearchResultClick}
+                />
+              )}
+            </div>
+            
+            <button 
+              className="btn-accent flex items-center gap-2 flex-shrink-0"
+              onClick={() => setShowAddModal(true)}
+            >
+              <Plus size={16} />
+              <span>Add Product</span>
+            </button>
           </div>
           
-          <button 
-            className="btn-accent flex items-center gap-2 flex-shrink-0"
-            onClick={() => setShowAddModal(true)}
-          >
-            <Plus size={16} />
-            <span>Add Product</span>
-          </button>
-        </div>
-        
-        {/* Right Section - Notifications and Profile */}
-        <div className="flex items-center space-x-4">
-          <button className="p-2 rounded-md text-primary-500 hover:text-primary-700 hover:bg-primary-100 relative">
-            <Bell size={20} />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-accent-500 rounded-full"></span>
-          </button>
-          
-          <div className="h-8 w-8 rounded-full bg-primary-200 flex items-center justify-center text-primary-700 font-medium">
-            {user?.user_metadata?.avatar_url ? (
-              <img
-                src={user.user_metadata.avatar_url}
-                alt={user.user_metadata?.full_name || 'User'}
-                className="w-8 h-8 rounded-full"
-              />
-            ) : (
-              <span className="text-sm">
-                {getInitials(user?.user_metadata?.full_name)}
-              </span>
-            )}
+          {/* Right Section - Notifications and Profile */}
+          <div className="flex items-center space-x-4 flex-shrink-0">
+            <button className="p-2 rounded-md text-primary-500 hover:text-primary-700 hover:bg-primary-100 relative">
+              <Bell size={20} />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-accent-500 rounded-full"></span>
+            </button>
+            
+            <div className="h-8 w-8 rounded-full bg-primary-200 flex items-center justify-center text-primary-700 font-medium">
+              {user?.user_metadata?.avatar_url ? (
+                <img
+                  src={user.user_metadata.avatar_url}
+                  alt={user.user_metadata?.full_name || 'User'}
+                  className="w-8 h-8 rounded-full"
+                />
+              ) : (
+                <span className="text-sm">
+                  {getInitials(user?.user_metadata?.full_name)}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>
