@@ -175,11 +175,16 @@ const FolderDetail = () => {
                     onClick={() => handleListClick(list.id)}
                   >
                     <div className="p-6 flex-1 flex flex-col">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <ListIcon size={20} className="text-primary-600 flex-shrink-0" />
-                          <h3 className="font-medium text-primary-900 line-clamp-1">{list.name}</h3>
-                        </div>
+                      {/* LIST indicator above list name */}
+                      <div className="mb-2">
+                        <span className="inline-block text-xs font-medium text-primary-500 uppercase tracking-wide">
+                          LIST
+                        </span>
+                      </div>
+                      
+                      {/* List name without icon */}
+                      <div className="mb-3">
+                        <h3 className="font-medium text-primary-900 line-clamp-1">{list.name}</h3>
                       </div>
                       
                       {list.description && (
