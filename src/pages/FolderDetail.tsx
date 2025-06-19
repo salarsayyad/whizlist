@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Edit2, Share2, Users, Trash2, 
-  Lock, Globe, MoreHorizontal, Plus, List as ListIcon, FolderOpen 
+  Lock, Globe, Plus, List as ListIcon, FolderOpen 
 } from 'lucide-react';
 import { useFolderStore } from '../store/folderStore';
 import { useListStore } from '../store/listStore';
@@ -129,21 +129,7 @@ const FolderDetail = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           <div>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-medium text-primary-900">
-                Lists ({folderLists.length})
-              </h2>
-              
-              <div className="flex items-center gap-3">
-                <Button 
-                  variant="secondary"
-                  className="flex items-center gap-1"
-                >
-                  <MoreHorizontal size={16} />
-                  <span>More</span>
-                </Button>
-              </div>
-            </div>
+            {/* Removed the header with Lists count and More button */}
             
             {folderLists.length === 0 ? (
               <div className="text-center py-16 card p-8">
