@@ -128,7 +128,7 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
           type: 'list',
           title: list.name,
           description: list.description || undefined,
-          itemCount: list.products.length,
+          itemCount: list.productCount || 0,
           matchedIn
         });
       }
