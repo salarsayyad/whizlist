@@ -82,10 +82,10 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         ></div>
       )}
       
-      {/* Sidebar */}
+      {/* Sidebar - Now fixed on desktop */}
       <aside 
         className={cn(
-          "fixed md:sticky top-0 w-64 bg-white border-r border-primary-200 z-30 transition-transform duration-300 ease-in-out h-screen md:h-[calc(100vh-4rem)]",
+          "fixed top-0 w-64 bg-white border-r border-primary-200 z-30 transition-transform duration-300 ease-in-out h-screen",
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
           "flex flex-col"
         )}
@@ -99,6 +99,9 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             <X size={20} />
           </button>
         </div>
+        
+        {/* Add top padding on desktop to account for fixed header */}
+        <div className="hidden md:block h-16 flex-shrink-0"></div>
         
         <nav className="flex-1 overflow-y-auto py-4 px-3">
           <ul className="space-y-1">

@@ -53,7 +53,7 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
   };
   
   return (
-    <header className="bg-white shadow-sm border-b border-primary-200 sticky top-0 z-10">
+    <header className="bg-white shadow-sm border-b border-primary-200 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
         <div className="flex items-center">
           <button 

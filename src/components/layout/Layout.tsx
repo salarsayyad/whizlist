@@ -13,7 +13,8 @@ const Layout = () => {
       <div className="flex flex-1 overflow-hidden">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+        {/* Main content with left margin to account for fixed sidebar on desktop */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 md:ml-64">
           <div className="max-w-7xl mx-auto">
             <Outlet />
           </div>
