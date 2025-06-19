@@ -52,12 +52,16 @@ const ProductDetail = () => {
         const breadcrumbRect = breadcrumbRef.current.getBoundingClientRect();
         const headerHeight = 64; // Height of the header (4rem = 64px)
         
-        // Show sticky breadcrumb when original breadcrumb is above the header
-        setIsSticky(breadcrumbRect.bottom < headerHeight);
+        // Show sticky breadcrumb when the original breadcrumb has completely scrolled past the header
+        // We need to check if the bottom of the breadcrumb container is above the header
+        setIsSticky(breadcrumbRect.bottom <= headerHeight);
       }
     };
 
     window.addEventListener('scroll', handleScroll);
+    // Call once to set initial state
+    handleScroll();
+    
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
   
