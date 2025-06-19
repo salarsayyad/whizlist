@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Share2, Pin, ExternalLink, Trash2, Edit2, 
@@ -24,10 +24,6 @@ const ProductDetail = () => {
   
   const [showListSelector, setShowListSelector] = useState(false);
   const [showAddTagModal, setShowAddTagModal] = useState(false);
-  const [isSticky, setIsSticky] = useState(false);
-  
-  const breadcrumbRef = useRef<HTMLDivElement>(null);
-  const stickyBreadcrumbRef = useRef<HTMLDivElement>(null);
   
   // Get the list that contains this product
   const productList = lists.find(list => list.id === product?.listId);
@@ -44,22 +40,6 @@ const ProductDetail = () => {
       });
     }
   }, [productList?.folderId, folders.length]);
-
-  // Handle scroll to show/hide sticky breadcrumb
-  useEffect(() => {
-    const handleScroll = () => {
-      if (breadcrumbRef.current) {
-        const breadcrumbRect = breadcrumbRef.current.getBoundingClientRect();
-        const headerHeight = 64; // Height of the header (4rem = 64px)
-        
-        // Show sticky breadcrumb when original breadcrumb is above the header
-        setIsSticky(breadcrumbRect.bottom < headerHeight);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
   
   if (!product) {
     return (
@@ -105,62 +85,39 @@ const ProductDetail = () => {
       navigate(`/list/${productList.id}`);
     }
   };
-
-  const BreadcrumbContent = () => (
-    <nav className="flex items-center text-sm text-primary-600">
-      {parentFolder && (
-        <>
-          <button
-            onClick={handleFolderClick}
-            className="flex items-center gap-1 hover:text-primary-800 transition-colors group"
-          >
-            <FolderOpen size={14} className="group-hover:text-primary-700" />
-            <span className="group-hover:underline">{parentFolder.name}</span>
-          </button>
-          
-          {productList && (
-            <ChevronRight size={14} className="mx-2 text-primary-400" />
-          )}
-        </>
-      )}
-      
-      {productList && (
-        <button
-          onClick={handleListClick}
-          className="flex items-center gap-1 hover:text-primary-800 transition-colors group"
-        >
-          <ListIcon size={14} className="group-hover:text-primary-700" />
-          <span className="group-hover:underline">{productList.name}</span>
-        </button>
-      )}
-    </nav>
-  );
   
   return (
     <div className="pb-24"> {/* Add bottom padding to prevent content from being hidden behind floating menu */}
-      {/* Original Breadcrumb Navigation - Only show if there's a folder or list */}
+      {/* Breadcrumb Navigation - Only show if there's a folder or list */}
       {(parentFolder || productList) && (
-        <div ref={breadcrumbRef} className="mb-6">
-          <div className="mb-4">
-            <BreadcrumbContent />
-          </div>
-        </div>
-      )}
-
-      {/* Sticky Breadcrumb Navigation */}
-      {(parentFolder || productList) && (
-        <div 
-          ref={stickyBreadcrumbRef}
-          className={`fixed top-16 left-0 right-0 z-40 bg-white border-b border-primary-200 shadow-sm transition-transform duration-300 ${
-            isSticky ? 'translate-y-0' : '-translate-y-full'
-          }`}
-        >
-          {/* Account for sidebar on desktop */}
-          <div className="md:ml-64 px-4 md:px-6 py-3">
-            <div className="max-w-7xl mx-auto">
-              <BreadcrumbContent />
-            </div>
-          </div>
+        <div className="mb-6">
+          <nav className="flex items-center text-sm text-primary-600 mb-4">
+            {parentFolder && (
+              <>
+                <button
+                  onClick={handleFolderClick}
+                  className="flex items-center gap-1 hover:text-primary-800 transition-colors group"
+                >
+                  <FolderOpen size={14} className="group-hover:text-primary-700" />
+                  <span className="group-hover:underline">{parentFolder.name}</span>
+                </button>
+                
+                {productList && (
+                  <ChevronRight size={14} className="mx-2 text-primary-400" />
+                )}
+              </>
+            )}
+            
+            {productList && (
+              <button
+                onClick={handleListClick}
+                className="flex items-center gap-1 hover:text-primary-800 transition-colors group"
+              >
+                <ListIcon size={14} className="group-hover:text-primary-700" />
+                <span className="group-hover:underline">{productList.name}</span>
+              </button>
+            )}
+          </nav>
         </div>
       )}
 
