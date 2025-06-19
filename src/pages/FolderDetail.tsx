@@ -180,19 +180,6 @@ const FolderDetail = () => {
                           <ListIcon size={20} className="text-primary-600 flex-shrink-0" />
                           <h3 className="font-medium text-primary-900 line-clamp-1">{list.name}</h3>
                         </div>
-                        <div className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-100 text-primary-700 flex-shrink-0">
-                          {list.isPublic ? (
-                            <>
-                              <Globe size={10} />
-                              <span>Public</span>
-                            </>
-                          ) : (
-                            <>
-                              <Lock size={10} />
-                              <span>Private</span>
-                            </>
-                          )}
-                        </div>
                       </div>
                       
                       {list.description && (
@@ -211,9 +198,19 @@ const FolderDetail = () => {
                     
                     <div className="px-6 py-3 bg-primary-50 border-t border-primary-100">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-primary-600 font-medium">
-                          {list.isPublic ? 'Public List' : 'Private List'}
-                        </span>
+                        <div className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-100 text-primary-700">
+                          {list.isPublic ? (
+                            <>
+                              <Globe size={10} />
+                              <span>Public</span>
+                            </>
+                          ) : (
+                            <>
+                              <Lock size={10} />
+                              <span>Private</span>
+                            </>
+                          )}
+                        </div>
                         <div className="flex items-center gap-1">
                           <div className="w-2 h-2 bg-accent-500 rounded-full"></div>
                           <span className="text-xs text-primary-500">Active</span>
