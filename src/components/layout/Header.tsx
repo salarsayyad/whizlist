@@ -54,9 +54,9 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
   
   return (
     <header className="bg-white shadow-sm border-b border-primary-200 sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
+      <div className="w-full px-4 sm:px-6 flex items-center h-16">
         {/* Left Section - Logo and Mobile Menu */}
-        <div className="flex items-center">
+        <div className="flex items-center flex-shrink-0">
           <button 
             onClick={onMenuToggle}
             className="p-2 rounded-md text-primary-500 hover:text-primary-700 hover:bg-primary-100 focus:outline-none md:hidden"
@@ -71,8 +71,8 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
         </div>
         
         {/* Center Section - Search Bar and Add Product (Desktop Only) */}
-        <div className="hidden md:flex items-center gap-4 flex-1 justify-center max-w-2xl mx-8">
-          <div className="flex-1 max-w-lg relative" ref={searchRef}>
+        <div className="hidden md:flex items-center gap-4 flex-1 justify-center px-8">
+          <div className="w-full max-w-lg relative" ref={searchRef}>
             <form onSubmit={handleSearch} className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search size={16} className="text-primary-400" />
@@ -114,7 +114,7 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
         </div>
         
         {/* Right Section - Notifications and Profile */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 flex-shrink-0">
           <button className="p-2 rounded-md text-primary-500 hover:text-primary-700 hover:bg-primary-100 relative">
             <Bell size={20} />
             <span className="absolute top-1 right-1 w-2 h-2 bg-accent-500 rounded-full"></span>
