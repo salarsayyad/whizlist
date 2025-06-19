@@ -70,8 +70,9 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
         isMatch = true;
       }
 
-      // Check tags
-      const matchingTags = product.tags.filter(tag => 
+      // Check tags - add null check
+      const productTags = product.tags || [];
+      const matchingTags = productTags.filter(tag => 
         tag.toLowerCase().includes(searchTerm)
       );
       if (matchingTags.length > 0) {
@@ -163,10 +164,11 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
       }
     });
 
-    // Search Tags (collect unique tags that match)
+    // Search Tags (collect unique tags that match) - add null check
     const allTags = new Set<string>();
     products.forEach(product => {
-      product.tags.forEach(tag => {
+      const productTags = product.tags || [];
+      productTags.forEach(tag => {
         if (tag.toLowerCase().includes(searchTerm)) {
           allTags.add(tag);
         }
@@ -174,9 +176,10 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
     });
 
     Array.from(allTags).forEach(tag => {
-      const productsWithTag = products.filter(product => 
-        product.tags.some(t => t.toLowerCase() === tag.toLowerCase())
-      );
+      const productsWithTag = products.filter(product => {
+        const productTags = product.tags || [];
+        return productTags.some(t => t.toLowerCase() === tag.toLowerCase());
+      });
 
       results.tags.push({
         id: tag,
