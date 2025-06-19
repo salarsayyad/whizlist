@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Edit2, Share2, Users, Pin, Trash2, 
-  Lock, Globe, MoreHorizontal, Grid, List as ListIcon, FolderOpen, Plus 
+  Lock, Globe, Grid, List as ListIcon, FolderOpen, Plus 
 } from 'lucide-react';
 import { useListStore } from '../store/listStore';
 import { useFolderStore } from '../store/folderStore';
@@ -139,36 +139,23 @@ const ListDetail = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           <div>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-medium text-primary-900">
-                Products ({products.length})
-              </h2>
-              
-              <div className="flex items-center gap-3">
-                <div className="flex bg-primary-100 rounded-md p-1">
-                  <button
-                    className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-white shadow-soft' : 'text-primary-600 hover:text-primary-800'}`}
-                    onClick={() => setViewMode('grid')}
-                    aria-label="Grid view"
-                  >
-                    <Grid size={18} />
-                  </button>
-                  <button
-                    className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-white shadow-soft' : 'text-primary-600 hover:text-primary-800'}`}
-                    onClick={() => setViewMode('list')}
-                    aria-label="List view"
-                  >
-                    <ListIcon size={18} />
-                  </button>
-                </div>
-                
-                <Button 
-                  variant="secondary"
-                  className="flex items-center gap-1"
+            {/* Removed the header with Products count and More button */}
+            <div className="flex items-center justify-end mb-6">
+              <div className="flex bg-primary-100 rounded-md p-1">
+                <button
+                  className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-white shadow-soft' : 'text-primary-600 hover:text-primary-800'}`}
+                  onClick={() => setViewMode('grid')}
+                  aria-label="Grid view"
                 >
-                  <MoreHorizontal size={16} />
-                  <span>More</span>
-                </Button>
+                  <Grid size={18} />
+                </button>
+                <button
+                  className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-white shadow-soft' : 'text-primary-600 hover:text-primary-800'}`}
+                  onClick={() => setViewMode('list')}
+                  aria-label="List view"
+                >
+                  <ListIcon size={18} />
+                </button>
               </div>
             </div>
             
