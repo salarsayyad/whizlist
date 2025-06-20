@@ -35,10 +35,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     );
   };
 
-  const handleFolderClick = (folderId: string, e: React.MouseEvent) => {
-    // Always toggle the folder expansion
-    toggleFolder(folderId);
-    
+  const handleFolderClick = (folderId: string) => {
     // Navigate to the folder page
     navigate(`/folder/${folderId}`);
     
@@ -46,6 +43,13 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     if (window.innerWidth < 768) {
       onClose();
     }
+  };
+
+  const handleChevronClick = (e: React.MouseEvent, folderId: string) => {
+    // Stop event propagation to prevent folder navigation
+    e.stopPropagation();
+    // Only toggle the folder expansion
+    toggleFolder(folderId);
   };
   
   const getFolderLists = (folderId: string) => {
@@ -204,18 +208,23 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                 <li key={folder.id}>
                   <button 
                     className="nav-link w-full"
-                    onClick={(e) => handleFolderClick(folder.id, e)}
+                    onClick={() => handleFolderClick(folder.id)}
                   >
                     <FolderOpen size={18} />
                     <span className="flex-1 text-left">{folder.name}</span>
                     <span className="text-xs text-primary-500 mr-2">
                       {getFolderLists(folder.id).length}
                     </span>
-                    {expandedFolders.includes(folder.id) ? (
-                      <ChevronDown size={16} />
-                    ) : (
-                      <ChevronRight size={16} />
-                    )}
+                    <button
+                      onClick={(e) => handleChevronClick(e, folder.id)}
+                      className="p-1 hover:bg-primary-200 rounded transition-colors"
+                    >
+                      {expandedFolders.includes(folder.id) ? (
+                        <ChevronDown size={16} />
+                      ) : (
+                        <ChevronRight size={16} />
+                      )}
+                    </button>
                   </button>
                   
                   {expandedFolders.includes(folder.id) && (
