@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import Modal from '../ui/Modal';
 import { extractProductDetails } from '../../lib/utils';
@@ -30,6 +30,9 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const [newlyCreatedListId, setNewlyCreatedListId] = useState<string | null>(null);
   
+  // Ref for auto-focusing the URL input
+  const urlInputRef = useRef<HTMLInputElement>(null);
+  
   const { createProduct, products } = useProductStore();
   const { lists, fetchLists, createList } = useListStore();
   const { folders, fetchFolders } = useFolderStore();
@@ -37,6 +40,11 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
   useEffect(() => {
     fetchLists();
     fetchFolders();
+    
+    // Auto-focus the URL input when the modal opens
+    if (urlInputRef.current) {
+      urlInputRef.current.focus();
+    }
   }, []);
 
   // Get all existing tags from products
@@ -351,6 +359,7 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
                 <Link2 size={16} className="text-primary-400" />
               </div>
               <input
+                ref={urlInputRef}
                 type="text"
                 id="url"
                 placeholder="https://www.example.com/product"
