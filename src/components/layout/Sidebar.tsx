@@ -1,10 +1,11 @@
-import { X, Grid, List as ListIcon, FolderOpen, Share2, Star, Trash2, Settings, Plus, ChevronDown, ChevronRight } from 'lucide-react';
+import { X, Grid, List as ListIcon, FolderOpen, Share2, Star, Trash2, Settings, Plus, ChevronDown, ChevronRight, Package } from 'lucide-react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { useState, useEffect } from 'react';
 import { Menu } from '@headlessui/react';
 import { useFolderStore } from '../../store/folderStore';
 import { useListStore } from '../../store/listStore';
+import { useProductStore } from '../../store/productStore';
 import CreateFolderModal from '../folder/CreateFolderModal';
 import CreateListModal from '../list/CreateListModal';
 
@@ -19,6 +20,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
   const { folders, fetchFolders } = useFolderStore();
   const { lists, fetchLists } = useListStore();
+  const { products, fetchProducts } = useProductStore();
   const [showCreateFolder, setShowCreateFolder] = useState(false);
   const [showCreateList, setShowCreateList] = useState(false);
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
@@ -26,6 +28,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   useEffect(() => {
     fetchFolders();
     fetchLists();
+    fetchProducts();
   }, []);
   
   const toggleFolder = (folderId: string) => {
@@ -73,6 +76,11 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const getUnorganizedLists = () => {
     return lists.filter(list => !list.folderId);
   };
+
+  // Get count of unassigned products (products without a list_id)
+  const getUnassignedProductCount = () => {
+    return products.filter(product => !product.listId).length;
+  };
   
   const handleCreateFolder = () => {
     setShowCreateFolder(true);
@@ -88,6 +96,11 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     if (window.innerWidth < 768) {
       onClose();
     }
+  };
+
+  const handleUnassignedClick = () => {
+    navigate('/unassigned');
+    handleNavLinkClick();
   };
   
   return (
@@ -292,6 +305,23 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                   </NavLink>
                 </li>
               ))}
+
+              {/* Unassigned Products - Always at the bottom */}
+              <li className="pt-2 border-t border-primary-200">
+                <button
+                  className={cn(
+                    "nav-link w-full",
+                    location.pathname === '/unassigned' && "nav-link-active"
+                  )}
+                  onClick={handleUnassignedClick}
+                >
+                  <Package size={18} />
+                  <span className="flex-1 text-left">Unassigned</span>
+                  <span className="text-xs text-primary-500">
+                    {getUnassignedProductCount()}
+                  </span>
+                </button>
+              </li>
             </ul>
           </div>
         </nav>

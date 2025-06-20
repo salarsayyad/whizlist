@@ -5,6 +5,7 @@ import ProductDetail from './pages/ProductDetail';
 import ListDetail from './pages/ListDetail';
 import FolderDetail from './pages/FolderDetail';
 import TagDetail from './pages/TagDetail';
+import Unassigned from './pages/Unassigned';
 import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
 import Landing from './pages/Landing';
@@ -29,6 +30,7 @@ function App() {
           <Route path="/list/:id" element={<ListDetail />} />
           <Route path="/folder/:id" element={<FolderDetail />} />
           <Route path="/tag/:tag" element={<TagDetail />} />
+          <Route path="/unassigned" element={<Unassigned />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
       </Route>
