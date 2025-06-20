@@ -19,6 +19,7 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedListIds, setSelectedListIds] = useState<string[]>(currentListId ? [currentListId] : []);
@@ -62,6 +63,11 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
       .slice(0, 5); // Limit to 5 suggestions
   }, [tagInput, existingTags, tags]);
 
+  // Reset selected suggestion index when suggestions change
+  useEffect(() => {
+    setSelectedSuggestionIndex(-1);
+  }, [tagSuggestions]);
+
   // Filter lists and folders based on search query
   const filteredLists = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -100,6 +106,7 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
       setTags([...tags, trimmedTag]);
       setTagInput('');
       setShowTagSuggestions(false);
+      setSelectedSuggestionIndex(-1);
     }
   };
 
@@ -111,9 +118,34 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
     const value = e.target.value;
     setTagInput(value);
     setShowTagSuggestions(value.trim().length > 0);
+    setSelectedSuggestionIndex(-1);
   };
 
   const handleTagInputKeyPress = (e: React.KeyboardEvent) => {
+    if (showTagSuggestions && tagSuggestions.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedSuggestionIndex(prev => 
+          prev < tagSuggestions.length - 1 ? prev + 1 : 0
+        );
+        return;
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedSuggestionIndex(prev => 
+          prev > 0 ? prev - 1 : tagSuggestions.length - 1
+        );
+        return;
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (selectedSuggestionIndex >= 0 && selectedSuggestionIndex < tagSuggestions.length) {
+          handleAddTag(tagSuggestions[selectedSuggestionIndex]);
+        } else {
+          handleAddTag();
+        }
+        return;
+      }
+    }
+
     if (e.key === 'Enter') {
       e.preventDefault();
       handleAddTag();
@@ -121,6 +153,7 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
       setTags(tags.slice(0, -1));
     } else if (e.key === 'Escape') {
       setShowTagSuggestions(false);
+      setSelectedSuggestionIndex(-1);
     }
   };
 
@@ -132,7 +165,14 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
 
   const handleTagInputBlur = () => {
     // Delay hiding suggestions to allow clicking on them
-    setTimeout(() => setShowTagSuggestions(false), 150);
+    setTimeout(() => {
+      setShowTagSuggestions(false);
+      setSelectedSuggestionIndex(-1);
+    }, 150);
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    handleAddTag(suggestion);
   };
 
   const toggleListSelection = (listId: string) => {
@@ -367,17 +407,23 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
                     {/* Tag suggestions dropdown */}
                     {showTagSuggestions && tagSuggestions.length > 0 && (
                       <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-primary-300 rounded-md shadow-lg z-10 max-h-32 overflow-y-auto">
-                        {tagSuggestions.map((suggestion) => (
+                        {tagSuggestions.map((suggestion, index) => (
                           <button
                             key={suggestion}
                             type="button"
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-primary-50 focus:bg-primary-50 focus:outline-none"
+                            className={cn(
+                              "w-full text-left px-3 py-2 text-sm focus:outline-none transition-colors",
+                              index === selectedSuggestionIndex
+                                ? "bg-primary-100 text-primary-900"
+                                : "hover:bg-primary-50 text-primary-800"
+                            )}
                             onMouseDown={(e) => {
                               e.preventDefault(); // Prevent input blur
-                              handleAddTag(suggestion);
+                              handleSuggestionClick(suggestion);
                             }}
+                            onMouseEnter={() => setSelectedSuggestionIndex(index)}
                           >
-                            <span className="text-primary-800">{suggestion}</span>
+                            {suggestion}
                           </button>
                         ))}
                       </div>
@@ -397,7 +443,7 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
               </div>
             </div>
             <p className="mt-1 text-xs text-primary-500">
-              Press Enter or click + to add tags. Use Backspace to remove the last tag.
+              Press Enter or click + to add tags. Use ↑↓ arrows to navigate suggestions. Use Backspace to remove the last tag.
             </p>
           </div>
 
