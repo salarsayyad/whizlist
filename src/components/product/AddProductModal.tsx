@@ -18,6 +18,7 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
   const [url, setUrl] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
+  const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedListIds, setSelectedListIds] = useState<string[]>(currentListId ? [currentListId] : []);
@@ -28,7 +29,7 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const [newlyCreatedListId, setNewlyCreatedListId] = useState<string | null>(null);
   
-  const { createProduct } = useProductStore();
+  const { createProduct, products } = useProductStore();
   const { lists, fetchLists, createList } = useListStore();
   const { folders, fetchFolders } = useFolderStore();
   
@@ -36,6 +37,30 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
     fetchLists();
     fetchFolders();
   }, []);
+
+  // Get all existing tags from products
+  const existingTags = useMemo(() => {
+    const allTags = new Set<string>();
+    products.forEach(product => {
+      if (Array.isArray(product.tags)) {
+        product.tags.forEach(tag => allTags.add(tag));
+      }
+    });
+    return Array.from(allTags).sort();
+  }, [products]);
+
+  // Filter tag suggestions based on input
+  const tagSuggestions = useMemo(() => {
+    if (!tagInput.trim()) return [];
+    
+    const query = tagInput.toLowerCase();
+    return existingTags
+      .filter(tag => 
+        tag.toLowerCase().includes(query) && 
+        !tags.includes(tag) // Don't suggest already added tags
+      )
+      .slice(0, 5); // Limit to 5 suggestions
+  }, [tagInput, existingTags, tags]);
 
   // Filter lists and folders based on search query
   const filteredLists = useMemo(() => {
@@ -69,16 +94,23 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
     }
   }, [searchQuery, filteredFolders]);
   
-  const handleAddTag = () => {
-    const trimmedTag = tagInput.trim();
+  const handleAddTag = (tagToAdd?: string) => {
+    const trimmedTag = (tagToAdd || tagInput).trim();
     if (trimmedTag && !tags.includes(trimmedTag)) {
       setTags([...tags, trimmedTag]);
       setTagInput('');
+      setShowTagSuggestions(false);
     }
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
     setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+
+  const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setTagInput(value);
+    setShowTagSuggestions(value.trim().length > 0);
   };
 
   const handleTagInputKeyPress = (e: React.KeyboardEvent) => {
@@ -87,7 +119,20 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
       handleAddTag();
     } else if (e.key === 'Backspace' && !tagInput && tags.length > 0) {
       setTags(tags.slice(0, -1));
+    } else if (e.key === 'Escape') {
+      setShowTagSuggestions(false);
     }
+  };
+
+  const handleTagInputFocus = () => {
+    if (tagInput.trim().length > 0) {
+      setShowTagSuggestions(true);
+    }
+  };
+
+  const handleTagInputBlur = () => {
+    // Delay hiding suggestions to allow clicking on them
+    setTimeout(() => setShowTagSuggestions(false), 150);
   };
 
   const toggleListSelection = (listId: string) => {
@@ -305,24 +350,50 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
                 </div>
               )}
               
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Add a tag..."
-                  className="input flex-1"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={handleTagInputKeyPress}
-                />
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleAddTag}
-                  disabled={!tagInput.trim() || tags.includes(tagInput.trim())}
-                >
-                  <Plus size={16} />
-                </Button>
+              <div className="relative">
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      placeholder="Add a tag..."
+                      className="input w-full"
+                      value={tagInput}
+                      onChange={handleTagInputChange}
+                      onKeyDown={handleTagInputKeyPress}
+                      onFocus={handleTagInputFocus}
+                      onBlur={handleTagInputBlur}
+                    />
+                    
+                    {/* Tag suggestions dropdown */}
+                    {showTagSuggestions && tagSuggestions.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-primary-300 rounded-md shadow-lg z-10 max-h-32 overflow-y-auto">
+                        {tagSuggestions.map((suggestion) => (
+                          <button
+                            key={suggestion}
+                            type="button"
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-primary-50 focus:bg-primary-50 focus:outline-none"
+                            onMouseDown={(e) => {
+                              e.preventDefault(); // Prevent input blur
+                              handleAddTag(suggestion);
+                            }}
+                          >
+                            <span className="text-primary-800">{suggestion}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleAddTag()}
+                    disabled={!tagInput.trim() || tags.includes(tagInput.trim())}
+                  >
+                    <Plus size={16} />
+                  </Button>
+                </div>
               </div>
             </div>
             <p className="mt-1 text-xs text-primary-500">
