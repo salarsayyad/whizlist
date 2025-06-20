@@ -20,16 +20,58 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
   const { folders, fetchFolders } = useFolderStore();
   const { lists, fetchLists } = useListStore();
-  const { products, fetchProducts } = useProductStore();
+  const { fetchProducts } = useProductStore();
   const [showCreateFolder, setShowCreateFolder] = useState(false);
   const [showCreateList, setShowCreateList] = useState(false);
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+  const [allProducts, setAllProducts] = useState<any[]>([]);
   
   useEffect(() => {
     fetchFolders();
     fetchLists();
-    fetchProducts();
+    
+    // Fetch all products separately for sidebar calculations
+    fetchAllProductsForSidebar();
   }, []);
+
+  // Separate function to fetch all products for sidebar calculations
+  const fetchAllProductsForSidebar = async () => {
+    try {
+      const { supabase } = await import('../../lib/supabase');
+      
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      // Map database products to UI products
+      const mappedProducts = (data || []).map((dbProduct: any) => ({
+        id: dbProduct.id,
+        title: dbProduct.title,
+        description: dbProduct.description,
+        price: dbProduct.price,
+        imageUrl: dbProduct.image_url,
+        productUrl: dbProduct.product_url,
+        isPinned: dbProduct.is_pinned || false,
+        tags: dbProduct.tags || [],
+        listId: dbProduct.list_id,
+        ownerId: dbProduct.owner_id,
+        createdAt: dbProduct.created_at,
+        updatedAt: dbProduct.updated_at
+      }));
+      
+      setAllProducts(mappedProducts);
+    } catch (error) {
+      console.error('Error fetching products for sidebar:', error);
+    }
+  };
+
+  // Refresh products when location changes to ensure count is always accurate
+  useEffect(() => {
+    fetchAllProductsForSidebar();
+  }, [location.pathname]);
   
   const toggleFolder = (folderId: string) => {
     setExpandedFolders(prev => 
@@ -77,9 +119,9 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     return lists.filter(list => !list.folderId);
   };
 
-  // Get count of unassigned products (products without a list_id)
+  // Get count of unassigned products (products without a list_id) using allProducts
   const getUnassignedProductCount = () => {
-    return products.filter(product => !product.listId).length;
+    return allProducts.filter(product => !product.listId).length;
   };
   
   const handleCreateFolder = () => {
