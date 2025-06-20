@@ -36,6 +36,11 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   };
 
   const handleFolderClick = (folderId: string) => {
+    // Always expand the folder when clicking on it
+    if (!expandedFolders.includes(folderId)) {
+      setExpandedFolders(prev => [...prev, folderId]);
+    }
+    
     // Navigate to the folder page
     navigate(`/folder/${folderId}`);
     
