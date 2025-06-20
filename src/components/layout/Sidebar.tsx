@@ -1,5 +1,5 @@
 import { X, Grid, List as ListIcon, FolderOpen, Share2, Star, Trash2, Settings, Plus, ChevronDown, ChevronRight } from 'lucide-react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { useState, useEffect } from 'react';
 import { Menu } from '@headlessui/react';
@@ -15,6 +15,7 @@ interface SidebarProps {
 
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
   const { folders, fetchFolders } = useFolderStore();
   const { lists, fetchLists } = useListStore();
@@ -36,13 +37,21 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   };
 
   const handleFolderClick = (folderId: string) => {
-    // Always expand the folder when clicking on it
-    if (!expandedFolders.includes(folderId)) {
-      setExpandedFolders(prev => [...prev, folderId]);
-    }
+    // Check if we're currently on this folder's detail page
+    const isCurrentFolder = location.pathname === `/folder/${folderId}`;
     
-    // Navigate to the folder page
-    navigate(`/folder/${folderId}`);
+    if (isCurrentFolder) {
+      // If we're on the folder page, just toggle expansion
+      toggleFolder(folderId);
+    } else {
+      // If we're not on the folder page, expand and navigate
+      if (!expandedFolders.includes(folderId)) {
+        setExpandedFolders(prev => [...prev, folderId]);
+      }
+      
+      // Navigate to the folder page
+      navigate(`/folder/${folderId}`);
+    }
     
     // Close sidebar on mobile
     if (window.innerWidth < 768) {
