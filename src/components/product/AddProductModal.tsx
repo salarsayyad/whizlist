@@ -26,6 +26,7 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
   const [showNewListInput, setShowNewListInput] = useState(false);
   const [newListName, setNewListName] = useState('');
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+  const [newlyCreatedListId, setNewlyCreatedListId] = useState<string | null>(null);
   
   const { createProduct } = useProductStore();
   const { lists, fetchLists, createList } = useListStore();
@@ -124,6 +125,7 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
       });
 
       setSelectedListIds(prev => [...prev, newList.id]);
+      setNewlyCreatedListId(newList.id);
       setNewListName('');
       setShowNewListInput(false);
       setSelectedFolderId(null);
@@ -173,21 +175,58 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
       // Create products for each selected list (or one unassigned product if no lists selected)
       const listsToCreate = selectedListIds.length > 0 ? selectedListIds : [null];
       
-      const createdProducts = await Promise.all(
-        listsToCreate.map(async (listId) => {
-          const productWithList = {
-            ...baseProduct,
-            listId
-          };
-          
-          const createdProduct = await createProduct(productWithList);
-          
-          // Start the enhanced details extraction for each product
-          updateDetails(createdProduct.id).catch(console.error);
-          
-          return createdProduct;
-        })
-      );
+      // If we have a newly created list, handle it first to avoid race condition
+      if (newlyCreatedListId && selectedListIds.includes(newlyCreatedListId)) {
+        // Create product for the newly created list first
+        const productWithNewList = {
+          ...baseProduct,
+          listId: newlyCreatedListId
+        };
+        
+        const createdProduct = await createProduct(productWithNewList);
+        
+        // Start the enhanced details extraction for this product
+        updateDetails(createdProduct.id).catch(console.error);
+        
+        // Remove the newly created list from the remaining lists to process
+        const remainingListIds = listsToCreate.filter(id => id !== newlyCreatedListId);
+        
+        // Create products for remaining lists concurrently
+        if (remainingListIds.length > 0) {
+          await Promise.all(
+            remainingListIds.map(async (listId) => {
+              const productWithList = {
+                ...baseProduct,
+                listId
+              };
+              
+              const createdProduct = await createProduct(productWithList);
+              
+              // Start the enhanced details extraction for each product
+              updateDetails(createdProduct.id).catch(console.error);
+              
+              return createdProduct;
+            })
+          );
+        }
+      } else {
+        // No newly created list, proceed with concurrent creation
+        await Promise.all(
+          listsToCreate.map(async (listId) => {
+            const productWithList = {
+              ...baseProduct,
+              listId
+            };
+            
+            const createdProduct = await createProduct(productWithList);
+            
+            // Start the enhanced details extraction for each product
+            updateDetails(createdProduct.id).catch(console.error);
+            
+            return createdProduct;
+          })
+        );
+      }
       
       onClose();
     } catch (err) {
