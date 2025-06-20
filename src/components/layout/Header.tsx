@@ -54,7 +54,7 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
   
   return (
     <header className="bg-white shadow-sm border-b border-primary-200 sticky top-0 z-40">
-      <div className="w-full px-4 sm:px-6 flex items-center h-16">
+      <div className="w-full px-4 sm:px-6 flex items-center justify-between h-16">
         {/* Left Section - Logo and Mobile Menu */}
         <div className="flex items-center flex-shrink-0">
           <button 
@@ -114,7 +114,7 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
         </div>
         
         {/* Right Section - Notifications and Profile */}
-        <div className="flex items-center space-x-4 flex-shrink-0">
+        <div className="flex items-center space-x-2 flex-shrink-0">
           <button className="p-2 rounded-md text-primary-500 hover:text-primary-700 hover:bg-primary-100 relative">
             <Bell size={20} />
             <span className="absolute top-1 right-1 w-2 h-2 bg-accent-500 rounded-full"></span>
