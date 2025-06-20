@@ -292,20 +292,20 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-primary-700 mb-3">
+            <label className="block text-sm font-medium text-primary-700 mb-2">
               Add to Lists ({selectedListIds.length} selected)
             </label>
             
             {/* Search Input */}
-            <div className="mb-4">
+            <div className="mb-3">
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search size={16} className="text-primary-400" />
+                  <Search size={14} className="text-primary-400" />
                 </div>
                 <input
                   type="text"
                   placeholder="Search lists and folders..."
-                  className="input pl-10 pr-10"
+                  className="w-full px-3 py-2 pl-9 pr-9 text-sm border border-primary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -315,7 +315,7 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
                     onClick={clearSearch}
                     className="absolute inset-y-0 right-0 pr-3 flex items-center text-primary-400 hover:text-primary-600"
                   >
-                    <X size={16} />
+                    <X size={14} />
                   </button>
                 )}
               </div>
@@ -329,15 +329,15 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
               )}
             </div>
 
-            <div className="max-h-80 overflow-y-auto border border-primary-200 rounded-lg">
-              <div className="p-3 space-y-2">
+            <div className="max-h-64 overflow-y-auto border border-primary-200 rounded-md">
+              <div className="p-2 space-y-1">
                 {/* Show search results or organized view */}
                 {isSearching && !hasSearchResults ? (
                   /* No search results */
-                  <div className="text-center py-8 text-primary-600">
-                    <Search size={48} className="mx-auto mb-3 text-primary-300" />
-                    <p className="mb-2">No lists found for "{searchQuery}"</p>
-                    <p className="text-sm text-primary-500 mb-4">Create a new list with this name</p>
+                  <div className="text-center py-6 text-primary-600">
+                    <Search size={32} className="mx-auto mb-2 text-primary-300" />
+                    <p className="mb-1 text-sm">No lists found for "{searchQuery}"</p>
+                    <p className="text-xs text-primary-500 mb-3">Create a new list with this name</p>
                     <Button
                       type="button"
                       variant="accent"
@@ -348,7 +348,7 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
                       }}
                       className="mx-auto"
                     >
-                      <Plus size={16} className="mr-1" />
+                      <Plus size={14} className="mr-1" />
                       Create "{searchQuery}" List
                     </Button>
                   </div>
@@ -366,67 +366,67 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
                       }
                       
                       return (
-                        <div key={folder.id} className="border border-primary-200 rounded-lg">
+                        <div key={folder.id} className="border border-primary-200 rounded-md">
                           {/* Folder header */}
-                          <div className="flex items-center justify-between p-3 bg-primary-50 rounded-t-lg">
+                          <div className="flex items-center justify-between p-2 bg-primary-50 rounded-t-md">
                             <button
                               type="button"
                               className="flex items-center gap-2 flex-1 text-left"
                               onClick={() => toggleFolder(folder.id)}
                             >
                               {isExpanded ? (
-                                <ChevronDown size={16} className="text-primary-500" />
+                                <ChevronDown size={14} className="text-primary-500" />
                               ) : (
-                                <ChevronRight size={16} className="text-primary-500" />
+                                <ChevronRight size={14} className="text-primary-500" />
                               )}
-                              <FolderOpen size={16} className="text-primary-600" />
-                              <span className="font-medium text-primary-800">{folder.name}</span>
-                              <span className="text-primary-500 text-sm">
-                                ({folderLists.length} list{folderLists.length === 1 ? '' : 's'})
+                              <FolderOpen size={14} className="text-primary-600" />
+                              <span className="text-sm font-medium text-primary-800">{folder.name}</span>
+                              <span className="text-primary-500 text-xs">
+                                ({folderLists.length})
                               </span>
                             </button>
                             
                             {!isSearching && (
                               <button
                                 type="button"
-                                className="text-accent-600 hover:text-accent-700 p-1 rounded-md hover:bg-accent-50"
+                                className="text-accent-600 hover:text-accent-700 p-1 rounded hover:bg-accent-50"
                                 onClick={() => handleShowNewListInput(folder.id)}
                                 title="Add new list to this folder"
                               >
-                                <Plus size={16} />
+                                <Plus size={14} />
                               </button>
                             )}
                           </div>
 
                           {/* Folder lists */}
                           {isExpanded && (
-                            <div className="p-2 space-y-1">
+                            <div className="p-1 space-y-0.5">
                               {folderLists.length > 0 ? (
                                 folderLists.map((list) => (
                                   <div 
                                     key={list.id}
-                                    className="flex items-center justify-between py-2 px-3 rounded-md hover:bg-primary-50"
+                                    className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-primary-50"
                                   >
                                     <div className="flex items-center">
                                       <button
                                         type="button"
-                                        className={`w-5 h-5 rounded border flex items-center justify-center mr-3 ${
+                                        className={`w-4 h-4 rounded border flex items-center justify-center mr-2 ${
                                           selectedListIds.includes(list.id) 
                                             ? 'bg-primary-700 border-primary-700 text-white' 
                                             : 'border-primary-300'
                                         }`}
                                         onClick={() => toggleListSelection(list.id)}
                                       >
-                                        {selectedListIds.includes(list.id) && <Check size={14} />}
+                                        {selectedListIds.includes(list.id) && <Check size={10} />}
                                       </button>
-                                      <ListIcon size={14} className="text-primary-500 mr-2" />
-                                      <span className="text-primary-800">{list.name}</span>
+                                      <ListIcon size={12} className="text-primary-500 mr-1.5" />
+                                      <span className="text-sm text-primary-800">{list.name}</span>
                                     </div>
-                                    <span className="text-primary-500 text-sm">{list.productCount || 0} items</span>
+                                    <span className="text-primary-500 text-xs">{list.productCount || 0}</span>
                                   </div>
                                 ))
                               ) : (
-                                <div className="text-center py-4 text-primary-500 text-sm">
+                                <div className="text-center py-3 text-primary-500 text-xs">
                                   No lists in this folder yet
                                 </div>
                               )}
@@ -438,52 +438,52 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
 
                     {/* Unorganized lists */}
                     {getUnorganizedLists().length > 0 && (
-                      <div className="border border-primary-200 rounded-lg">
-                        <div className="flex items-center justify-between p-3 bg-primary-50 rounded-t-lg">
+                      <div className="border border-primary-200 rounded-md">
+                        <div className="flex items-center justify-between p-2 bg-primary-50 rounded-t-md">
                           <div className="flex items-center gap-2">
-                            <ListIcon size={16} className="text-primary-600" />
-                            <span className="font-medium text-primary-800">
+                            <ListIcon size={14} className="text-primary-600" />
+                            <span className="text-sm font-medium text-primary-800">
                               {isSearching ? 'Matching Lists' : 'Unorganized Lists'}
                             </span>
-                            <span className="text-primary-500 text-sm">
-                              ({getUnorganizedLists().length} list{getUnorganizedLists().length === 1 ? '' : 's'})
+                            <span className="text-primary-500 text-xs">
+                              ({getUnorganizedLists().length})
                             </span>
                           </div>
                           
                           {!isSearching && (
                             <button
                               type="button"
-                              className="text-accent-600 hover:text-accent-700 p-1 rounded-md hover:bg-accent-50"
+                              className="text-accent-600 hover:text-accent-700 p-1 rounded hover:bg-accent-50"
                               onClick={() => handleShowNewListInput()}
                               title="Add new unorganized list"
                             >
-                              <Plus size={16} />
+                              <Plus size={14} />
                             </button>
                           )}
                         </div>
 
-                        <div className="p-2 space-y-1">
+                        <div className="p-1 space-y-0.5">
                           {getUnorganizedLists().map((list) => (
                             <div 
                               key={list.id}
-                              className="flex items-center justify-between py-2 px-3 rounded-md hover:bg-primary-50"
+                              className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-primary-50"
                             >
                               <div className="flex items-center">
                                 <button
                                   type="button"
-                                  className={`w-5 h-5 rounded border flex items-center justify-center mr-3 ${
+                                  className={`w-4 h-4 rounded border flex items-center justify-center mr-2 ${
                                     selectedListIds.includes(list.id) 
                                       ? 'bg-primary-700 border-primary-700 text-white' 
                                       : 'border-primary-300'
                                   }`}
                                   onClick={() => toggleListSelection(list.id)}
                                 >
-                                  {selectedListIds.includes(list.id) && <Check size={14} />}
+                                  {selectedListIds.includes(list.id) && <Check size={10} />}
                                 </button>
-                                <ListIcon size={14} className="text-primary-500 mr-2" />
-                                <span className="text-primary-800">{list.name}</span>
+                                <ListIcon size={12} className="text-primary-500 mr-1.5" />
+                                <span className="text-sm text-primary-800">{list.name}</span>
                               </div>
-                              <span className="text-primary-500 text-sm">{list.productCount || 0} items</span>
+                              <span className="text-primary-500 text-xs">{list.productCount || 0}</span>
                             </div>
                           ))}
                         </div>
@@ -492,11 +492,11 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
 
                     {/* Create new list option when searching (even with results) */}
                     {isSearching && searchQuery.trim() && !searchQueryExists && (
-                      <div className="border border-accent-200 rounded-lg bg-accent-50 p-4">
+                      <div className="border border-accent-200 rounded-md bg-accent-50 p-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <Plus size={16} className="text-accent-600" />
-                            <span className="text-accent-800 font-medium">
+                            <Plus size={14} className="text-accent-600" />
+                            <span className="text-accent-800 text-sm font-medium">
                               Create "{searchQuery}" list
                             </span>
                           </div>
@@ -512,7 +512,7 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
                             Create & Select
                           </Button>
                         </div>
-                        <p className="text-accent-600 text-sm mt-1 ml-6">
+                        <p className="text-accent-600 text-xs mt-1 ml-5">
                           Create a new list with this name and add it to selection
                         </p>
                       </div>
@@ -520,10 +520,10 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
 
                     {/* New list input */}
                     {showNewListInput && (
-                      <div className="border border-accent-200 rounded-lg p-4 bg-accent-50">
+                      <div className="border border-accent-200 rounded-md p-3 bg-accent-50">
                         <div className="flex items-center gap-2 mb-2">
-                          <Plus size={16} className="text-accent-600" />
-                          <span className="font-medium text-accent-800">
+                          <Plus size={14} className="text-accent-600" />
+                          <span className="text-sm font-medium text-accent-800">
                             Create New List
                             {selectedFolderId && (
                               <span className="text-accent-600 ml-1">
@@ -536,7 +536,7 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
                           <input
                             type="text"
                             placeholder="New list name"
-                            className="input flex-1"
+                            className="flex-1 px-2 py-1.5 text-sm border border-accent-300 rounded focus:outline-none focus:ring-1 focus:ring-accent-500 focus:border-accent-500"
                             value={newListName}
                             onChange={(e) => setNewListName(e.target.value)}
                             autoFocus
@@ -577,16 +577,17 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
 
                     {/* Empty state */}
                     {!isSearching && folders.length === 0 && getUnorganizedLists().length === 0 && (
-                      <div className="text-center py-8 text-primary-600">
-                        <ListIcon size={48} className="mx-auto mb-3 text-primary-300" />
-                        <p className="mb-4">No lists found. Create your first list!</p>
+                      <div className="text-center py-6 text-primary-600">
+                        <ListIcon size={32} className="mx-auto mb-2 text-primary-300" />
+                        <p className="mb-3 text-sm">No lists found. Create your first list!</p>
                         <Button
                           type="button"
                           variant="accent"
+                          size="sm"
                           onClick={() => handleShowNewListInput()}
                           className="mx-auto"
                         >
-                          <Plus size={16} className="mr-1" />
+                          <Plus size={14} className="mr-1" />
                           Create First List
                         </Button>
                       </div>
