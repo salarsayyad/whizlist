@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Edit2, Share2, Users, Trash2, 
-  Lock, Globe, Plus, List as ListIcon, FolderOpen 
+  Lock, Globe, Plus, List as ListIcon, FolderOpen, MessageSquare, X 
 } from 'lucide-react';
 import { useFolderStore } from '../store/folderStore';
 import { useListStore } from '../store/listStore';
@@ -10,7 +10,7 @@ import Button from '../components/ui/Button';
 import CreateListModal from '../components/list/CreateListModal';
 import EditFolderModal from '../components/folder/EditFolderModal';
 import CommentSection from '../components/comment/CommentSection';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const FolderDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +23,7 @@ const FolderDetail = () => {
   
   const [showCreateListModal, setShowCreateListModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showCommentsSidebar, setShowCommentsSidebar] = useState(false);
 
   useEffect(() => {
     fetchLists();
@@ -74,7 +75,7 @@ const FolderDetail = () => {
   };
   
   return (
-    <div className="pb-24"> {/* Add bottom padding to prevent content from being hidden behind floating menu */}
+    <div className="pb-24 relative"> {/* Add relative positioning for sidebar */}
       <div className="mb-6">
         <div className="flex flex-col md:flex-row justify-between">
           <div className="flex-1">
@@ -126,97 +127,131 @@ const FolderDetail = () => {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-          <div>
-            {/* Removed the header with Lists count and More button */}
-            
-            {folderLists.length === 0 ? (
-              <div className="text-center py-16 card p-8">
-                <ListIcon size={64} className="mx-auto mb-4 text-primary-300" />
-                <h3 className="text-xl font-medium text-primary-700 mb-2">No lists in this folder yet</h3>
-                <p className="text-primary-600 mb-6">Create your first list to start organizing your products.</p>
-                <Button 
-                  onClick={() => setShowCreateListModal(true)}
-                  className="mx-auto flex items-center gap-2"
-                >
-                  <Plus size={16} />
-                  Create First List
-                </Button>
-              </div>
-            ) : (
-              <motion.div 
-                className="grid grid-cols-1 sm:grid-cols-2 gap-6"
-                variants={container}
-                initial="hidden"
-                animate="show"
+      {/* Main content area - adjust margin when sidebar is open */}
+      <div className={`transition-all duration-300 ${showCommentsSidebar ? 'lg:mr-96' : ''}`}>
+        <div>
+          {folderLists.length === 0 ? (
+            <div className="text-center py-16 card p-8">
+              <ListIcon size={64} className="mx-auto mb-4 text-primary-300" />
+              <h3 className="text-xl font-medium text-primary-700 mb-2">No lists in this folder yet</h3>
+              <p className="text-primary-600 mb-6">Create your first list to start organizing your products.</p>
+              <Button 
+                onClick={() => setShowCreateListModal(true)}
+                className="mx-auto flex items-center gap-2"
               >
-                {folderLists.map((list) => (
-                  <motion.div 
-                    key={list.id}
-                    className="card cursor-pointer overflow-hidden flex flex-col h-full hover:shadow-elevated transition-shadow duration-300"
-                    variants={item}
-                    whileHover={{ y: -4 }}
-                    onClick={() => handleListClick(list.id)}
-                  >
-                    <div className="p-6 flex-1 flex flex-col">
-                      {/* LIST indicator above list name */}
-                      <div className="mb-2">
-                        <span className="inline-block text-xs font-medium text-primary-500 uppercase tracking-wide">
-                          LIST
-                        </span>
-                      </div>
-                      
-                      {/* List name without icon */}
-                      <div className="mb-3">
-                        <h3 className="font-medium text-primary-900 line-clamp-1">{list.name}</h3>
-                      </div>
-                      
-                      {/* Description only - removed item count */}
-                      {list.description && (
-                        <p className="text-primary-600 text-sm mb-3 line-clamp-2 flex-1">
-                          {list.description}
-                        </p>
-                      )}
+                <Plus size={16} />
+                Create First List
+              </Button>
+            </div>
+          ) : (
+            <motion.div 
+              className="grid grid-cols-1 sm:grid-cols-2 gap-6"
+              variants={container}
+              initial="hidden"
+              animate="show"
+            >
+              {folderLists.map((list) => (
+                <motion.div 
+                  key={list.id}
+                  className="card cursor-pointer overflow-hidden flex flex-col h-full hover:shadow-elevated transition-shadow duration-300"
+                  variants={item}
+                  whileHover={{ y: -4 }}
+                  onClick={() => handleListClick(list.id)}
+                >
+                  <div className="p-6 flex-1 flex flex-col">
+                    {/* LIST indicator above list name */}
+                    <div className="mb-2">
+                      <span className="inline-block text-xs font-medium text-primary-500 uppercase tracking-wide">
+                        LIST
+                      </span>
                     </div>
                     
-                    <div className="px-6 py-3 bg-primary-50 border-t border-primary-100">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-100 text-primary-700">
-                          {list.isPublic ? (
-                            <>
-                              <Globe size={10} />
-                              <span>Public</span>
-                            </>
-                          ) : (
-                            <>
-                              <Lock size={10} />
-                              <span>Private</span>
-                            </>
-                          )}
-                        </div>
-                        <div className="text-xs text-primary-500 font-medium">
-                          {list.productCount || 0} items
-                        </div>
+                    {/* List name without icon */}
+                    <div className="mb-3">
+                      <h3 className="font-medium text-primary-900 line-clamp-1">{list.name}</h3>
+                    </div>
+                    
+                    {/* Description only - removed item count */}
+                    {list.description && (
+                      <p className="text-primary-600 text-sm mb-3 line-clamp-2 flex-1">
+                        {list.description}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div className="px-6 py-3 bg-primary-50 border-t border-primary-100">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-100 text-primary-700">
+                        {list.isPublic ? (
+                          <>
+                            <Globe size={10} />
+                            <span>Public</span>
+                          </>
+                        ) : (
+                          <>
+                            <Lock size={10} />
+                            <span>Private</span>
+                          </>
+                        )}
+                      </div>
+                      <div className="text-xs text-primary-500 font-medium">
+                        {list.productCount || 0} items
                       </div>
                     </div>
-                  </motion.div>
-                ))}
-              </motion.div>
-            )}
-          </div>
-        </div>
-
-        <div className="lg:col-span-1">
-          <div className="card p-6">
-            <CommentSection 
-              entityType="folder"
-              entityId={folder.id}
-              title={`Folder Comments (${0})`}
-            />
-          </div>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
         </div>
       </div>
+
+      {/* Comments Sidebar */}
+      <AnimatePresence>
+        {showCommentsSidebar && (
+          <>
+            {/* Mobile backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-primary-900/20 backdrop-blur-sm z-40 lg:hidden"
+              onClick={() => setShowCommentsSidebar(false)}
+            />
+            
+            {/* Sidebar */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 h-full w-full max-w-sm lg:max-w-md xl:max-w-lg bg-white border-l border-primary-200 shadow-2xl z-50 overflow-hidden flex flex-col"
+            >
+              {/* Sidebar Header */}
+              <div className="flex items-center justify-between p-4 border-b border-primary-200 bg-primary-50">
+                <div className="flex items-center gap-2">
+                  <MessageSquare size={18} className="text-primary-700" />
+                  <h2 className="text-lg font-medium text-primary-900">Comments</h2>
+                </div>
+                <button
+                  onClick={() => setShowCommentsSidebar(false)}
+                  className="p-2 rounded-md text-primary-500 hover:text-primary-700 hover:bg-primary-100 transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Sidebar Content */}
+              <div className="flex-1 overflow-y-auto p-4">
+                <CommentSection 
+                  entityType="folder"
+                  entityId={folder.id}
+                />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Fixed Floating Actions Menu - Lower z-index than mobile sidebar */}
       <div className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none">
@@ -239,6 +274,15 @@ const FolderDetail = () => {
                     title="New List"
                   >
                     <Plus size={20} />
+                  </Button>
+                  
+                  <Button
+                    variant={showCommentsSidebar ? 'primary' : 'secondary'}
+                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
+                    onClick={() => setShowCommentsSidebar(!showCommentsSidebar)}
+                    title="Comments"
+                  >
+                    <MessageSquare size={20} />
                   </Button>
                   
                   <Button
@@ -271,6 +315,15 @@ const FolderDetail = () => {
                   >
                     <Plus size={16} />
                     <span>New List</span>
+                  </Button>
+                  
+                  <Button
+                    variant={showCommentsSidebar ? 'primary' : 'secondary'}
+                    className="flex items-center justify-center gap-2"
+                    onClick={() => setShowCommentsSidebar(!showCommentsSidebar)}
+                  >
+                    <MessageSquare size={16} />
+                    <span>Comments</span>
                   </Button>
                   
                   <Button
