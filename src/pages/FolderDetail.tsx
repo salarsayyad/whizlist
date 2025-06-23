@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useFolderStore } from '../store/folderStore';
 import { useListStore } from '../store/listStore';
+import { useCommentStore } from '../store/commentStore';
 import Button from '../components/ui/Button';
 import CreateListModal from '../components/list/CreateListModal';
 import EditFolderModal from '../components/folder/EditFolderModal';
@@ -17,6 +18,7 @@ const FolderDetail = () => {
   const navigate = useNavigate();
   const { folders, deleteFolder } = useFolderStore();
   const { lists, fetchLists } = useListStore();
+  const { comments } = useCommentStore();
   
   const folder = folders.find(f => f.id === id);
   const folderLists = lists.filter(list => list.folderId === id);
@@ -229,9 +231,12 @@ const FolderDetail = () => {
             >
               {/* Sidebar Header */}
               <div className="flex items-center justify-between p-4 border-b border-primary-200 bg-primary-50">
-                <div className="flex items-center gap-2">
-                  <MessageSquare size={18} className="text-primary-700" />
-                  <h2 className="text-lg font-medium text-primary-900">Comments</h2>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <MessageSquare size={18} className="text-primary-700" />
+                    <h2 className="text-lg font-medium text-primary-900">Comments</h2>
+                  </div>
+                  <p className="text-sm text-primary-600">({comments.length})</p>
                 </div>
                 <button
                   onClick={() => setShowCommentsSidebar(false)}
