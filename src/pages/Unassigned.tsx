@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Grid, List as ListIcon, Plus, Filter, Package } from 'lucide-react';
+import { Grid, List as ListIcon, Filter, Package } from 'lucide-react';
 import { useProductStore } from '../store/productStore';
 import ProductGrid from '../components/product/ProductGrid';
 import ProductList from '../components/product/ProductList';
@@ -42,17 +42,13 @@ const Unassigned = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="flex items-center gap-3"
         >
-          <Package size={24} className="text-primary-600" />
-          <div>
-            <h1 className="text-2xl font-medium text-primary-900">
-              Unassigned Products ({unassignedProducts.length})
-            </h1>
-            <p className="text-primary-600 text-sm mt-1">
-              Products that haven't been added to any list
-            </p>
-          </div>
+          <h1 className="text-2xl font-medium text-primary-900">
+            Unassigned Products ({unassignedProducts.length})
+          </h1>
+          <p className="text-primary-600 text-sm mt-1">
+            Products that haven't been added to any list
+          </p>
         </motion.div>
         
         <div className="flex items-center gap-3">
@@ -79,14 +75,6 @@ const Unassigned = () => {
           >
             <Filter size={16} />
             <span>Filter</span>
-          </Button>
-          
-          <Button 
-            className="flex items-center gap-1"
-            onClick={handleAddProduct}
-          >
-            <Plus size={16} />
-            <span>Add Product</span>
           </Button>
         </div>
       </div>
@@ -270,6 +258,6 @@ const UnassignedProductListItem = ({ product }: { product: any }) => {
 
 // Import missing components
 import { useNavigate } from 'react-router-dom';
-import { Pin, ExternalLink, Trash2 } from 'lucide-react';
+import { Pin, ExternalLink, Trash2, Plus } from 'lucide-react';
 
 export default Unassigned;
