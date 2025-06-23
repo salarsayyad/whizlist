@@ -221,13 +221,13 @@ const FolderDetail = () => {
               onClick={() => setShowCommentsSidebar(false)}
             />
             
-            {/* Sidebar */}
+            {/* Sidebar - positioned below the main header */}
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-full w-full max-w-sm lg:max-w-md xl:max-w-lg bg-white border-l border-primary-200 shadow-2xl z-50 overflow-hidden flex flex-col"
+              className="fixed top-16 right-0 bottom-0 w-full max-w-sm lg:max-w-md xl:max-w-lg bg-white border-l border-primary-200 shadow-2xl z-50 overflow-hidden flex flex-col"
             >
               {/* Sidebar Header */}
               <div className="flex items-center justify-between p-4 border-b border-primary-200 bg-primary-50">
