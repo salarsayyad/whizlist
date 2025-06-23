@@ -96,8 +96,8 @@ const Unassigned = () => {
           </p>
         </motion.div>
         
-        {/* Controls below title and description on mobile */}
-        <div className="flex items-center gap-3">
+        {/* Controls aligned to the right on mobile */}
+        <div className="flex items-center justify-end gap-3">
           <Button 
             variant="secondary"
             className="flex items-center gap-1"
