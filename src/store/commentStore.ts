@@ -88,7 +88,8 @@ export const useCommentStore = create<CommentState>((set, get) => ({
       
       const userId = useAuthStore.getState().user?.id;
       
-      const { data, error } = await supabase
+      // First, fetch all comments for the entity
+      const { data: commentsData, error: commentsError } = await supabase
         .from('comments')
         .select(`
           *,
@@ -96,19 +97,16 @@ export const useCommentStore = create<CommentState>((set, get) => ({
             id,
             full_name,
             avatar_url
-          ),
-          like_count:comment_likes(count),
-          is_liked_by_user:comment_likes!inner(user_id)
+          )
         `)
         .eq('entity_type', entityType)
         .eq('entity_id', entityId)
-        .eq('comment_likes.user_id', userId || '')
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
+      if (commentsError) throw commentsError;
       
-      // Process the data to get proper like counts and user like status
-      const processedData = await Promise.all((data || []).map(async (comment) => {
+      // Then, for each comment, get the like count and user like status
+      const processedComments = await Promise.all((commentsData || []).map(async (comment) => {
         // Get total like count
         const { count: likeCount } = await supabase
           .from('comment_likes')
@@ -116,26 +114,32 @@ export const useCommentStore = create<CommentState>((set, get) => ({
           .eq('comment_id', comment.id);
 
         // Check if current user liked this comment
-        const { data: userLike } = await supabase
-          .from('comment_likes')
-          .select('id')
-          .eq('comment_id', comment.id)
-          .eq('user_id', userId || '')
-          .single();
+        let isLikedByUser = false;
+        if (userId) {
+          const { data: userLike } = await supabase
+            .from('comment_likes')
+            .select('id')
+            .eq('comment_id', comment.id)
+            .eq('user_id', userId)
+            .single();
+
+          isLikedByUser = !!userLike;
+        }
 
         return {
           ...comment,
           like_count: likeCount || 0,
-          is_liked_by_user: !!userLike
+          is_liked_by_user: isLikedByUser
         };
       }));
       
-      const mappedComments = processedData.map(mapDbCommentToUiComment);
+      const mappedComments = processedComments.map(mapDbCommentToUiComment);
       const organizedComments = organizeCommentsIntoThreads(mappedComments);
       
       set({ comments: organizedComments });
       
     } catch (error) {
+      console.error('Error fetching comments:', error);
       set({ error: (error as Error).message });
     } finally {
       set({ isLoading: false });
@@ -186,6 +190,7 @@ export const useCommentStore = create<CommentState>((set, get) => ({
       return newComment;
       
     } catch (error) {
+      console.error('Error creating comment:', error);
       set({ error: (error as Error).message });
       throw error;
     } finally {
@@ -224,17 +229,22 @@ export const useCommentStore = create<CommentState>((set, get) => ({
         .select('*', { count: 'exact', head: true })
         .eq('comment_id', commentId);
 
-      const { data: userLike } = await supabase
-        .from('comment_likes')
-        .select('id')
-        .eq('comment_id', commentId)
-        .eq('user_id', userId || '')
-        .single();
+      let isLikedByUser = false;
+      if (userId) {
+        const { data: userLike } = await supabase
+          .from('comment_likes')
+          .select('id')
+          .eq('comment_id', commentId)
+          .eq('user_id', userId)
+          .single();
+
+        isLikedByUser = !!userLike;
+      }
 
       const updatedComment = mapDbCommentToUiComment({
         ...data,
         like_count: likeCount || 0,
-        is_liked_by_user: !!userLike
+        is_liked_by_user: isLikedByUser
       });
       
       // Update the comment in the store
@@ -253,6 +263,7 @@ export const useCommentStore = create<CommentState>((set, get) => ({
       set(state => ({ comments: updateCommentInList(state.comments) }));
       
     } catch (error) {
+      console.error('Error updating comment:', error);
       set({ error: (error as Error).message });
       throw error;
     } finally {
@@ -287,6 +298,7 @@ export const useCommentStore = create<CommentState>((set, get) => ({
       set(state => ({ comments: removeCommentFromList(state.comments) }));
       
     } catch (error) {
+      console.error('Error deleting comment:', error);
       set({ error: (error as Error).message });
       throw error;
     } finally {
