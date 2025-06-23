@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
-  Share2, Pin, ExternalLink, Trash2, Edit2, 
+  Share2, ExternalLink, Trash2, Edit2, 
   Plus, List as ListIcon, X, ChevronRight, FolderOpen, MessageSquare
 } from 'lucide-react';
 import { useProductStore } from '../store/productStore';
@@ -18,7 +18,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { products, togglePin, deleteProduct, updateProduct } = useProductStore();
+  const { products, deleteProduct, updateProduct } = useProductStore();
   const { lists } = useListStore();
   const { folders } = useFolderStore();
   const { comments } = useCommentStore();
@@ -382,15 +382,6 @@ const ProductDetail = () => {
                   </Button>
                   
                   <Button
-                    variant={product.isPinned ? 'primary' : 'secondary'}
-                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
-                    onClick={() => togglePin(product.id)}
-                    title={product.isPinned ? 'Unpin' : 'Pin'}
-                  >
-                    <Pin size={20} className={product.isPinned ? 'fill-white' : ''} />
-                  </Button>
-                  
-                  <Button
                     variant={showCommentsSidebar ? 'primary' : 'secondary'}
                     className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0 relative"
                     onClick={() => setShowCommentsSidebar(!showCommentsSidebar)}
@@ -443,15 +434,6 @@ const ProductDetail = () => {
                   >
                     <ListIcon size={16} />
                     <span>Move to List</span>
-                  </Button>
-                  
-                  <Button
-                    variant={product.isPinned ? 'primary' : 'secondary'}
-                    className="flex items-center justify-center gap-2"
-                    onClick={() => togglePin(product.id)}
-                  >
-                    <Pin size={16} className={product.isPinned ? 'fill-white' : ''} />
-                    <span>{product.isPinned ? 'Pinned' : 'Pin'}</span>
                   </Button>
                   
                   <Button

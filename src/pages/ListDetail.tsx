@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
-  Edit2, Share2, Users, Pin, Trash2, 
+  Edit2, Share2, Users, Trash2, 
   Lock, Globe, Grid, List as ListIcon, FolderOpen, Plus, MessageSquare, X 
 } from 'lucide-react';
 import { useListStore } from '../store/listStore';
@@ -347,15 +347,6 @@ const ListDetail = () => {
                   </Button>
                   
                   <Button
-                    variant={list.isPinned ? 'primary' : 'secondary'}
-                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
-                    onClick={() => {/* togglePin(list.id) */}}
-                    title={list.isPinned ? 'Unpin' : 'Pin'}
-                  >
-                    <Pin size={20} className={list.isPinned ? 'fill-white' : ''} />
-                  </Button>
-                  
-                  <Button
                     variant={showCommentsSidebar ? 'primary' : 'secondary'}
                     className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0 relative"
                     onClick={() => setShowCommentsSidebar(!showCommentsSidebar)}
@@ -400,15 +391,6 @@ const ListDetail = () => {
                   >
                     <Plus size={16} />
                     <span>Add Product</span>
-                  </Button>
-                  
-                  <Button
-                    variant={list.isPinned ? 'primary' : 'secondary'}
-                    className="flex items-center justify-center gap-2"
-                    onClick={() => {/* togglePin(list.id) */}}
-                  >
-                    <Pin size={16} className={list.isPinned ? 'fill-white' : ''} />
-                    <span>{list.isPinned ? 'Pinned' : 'Pin'}</span>
                   </Button>
                   
                   <Button
