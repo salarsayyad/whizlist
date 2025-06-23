@@ -35,7 +35,7 @@ const ProductDetail = () => {
   // Get the folder that contains the list (if applicable)
   const parentFolder = productList?.folderId ? folders.find(folder => folder.id === productList.folderId) : null;
 
-  // Fetch comments count independently for the floating menu
+  // Fetch main comments count (excluding replies) independently for the floating menu
   useEffect(() => {
     const fetchCommentsCount = async () => {
       if (!id) return;
@@ -46,7 +46,8 @@ const ProductDetail = () => {
           .from('comments')
           .select('*', { count: 'exact', head: true })
           .eq('entity_type', 'product')
-          .eq('entity_id', id);
+          .eq('entity_id', id)
+          .is('parent_id', null); // Only count main comments, not replies
 
         if (error) throw error;
         setCommentsCount(count || 0);
@@ -60,9 +61,11 @@ const ProductDetail = () => {
   }, [id]);
 
   // Update comments count when comments change (when sidebar is open)
+  // Count only main comments, not replies
   useEffect(() => {
     if (comments.length > 0) {
-      setCommentsCount(comments.length);
+      const mainCommentsCount = comments.filter(comment => !comment.parentId).length;
+      setCommentsCount(mainCommentsCount);
     }
   }, [comments]);
 
