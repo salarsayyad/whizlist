@@ -93,24 +93,18 @@ const ListDetail = () => {
                 </div>
               )}
 
-              <div className="flex items-center">
+              {/* List name with edit icon and indicators on the same line */}
+              <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-2xl font-medium text-primary-900">{list.name}</h1>
                 <button
                   onClick={() => setShowEditModal(true)}
-                  className="ml-2 text-primary-500 hover:text-primary-700 p-1 rounded-md hover:bg-primary-100"
+                  className="text-primary-500 hover:text-primary-700 p-1 rounded-md hover:bg-primary-100"
                   disabled={listLoading}
                 >
                   <Edit2 size={16} />
                 </button>
-              </div>
-              
-              {/* Description moved under title */}
-              {list.description && (
-                <p className="text-primary-600 text-sm mt-2">{list.description}</p>
-              )}
-              
-              {/* List and Privacy indicators moved under description */}
-              <div className="mt-3">
+                
+                {/* List and Privacy indicators */}
                 <div className="flex items-center gap-2">
                   <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-200 text-primary-800">
                     <ListIcon size={10} />
@@ -131,6 +125,11 @@ const ListDetail = () => {
                   </div>
                 </div>
               </div>
+              
+              {/* Description moved under title */}
+              {list.description && (
+                <p className="text-primary-600 text-sm mt-2">{list.description}</p>
+              )}
             </motion.div>
           </div>
         </div>
