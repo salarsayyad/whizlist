@@ -37,7 +37,51 @@ const Unassigned = () => {
   
   return (
     <div>
-      <div className="mb-6">
+      {/* Desktop Layout */}
+      <div className="hidden md:flex items-center justify-between mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <h1 className="text-2xl font-medium text-primary-900">
+            Unassigned Products ({unassignedProducts.length})
+          </h1>
+          <p className="text-primary-600 text-sm mt-1">
+            Products that haven't been added to any list
+          </p>
+        </motion.div>
+        
+        <div className="flex items-center gap-3">
+          <div className="flex bg-primary-100 rounded-md p-1">
+            <button
+              className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-white shadow-soft' : 'text-primary-600 hover:text-primary-800'}`}
+              onClick={() => setViewMode('grid')}
+              aria-label="Grid view"
+            >
+              <Grid size={18} />
+            </button>
+            <button
+              className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-white shadow-soft' : 'text-primary-600 hover:text-primary-800'}`}
+              onClick={() => setViewMode('list')}
+              aria-label="List view"
+            >
+              <ListIcon size={18} />
+            </button>
+          </div>
+          
+          <Button 
+            variant="secondary"
+            className="flex items-center gap-1"
+          >
+            <Filter size={16} />
+            <span>Filter</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Mobile Layout */}
+      <div className="md:hidden mb-6">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -52,7 +96,7 @@ const Unassigned = () => {
           </p>
         </motion.div>
         
-        {/* Controls moved below title and description */}
+        {/* Controls below title and description on mobile */}
         <div className="flex items-center gap-3">
           <div className="flex bg-primary-100 rounded-md p-1">
             <button
