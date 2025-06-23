@@ -90,7 +90,7 @@ const CommentItem = ({ comment, entityType, entityId, depth = 0, replyingTo, onR
   };
 
   return (
-    <div className={cn("space-y-3", depth > 0 && "ml-8")}>
+    <div className={cn("space-y-3", depth > 0 && "ml-4")}>
       <div className="flex gap-3">
         <div className="flex-shrink-0">
           {comment.user?.avatar_url ? (
