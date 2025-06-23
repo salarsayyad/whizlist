@@ -37,11 +37,12 @@ const Unassigned = () => {
   
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
+          className="mb-4"
         >
           <h1 className="text-2xl font-medium text-primary-900">
             Unassigned Products ({unassignedProducts.length})
@@ -51,6 +52,7 @@ const Unassigned = () => {
           </p>
         </motion.div>
         
+        {/* Controls moved below title and description */}
         <div className="flex items-center gap-3">
           <div className="flex bg-primary-100 rounded-md p-1">
             <button
