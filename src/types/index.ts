@@ -60,6 +60,8 @@ export interface Comment {
   createdAt: string;
   updatedAt: string;
   isEdited: boolean;
+  likeCount: number; // Number of likes
+  isLikedByUser: boolean; // Whether current user liked this comment
   user?: {
     id: string;
     full_name: string | null;

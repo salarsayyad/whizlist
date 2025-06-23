@@ -21,11 +21,10 @@ interface CommentItemProps {
 
 const CommentItem = ({ comment, entityType, entityId, depth = 0, replyingTo, onReply, onReplyCancel }: CommentItemProps) => {
   const { user } = useAuthStore();
-  const { updateComment, deleteComment } = useCommentStore();
+  const { updateComment, deleteComment, toggleLike } = useCommentStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
-  const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
+  const [isLiking, setIsLiking] = useState(false);
 
   const isOwner = user?.id === comment.userId;
   const maxDepth = 3;
@@ -53,9 +52,17 @@ const CommentItem = ({ comment, entityType, entityId, depth = 0, replyingTo, onR
     }
   };
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+  const handleLike = async () => {
+    if (isLiking) return; // Prevent double-clicking
+    
+    setIsLiking(true);
+    try {
+      await toggleLike(comment.id);
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    } finally {
+      setIsLiking(false);
+    }
   };
 
   const handleReplySubmit = () => {
@@ -193,13 +200,14 @@ const CommentItem = ({ comment, entityType, entityId, depth = 0, replyingTo, onR
           <div className="flex items-center gap-4 mt-2 text-xs">
             <button
               onClick={handleLike}
+              disabled={isLiking}
               className={cn(
-                "flex items-center gap-1 hover:text-primary-700 transition-colors",
-                isLiked ? "text-primary-700" : "text-primary-500"
+                "flex items-center gap-1 hover:text-primary-700 transition-colors disabled:opacity-50",
+                comment.isLikedByUser ? "text-primary-700" : "text-primary-500"
               )}
             >
-              <ThumbsUp size={14} className={isLiked ? "fill-current" : ""} />
-              <span>{likeCount > 0 ? likeCount : ''}</span>
+              <ThumbsUp size={14} className={comment.isLikedByUser ? "fill-current" : ""} />
+              <span>{comment.likeCount > 0 ? comment.likeCount : ''}</span>
             </button>
 
             {canReply && onReply && (

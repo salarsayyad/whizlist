@@ -11,6 +11,7 @@ interface CommentState {
   createComment: (entityType: 'product' | 'folder' | 'list', entityId: string, content: string, parentId?: string) => Promise<Comment>;
   updateComment: (commentId: string, content: string) => Promise<void>;
   deleteComment: (commentId: string) => Promise<void>;
+  toggleLike: (commentId: string) => Promise<void>;
   clearComments: () => void;
 }
 
@@ -26,6 +27,8 @@ const mapDbCommentToUiComment = (dbComment: any): Comment => ({
   createdAt: dbComment.created_at,
   updatedAt: dbComment.updated_at,
   isEdited: dbComment.is_edited,
+  likeCount: dbComment.like_count || 0,
+  isLikedByUser: dbComment.is_liked_by_user || false,
   user: dbComment.profiles ? {
     id: dbComment.profiles.id,
     full_name: dbComment.profiles.full_name,
@@ -83,6 +86,8 @@ export const useCommentStore = create<CommentState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
+      const userId = useAuthStore.getState().user?.id;
+      
       const { data, error } = await supabase
         .from('comments')
         .select(`
@@ -91,15 +96,41 @@ export const useCommentStore = create<CommentState>((set, get) => ({
             id,
             full_name,
             avatar_url
-          )
+          ),
+          like_count:comment_likes(count),
+          is_liked_by_user:comment_likes!inner(user_id)
         `)
         .eq('entity_type', entityType)
         .eq('entity_id', entityId)
+        .eq('comment_likes.user_id', userId || '')
         .order('created_at', { ascending: true });
 
       if (error) throw error;
       
-      const mappedComments = (data || []).map(mapDbCommentToUiComment);
+      // Process the data to get proper like counts and user like status
+      const processedData = await Promise.all((data || []).map(async (comment) => {
+        // Get total like count
+        const { count: likeCount } = await supabase
+          .from('comment_likes')
+          .select('*', { count: 'exact', head: true })
+          .eq('comment_id', comment.id);
+
+        // Check if current user liked this comment
+        const { data: userLike } = await supabase
+          .from('comment_likes')
+          .select('id')
+          .eq('comment_id', comment.id)
+          .eq('user_id', userId || '')
+          .single();
+
+        return {
+          ...comment,
+          like_count: likeCount || 0,
+          is_liked_by_user: !!userLike
+        };
+      }));
+      
+      const mappedComments = processedData.map(mapDbCommentToUiComment);
       const organizedComments = organizeCommentsIntoThreads(mappedComments);
       
       set({ comments: organizedComments });
@@ -143,7 +174,11 @@ export const useCommentStore = create<CommentState>((set, get) => ({
 
       if (error) throw error;
       
-      const newComment = mapDbCommentToUiComment(data);
+      const newComment = mapDbCommentToUiComment({
+        ...data,
+        like_count: 0,
+        is_liked_by_user: false
+      });
       
       // Refresh comments to get proper threading
       await get().fetchComments(entityType, entityId);
@@ -182,7 +217,25 @@ export const useCommentStore = create<CommentState>((set, get) => ({
 
       if (error) throw error;
       
-      const updatedComment = mapDbCommentToUiComment(data);
+      // Get current like data for this comment
+      const userId = useAuthStore.getState().user?.id;
+      const { count: likeCount } = await supabase
+        .from('comment_likes')
+        .select('*', { count: 'exact', head: true })
+        .eq('comment_id', commentId);
+
+      const { data: userLike } = await supabase
+        .from('comment_likes')
+        .select('id')
+        .eq('comment_id', commentId)
+        .eq('user_id', userId || '')
+        .single();
+
+      const updatedComment = mapDbCommentToUiComment({
+        ...data,
+        like_count: likeCount || 0,
+        is_liked_by_user: !!userLike
+      });
       
       // Update the comment in the store
       const updateCommentInList = (comments: Comment[]): Comment[] => {
@@ -238,6 +291,73 @@ export const useCommentStore = create<CommentState>((set, get) => ({
       throw error;
     } finally {
       set({ isLoading: false });
+    }
+  },
+
+  toggleLike: async (commentId: string) => {
+    try {
+      const userId = useAuthStore.getState().user?.id;
+      if (!userId) throw new Error('User must be authenticated to like comments');
+
+      // Check if user already liked this comment
+      const { data: existingLike, error: checkError } = await supabase
+        .from('comment_likes')
+        .select('id')
+        .eq('comment_id', commentId)
+        .eq('user_id', userId)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError;
+      }
+
+      if (existingLike) {
+        // Unlike: remove the like
+        const { error: deleteError } = await supabase
+          .from('comment_likes')
+          .delete()
+          .eq('id', existingLike.id);
+
+        if (deleteError) throw deleteError;
+      } else {
+        // Like: add the like
+        const { error: insertError } = await supabase
+          .from('comment_likes')
+          .insert([{
+            comment_id: commentId,
+            user_id: userId
+          }]);
+
+        if (insertError) throw insertError;
+      }
+
+      // Update the comment in the store with new like status
+      const updateCommentLikes = (comments: Comment[]): Comment[] => {
+        return comments.map(comment => {
+          if (comment.id === commentId) {
+            const newIsLiked = !comment.isLikedByUser;
+            const newLikeCount = newIsLiked 
+              ? comment.likeCount + 1 
+              : Math.max(0, comment.likeCount - 1);
+            
+            return {
+              ...comment,
+              isLikedByUser: newIsLiked,
+              likeCount: newLikeCount
+            };
+          }
+          if (comment.replies) {
+            return { ...comment, replies: updateCommentLikes(comment.replies) };
+          }
+          return comment;
+        });
+      };
+
+      set(state => ({ comments: updateCommentLikes(state.comments) }));
+
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      set({ error: (error as Error).message });
     }
   },
 
