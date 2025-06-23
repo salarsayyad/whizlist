@@ -105,32 +105,43 @@ export const useCommentStore = create<CommentState>((set, get) => ({
 
       if (commentsError) throw commentsError;
       
-      // Then, for each comment, get the like count and user like status
-      const processedComments = await Promise.all((commentsData || []).map(async (comment) => {
-        // Get total like count
-        const { count: likeCount } = await supabase
-          .from('comment_likes')
-          .select('*', { count: 'exact', head: true })
-          .eq('comment_id', comment.id);
+      if (!commentsData || commentsData.length === 0) {
+        set({ comments: [] });
+        return;
+      }
 
-        // Check if current user liked this comment
-        let isLikedByUser = false;
-        if (userId) {
-          const { data: userLike } = await supabase
-            .from('comment_likes')
-            .select('id')
-            .eq('comment_id', comment.id)
-            .eq('user_id', userId)
-            .single();
+      // Get all comment IDs for batch processing
+      const commentIds = commentsData.map(comment => comment.id);
+      
+      // Fetch all likes for these comments in a single query
+      const { data: likesData, error: likesError } = await supabase
+        .from('comment_likes')
+        .select('comment_id, user_id')
+        .in('comment_id', commentIds);
 
-          isLikedByUser = !!userLike;
+      if (likesError) throw likesError;
+
+      // Process likes data into maps for efficient lookup
+      const likeCountMap = new Map<string, number>();
+      const userLikesMap = new Map<string, boolean>();
+
+      // Count likes per comment and track user likes
+      (likesData || []).forEach(like => {
+        // Count total likes
+        const currentCount = likeCountMap.get(like.comment_id) || 0;
+        likeCountMap.set(like.comment_id, currentCount + 1);
+
+        // Track if current user liked this comment
+        if (userId && like.user_id === userId) {
+          userLikesMap.set(like.comment_id, true);
         }
+      });
 
-        return {
-          ...comment,
-          like_count: likeCount || 0,
-          is_liked_by_user: isLikedByUser
-        };
+      // Process comments with like data
+      const processedComments = commentsData.map(comment => ({
+        ...comment,
+        like_count: likeCountMap.get(comment.id) || 0,
+        is_liked_by_user: userLikesMap.get(comment.id) || false
       }));
       
       const mappedComments = processedComments.map(mapDbCommentToUiComment);
@@ -236,7 +247,7 @@ export const useCommentStore = create<CommentState>((set, get) => ({
           .select('id')
           .eq('comment_id', commentId)
           .eq('user_id', userId)
-          .single();
+          .maybeSingle();
 
         isLikedByUser = !!userLike;
       }
@@ -311,15 +322,15 @@ export const useCommentStore = create<CommentState>((set, get) => ({
       const userId = useAuthStore.getState().user?.id;
       if (!userId) throw new Error('User must be authenticated to like comments');
 
-      // Check if user already liked this comment
+      // Check if user already liked this comment using maybeSingle() to avoid PGRST116 error
       const { data: existingLike, error: checkError } = await supabase
         .from('comment_likes')
         .select('id')
         .eq('comment_id', commentId)
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
-      if (checkError && checkError.code !== 'PGRST116') {
+      if (checkError) {
         throw checkError;
       }
 
