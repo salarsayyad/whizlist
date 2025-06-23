@@ -232,12 +232,11 @@ const FolderDetail = () => {
             >
               {/* Sidebar Header */}
               <div className="flex items-center justify-between p-4 border-b border-primary-200 bg-primary-50">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <MessageSquare size={18} className="text-primary-700" />
-                    <h2 className="text-lg font-medium text-primary-900">Comments</h2>
-                  </div>
-                  <p className="text-sm text-primary-600">({comments.length})</p>
+                <div className="flex items-center gap-2">
+                  <MessageSquare size={18} className="text-primary-700" />
+                  <h2 className="text-lg font-medium text-primary-900">
+                    Comments ({comments.length})
+                  </h2>
                 </div>
                 <button
                   onClick={() => setShowCommentsSidebar(false)}
