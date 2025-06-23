@@ -2,17 +2,18 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Edit2, Share2, Users, Pin, Trash2, 
-  Lock, Globe, Grid, List as ListIcon, FolderOpen, Plus 
+  Lock, Globe, Grid, List as ListIcon, FolderOpen, Plus, MessageSquare, X 
 } from 'lucide-react';
 import { useListStore } from '../store/listStore';
 import { useFolderStore } from '../store/folderStore';
 import { useProductStore } from '../store/productStore';
+import { useCommentStore } from '../store/commentStore';
 import Button from '../components/ui/Button';
 import ProductCard from '../components/product/ProductCard';
 import EditListModal from '../components/list/EditListModal';
 import AddProductModal from '../components/product/AddProductModal';
 import CommentSection from '../components/comment/CommentSection';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const ListDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +21,7 @@ const ListDetail = () => {
   const { lists, deleteList, isLoading: listLoading } = useListStore();
   const { folders } = useFolderStore();
   const { fetchProductsByList, products, viewMode, setViewMode } = useProductStore();
+  const { comments } = useCommentStore();
   
   const list = lists.find(l => l.id === id);
   
@@ -28,6 +30,7 @@ const ListDetail = () => {
   
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [showCommentsSidebar, setShowCommentsSidebar] = useState(false);
 
   // Fetch products for this list
   useEffect(() => {
@@ -69,7 +72,7 @@ const ListDetail = () => {
   };
   
   return (
-    <div className="pb-24"> {/* Add bottom padding to prevent content from being hidden behind floating menu */}
+    <div className="pb-24 relative"> {/* Add relative positioning for sidebar */}
       <div className="mb-6">
         <div className="flex flex-col md:flex-row justify-between">
           <div className="flex-1">
@@ -210,43 +213,83 @@ const ListDetail = () => {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-          <div>
-            {/* Removed the separate header with view toggle since it's now in the main header */}
-            
-            {products.length === 0 ? (
-              <div className="text-center py-16 card p-8">
-                <h3 className="text-xl font-medium text-primary-700 mb-2">No products in this list yet</h3>
-                <p className="text-primary-600 mb-6">Add products to this list to start organizing.</p>
-                <Button 
-                  onClick={() => setShowAddProductModal(true)}
-                  className="mx-auto flex items-center gap-2"
-                >
-                  <Plus size={16} />
-                  Add Product
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {products.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="lg:col-span-1">
-          <div className="card p-6">
-            <CommentSection 
-              entityType="list"
-              entityId={list.id}
-              title={`List Comments (${0})`}
-            />
-          </div>
+      {/* Main content area - adjust margin when sidebar is open */}
+      <div className={`transition-all duration-300 ${showCommentsSidebar ? 'lg:mr-96' : ''}`}>
+        <div>
+          {/* Removed the separate header with view toggle since it's now in the main header */}
+          
+          {products.length === 0 ? (
+            <div className="text-center py-16 card p-8">
+              <h3 className="text-xl font-medium text-primary-700 mb-2">No products in this list yet</h3>
+              <p className="text-primary-600 mb-6">Add products to this list to start organizing.</p>
+              <Button 
+                onClick={() => setShowAddProductModal(true)}
+                className="mx-auto flex items-center gap-2"
+              >
+                <Plus size={16} />
+                Add Product
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {products.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Comments Sidebar */}
+      <AnimatePresence>
+        {showCommentsSidebar && (
+          <>
+            {/* Mobile backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-primary-900/20 backdrop-blur-sm z-40 lg:hidden"
+              onClick={() => setShowCommentsSidebar(false)}
+            />
+            
+            {/* Sidebar - positioned between header and floating menu */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed top-16 right-0 w-full max-w-sm lg:max-w-md xl:max-w-lg bg-white border-l border-primary-200 shadow-2xl z-50 overflow-hidden flex flex-col"
+              style={{ bottom: '96px' }} // 96px accounts for floating menu height + padding
+            >
+              {/* Sidebar Header */}
+              <div className="flex items-center justify-between p-4 border-b border-primary-200 bg-primary-50">
+                <div className="flex items-center gap-2">
+                  <MessageSquare size={18} className="text-primary-700" />
+                  <h2 className="text-lg font-medium text-primary-900">
+                    Comments ({comments.length})
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setShowCommentsSidebar(false)}
+                  className="p-2 rounded-md text-primary-500 hover:text-primary-700 hover:bg-primary-100 transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Sidebar Content */}
+              <div className="flex-1 overflow-hidden p-4">
+                <CommentSection 
+                  entityType="list"
+                  entityId={list.id}
+                  hideTitle={true}
+                />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Fixed Floating Actions Menu - Lower z-index than mobile sidebar */}
       <div className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none">
@@ -278,6 +321,15 @@ const ListDetail = () => {
                     title={list.isPinned ? 'Unpin' : 'Pin'}
                   >
                     <Pin size={20} className={list.isPinned ? 'fill-white' : ''} />
+                  </Button>
+                  
+                  <Button
+                    variant={showCommentsSidebar ? 'primary' : 'secondary'}
+                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
+                    onClick={() => setShowCommentsSidebar(!showCommentsSidebar)}
+                    title="Comments"
+                  >
+                    <MessageSquare size={20} />
                   </Button>
                   
                   <Button
@@ -320,6 +372,15 @@ const ListDetail = () => {
                   >
                     <Pin size={16} className={list.isPinned ? 'fill-white' : ''} />
                     <span>{list.isPinned ? 'Pinned' : 'Pin'}</span>
+                  </Button>
+                  
+                  <Button
+                    variant={showCommentsSidebar ? 'primary' : 'secondary'}
+                    className="flex items-center justify-center gap-2"
+                    onClick={() => setShowCommentsSidebar(!showCommentsSidebar)}
+                  >
+                    <MessageSquare size={16} />
+                    <span>Comments</span>
                   </Button>
                   
                   <Button

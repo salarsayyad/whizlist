@@ -49,9 +49,9 @@ const CommentSection = ({ entityType, entityId, title, hideTitle = false }: Comm
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col h-full">
       {!hideTitle && (
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-4 flex-shrink-0">
           <MessageSquare size={18} className="text-primary-700" />
           <h2 className="text-lg font-medium text-primary-900">
             {title || `Comments (${comments.length})`}
@@ -59,28 +59,32 @@ const CommentSection = ({ entityType, entityId, title, hideTitle = false }: Comm
         </div>
       )}
 
-      {comments.length === 0 ? (
-        <div className="text-center py-8 text-primary-600">
-          <MessageSquare size={48} className="mx-auto mb-3 text-primary-300" />
-          <p>No comments yet. Be the first to comment on this {getEntityName()}!</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {comments.map((comment) => (
-            <CommentItem
-              key={comment.id}
-              comment={comment}
-              entityType={entityType}
-              entityId={entityId}
-              replyingTo={replyingTo}
-              onReply={handleReply}
-              onReplyCancel={handleReplyCancel}
-            />
-          ))}
-        </div>
-      )}
+      {/* Comments list - scrollable area */}
+      <div className="flex-1 overflow-y-auto mb-4">
+        {comments.length === 0 ? (
+          <div className="text-center py-8 text-primary-600">
+            <MessageSquare size={48} className="mx-auto mb-3 text-primary-300" />
+            <p>No comments yet. Be the first to comment on this {getEntityName()}!</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {comments.map((comment) => (
+              <CommentItem
+                key={comment.id}
+                comment={comment}
+                entityType={entityType}
+                entityId={entityId}
+                replyingTo={replyingTo}
+                onReply={handleReply}
+                onReplyCancel={handleReplyCancel}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
-      <div className="border-t border-primary-200 pt-4">
+      {/* Fixed comment input at bottom */}
+      <div className="border-t border-primary-200 pt-4 flex-shrink-0 bg-white">
         <CommentForm 
           entityType={entityType}
           entityId={entityId}
