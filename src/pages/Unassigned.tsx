@@ -96,8 +96,12 @@ const Unassigned = () => {
           </p>
         </motion.div>
         
-        {/* Controls aligned to the right on mobile */}
-        <div className="flex items-center justify-end gap-3">
+        {/* Controls with Filter centered and Grid/List toggle on the right */}
+        <div className="flex items-center justify-between">
+          {/* Empty div for spacing */}
+          <div></div>
+          
+          {/* Centered Filter button */}
           <Button 
             variant="secondary"
             className="flex items-center gap-1"
@@ -106,6 +110,7 @@ const Unassigned = () => {
             <span>Filter</span>
           </Button>
 
+          {/* Grid/List toggle on the right */}
           <div className="flex bg-primary-100 rounded-md p-1">
             <button
               className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-white shadow-soft' : 'text-primary-600 hover:text-primary-800'}`}
