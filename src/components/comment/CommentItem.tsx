@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { MoreVertical, Reply, Edit2, Trash2, Heart } from 'lucide-react';
+import { MoreVertical, Reply, Edit2, Trash2, ThumbsUp } from 'lucide-react';
 import { Comment } from '../../types';
 import { useAuthStore } from '../../store/authStore';
 import { useCommentStore } from '../../store/commentStore';
@@ -194,11 +194,11 @@ const CommentItem = ({ comment, entityType, entityId, depth = 0, replyingTo, onR
             <button
               onClick={handleLike}
               className={cn(
-                "flex items-center gap-1 hover:text-error-600 transition-colors",
-                isLiked ? "text-error-600" : "text-primary-500"
+                "flex items-center gap-1 hover:text-primary-700 transition-colors",
+                isLiked ? "text-primary-700" : "text-primary-500"
               )}
             >
-              <Heart size={14} className={isLiked ? "fill-current" : ""} />
+              <ThumbsUp size={14} className={isLiked ? "fill-current" : ""} />
               <span>{likeCount > 0 ? likeCount : ''}</span>
             </button>
 
