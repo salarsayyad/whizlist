@@ -26,6 +26,38 @@ const FolderDetail = () => {
   const [showCreateListModal, setShowCreateListModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCommentsSidebar, setShowCommentsSidebar] = useState(false);
+  const [commentsCount, setCommentsCount] = useState(0);
+
+  // Fetch comments count independently for the floating menu
+  useEffect(() => {
+    const fetchCommentsCount = async () => {
+      if (!id) return;
+      
+      try {
+        const { supabase } = await import('../lib/supabase');
+        const { count, error } = await supabase
+          .from('comments')
+          .select('*', { count: 'exact', head: true })
+          .eq('entity_type', 'folder')
+          .eq('entity_id', id);
+
+        if (error) throw error;
+        setCommentsCount(count || 0);
+      } catch (error) {
+        console.error('Error fetching comments count:', error);
+        setCommentsCount(0);
+      }
+    };
+
+    fetchCommentsCount();
+  }, [id]);
+
+  // Update comments count when comments change (when sidebar is open)
+  useEffect(() => {
+    if (comments.length > 0) {
+      setCommentsCount(comments.length);
+    }
+  }, [comments]);
 
   useEffect(() => {
     fetchLists();
@@ -235,7 +267,7 @@ const FolderDetail = () => {
                 <div className="flex items-center gap-2">
                   <MessageSquare size={18} className="text-primary-700" />
                   <h2 className="text-lg font-medium text-primary-900">
-                    Comments ({comments.length})
+                    Comments ({commentsCount})
                   </h2>
                 </div>
                 <button
@@ -289,9 +321,9 @@ const FolderDetail = () => {
                     title="Comments"
                   >
                     <MessageSquare size={20} />
-                    {comments.length > 0 && (
+                    {commentsCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-accent-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 font-medium">
-                        {comments.length}
+                        {commentsCount}
                       </span>
                     )}
                   </Button>
@@ -335,9 +367,9 @@ const FolderDetail = () => {
                   >
                     <MessageSquare size={16} />
                     <span>Comments</span>
-                    {comments.length > 0 && (
+                    {commentsCount > 0 && (
                       <sup className="text-xs font-medium ml-1 text-current">
-                        {comments.length}
+                        {commentsCount}
                       </sup>
                     )}
                   </Button>
