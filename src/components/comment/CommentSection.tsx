@@ -8,9 +8,10 @@ interface CommentSectionProps {
   entityType: 'product' | 'folder' | 'list';
   entityId: string;
   title?: string;
+  hideTitle?: boolean; // New prop to hide the title
 }
 
-const CommentSection = ({ entityType, entityId, title }: CommentSectionProps) => {
+const CommentSection = ({ entityType, entityId, title, hideTitle = false }: CommentSectionProps) => {
   const { comments, isLoading, fetchComments, clearComments } = useCommentStore();
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
 
@@ -49,12 +50,14 @@ const CommentSection = ({ entityType, entityId, title }: CommentSectionProps) =>
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 mb-4">
-        <MessageSquare size={18} className="text-primary-700" />
-        <h2 className="text-lg font-medium text-primary-900">
-          {title || `Comments (${comments.length})`}
-        </h2>
-      </div>
+      {!hideTitle && (
+        <div className="flex items-center gap-2 mb-4">
+          <MessageSquare size={18} className="text-primary-700" />
+          <h2 className="text-lg font-medium text-primary-900">
+            {title || `Comments (${comments.length})`}
+          </h2>
+        </div>
+      )}
 
       {comments.length === 0 ? (
         <div className="text-center py-8 text-primary-600">

@@ -252,6 +252,7 @@ const FolderDetail = () => {
                 <CommentSection 
                   entityType="folder"
                   entityId={folder.id}
+                  hideTitle={true}
                 />
               </div>
             </motion.div>
