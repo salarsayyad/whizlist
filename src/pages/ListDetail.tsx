@@ -325,11 +325,16 @@ const ListDetail = () => {
                   
                   <Button
                     variant={showCommentsSidebar ? 'primary' : 'secondary'}
-                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
+                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0 relative"
                     onClick={() => setShowCommentsSidebar(!showCommentsSidebar)}
                     title="Comments"
                   >
                     <MessageSquare size={20} />
+                    {comments.length > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-accent-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 font-medium">
+                        {comments.length}
+                      </span>
+                    )}
                   </Button>
                   
                   <Button
@@ -381,6 +386,11 @@ const ListDetail = () => {
                   >
                     <MessageSquare size={16} />
                     <span>Comments</span>
+                    {comments.length > 0 && (
+                      <sup className="text-xs font-medium ml-1 text-current">
+                        {comments.length}
+                      </sup>
+                    )}
                   </Button>
                   
                   <Button
