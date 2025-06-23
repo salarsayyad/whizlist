@@ -434,7 +434,7 @@ const ProductDetail = () => {
                   </Button>
                 </div>
 
-                {/* Desktop: Grid layout with text */}
+                {/* Desktop: Grid layout with text and badge */}
                 <div className="hidden sm:flex gap-3">
                   <Button
                     variant="warning"
@@ -462,9 +462,9 @@ const ProductDetail = () => {
                     <MessageSquare size={16} />
                     <span>Comments</span>
                     {commentsCount > 0 && (
-                      <sup className="text-xs font-medium ml-1 text-current">
+                      <span className="absolute -top-1 -right-1 bg-accent-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 font-medium">
                         {commentsCount}
-                      </sup>
+                      </span>
                     )}
                   </Button>
                   
