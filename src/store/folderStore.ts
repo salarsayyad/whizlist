@@ -8,7 +8,7 @@ interface FolderState {
   isLoading: boolean;
   error: string | null;
   fetchFolders: () => Promise<void>;
-  createFolder: (folder: Pick<Folder, 'name' | 'description' | 'is_public' | 'parent_id'>) => Promise<void>;
+  createFolder: (folder: Pick<Folder, 'name' | 'description' | 'is_public' | 'parent_id'>) => Promise<Folder>;
   updateFolder: (id: string, updates: Partial<Folder>) => Promise<void>;
   deleteFolder: (id: string) => Promise<void>;
 }
@@ -52,6 +52,8 @@ export const useFolderStore = create<FolderState>((set, get) => ({
 
       if (error) throw error;
       set(state => ({ folders: [data, ...state.folders] }));
+      
+      return data;
       
     } catch (error) {
       set({ error: (error as Error).message });
