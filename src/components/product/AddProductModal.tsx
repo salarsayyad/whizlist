@@ -22,6 +22,7 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  // Only pre-select a list if we're on a specific list page
   const [selectedListIds, setSelectedListIds] = useState<string[]>(currentListId ? [currentListId] : []);
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
