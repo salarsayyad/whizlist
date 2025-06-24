@@ -48,6 +48,21 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
     }
   }, []);
 
+  // Auto-expand folder containing the current list
+  useEffect(() => {
+    if (currentListId && lists.length > 0 && folders.length > 0) {
+      const currentList = lists.find(list => list.id === currentListId);
+      if (currentList && currentList.folderId) {
+        setExpandedFolders(prev => {
+          if (!prev.includes(currentList.folderId!)) {
+            return [...prev, currentList.folderId!];
+          }
+          return prev;
+        });
+      }
+    }
+  }, [currentListId, lists, folders]);
+
   // Get all existing tags from products
   const existingTags = useMemo(() => {
     const allTags = new Set<string>();
