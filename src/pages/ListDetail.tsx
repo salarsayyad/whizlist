@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Edit2, Share2, Users, Trash2, 
-  Lock, Globe, Grid, List as ListIcon, FolderOpen, Plus, MessageSquare, X 
+  Lock, Globe, Grid, List as ListIcon, FolderOpen, Plus, MessageSquare, X, Folder 
 } from 'lucide-react';
 import { useListStore } from '../store/listStore';
 import { useFolderStore } from '../store/folderStore';
@@ -12,6 +12,7 @@ import Button from '../components/ui/Button';
 import ProductCard from '../components/product/ProductCard';
 import EditListModal from '../components/list/EditListModal';
 import AddProductModal from '../components/product/AddProductModal';
+import MoveListToFolderModal from '../components/list/MoveListToFolderModal';
 import CommentSection from '../components/comment/CommentSection';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -30,6 +31,7 @@ const ListDetail = () => {
   
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [showMoveToFolderModal, setShowMoveToFolderModal] = useState(false);
   const [showCommentsSidebar, setShowCommentsSidebar] = useState(false);
   const [commentsCount, setCommentsCount] = useState(0);
 
@@ -350,6 +352,15 @@ const ListDetail = () => {
                   </Button>
                   
                   <Button
+                    variant="warning"
+                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
+                    onClick={() => setShowMoveToFolderModal(true)}
+                    title="Move to Folder"
+                  >
+                    <Folder size={20} />
+                  </Button>
+                  
+                  <Button
                     variant={showCommentsSidebar ? 'primary' : 'secondary'}
                     className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0 relative"
                     onClick={() => setShowCommentsSidebar(!showCommentsSidebar)}
@@ -394,6 +405,15 @@ const ListDetail = () => {
                   >
                     <Plus size={16} />
                     <span>Add Product</span>
+                  </Button>
+                  
+                  <Button
+                    variant="warning"
+                    className="flex items-center justify-center gap-2"
+                    onClick={() => setShowMoveToFolderModal(true)}
+                  >
+                    <Folder size={16} />
+                    <span>Move to Folder</span>
                   </Button>
                   
                   <Button
@@ -446,6 +466,14 @@ const ListDetail = () => {
 
       {showAddProductModal && (
         <AddProductModal onClose={() => setShowAddProductModal(false)} />
+      )}
+
+      {showMoveToFolderModal && (
+        <MoveListToFolderModal
+          listId={list.id}
+          currentFolderId={list.folderId}
+          onClose={() => setShowMoveToFolderModal(false)}
+        />
       )}
     </div>
   );
