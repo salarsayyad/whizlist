@@ -8,7 +8,7 @@ import { useListStore } from '../store/listStore';
 import { useFolderStore } from '../store/folderStore';
 import { useProductStore } from '../store/productStore';
 import { useCommentStore } from '../store/commentStore';
-import Button from '../ui/Button';
+import Button from '../components/ui/Button';
 import ProductCard from '../components/product/ProductCard';
 import EditListModal from '../components/list/EditListModal';
 import AddProductModal from '../components/product/AddProductModal';
