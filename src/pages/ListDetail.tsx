@@ -8,7 +8,7 @@ import { useListStore } from '../store/listStore';
 import { useFolderStore } from '../store/folderStore';
 import { useProductStore } from '../store/productStore';
 import { useCommentStore } from '../store/commentStore';
-import Button from '../components/ui/Button';
+import Button from '../ui/Button';
 import ProductCard from '../components/product/ProductCard';
 import EditListModal from '../components/list/EditListModal';
 import AddProductModal from '../components/product/AddProductModal';
@@ -343,21 +343,21 @@ const ListDetail = () => {
                 {/* Mobile: Scrollable horizontal layout with icons only */}
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 sm:hidden">
                   <Button
-                    variant="accent"
-                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
-                    onClick={() => setShowAddProductModal(true)}
-                    title="Add Product"
-                  >
-                    <Plus size={20} />
-                  </Button>
-                  
-                  <Button
                     variant="warning"
                     className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
                     onClick={() => setShowMoveToFolderModal(true)}
                     title="Move to Folder"
                   >
                     <Folder size={20} />
+                  </Button>
+                  
+                  <Button
+                    variant="accent"
+                    className="flex items-center justify-center whitespace-nowrap flex-shrink-0 w-12 h-12 p-0"
+                    onClick={() => setShowAddProductModal(true)}
+                    title="Add Product"
+                  >
+                    <Plus size={20} />
                   </Button>
                   
                   <Button
@@ -399,21 +399,21 @@ const ListDetail = () => {
                 {/* Desktop: Grid layout with text and badge */}
                 <div className="hidden sm:flex gap-3">
                   <Button
-                    variant="accent"
-                    className="flex items-center justify-center gap-2"
-                    onClick={() => setShowAddProductModal(true)}
-                  >
-                    <Plus size={16} />
-                    <span>Add Product</span>
-                  </Button>
-                  
-                  <Button
                     variant="warning"
                     className="flex items-center justify-center gap-2"
                     onClick={() => setShowMoveToFolderModal(true)}
                   >
                     <Folder size={16} />
                     <span>Move to Folder</span>
+                  </Button>
+                  
+                  <Button
+                    variant="accent"
+                    className="flex items-center justify-center gap-2"
+                    onClick={() => setShowAddProductModal(true)}
+                  >
+                    <Plus size={16} />
+                    <span>Add Product</span>
                   </Button>
                   
                   <Button
