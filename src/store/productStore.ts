@@ -81,7 +81,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
 
   fetchProductsByList: async (listId: string | null) => {
     try {
-      set({ isLoading: true, error: null });
+      set({ isLoading: true, error: null, products: [] }); // Clear products immediately
       
       let query = supabase
         .from('products')
