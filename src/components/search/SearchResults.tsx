@@ -104,7 +104,7 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
 
       if (isMatch) {
         const result: SearchResult = {
-          id: product.id,
+          id: product.id, // This is the actual product ID from the database
           type: 'product',
           title: product.title,
           subtitle: product.price || undefined,
@@ -225,7 +225,12 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
   }, [query, allProducts, lists, folders]);
 
   const handleResultClick = (result: SearchResult, index?: number) => {
-    console.log('🔍 Search result clicked:', result);
+    console.log('🔍 Search result clicked:', { 
+      id: result.id, 
+      type: result.type, 
+      title: result.title,
+      index 
+    });
     
     // Update selected index if provided
     if (typeof index === 'number' && onSelectedIndexChange) {
@@ -235,7 +240,7 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
     // Close search results first
     onResultClick();
     
-    // Navigate based on result type
+    // Navigate based on result type using the exact ID from the result
     let targetPath = '';
     switch (result.type) {
       case 'product':
@@ -252,21 +257,19 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
         break;
     }
     
-    console.log('🚀 Navigating to:', targetPath);
+    console.log('🚀 Navigating to:', targetPath, 'for result ID:', result.id);
     
-    // Use a small delay to ensure the search results close first
-    setTimeout(() => {
-      if (targetPath) {
-        try {
-          navigate(targetPath);
-          console.log('✅ Navigation successful');
-        } catch (error) {
-          console.error('❌ Navigation failed:', error);
-          // Fallback to window.location
-          window.location.href = targetPath;
-        }
+    // Navigate immediately without delay to ensure proper sync
+    if (targetPath) {
+      try {
+        navigate(targetPath);
+        console.log('✅ Navigation successful to:', targetPath);
+      } catch (error) {
+        console.error('❌ Navigation failed:', error);
+        // Fallback to window.location
+        window.location.href = targetPath;
       }
-    }, 100);
+    }
   };
 
   // Handle keyboard navigation
@@ -288,7 +291,9 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
         case 'Enter':
           e.preventDefault();
           if (selectedIndex >= 0 && selectedIndex < searchResults.allResults.length) {
-            handleResultClick(searchResults.allResults[selectedIndex], selectedIndex);
+            const selectedResult = searchResults.allResults[selectedIndex];
+            console.log('🎯 Enter pressed on result:', selectedResult);
+            handleResultClick(selectedResult, selectedIndex);
           }
           break;
         case 'Escape':
@@ -367,7 +372,7 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
               
               return (
                 <button
-                  key={result.id}
+                  key={`product-${result.id}`} // Ensure unique keys
                   className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-3 transition-colors ${
                     isSelected 
                       ? 'bg-primary-100 text-primary-900' 
@@ -376,6 +381,7 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    console.log('🖱️ Product clicked:', result.id, result.title);
                     handleResultClick(result, globalIndex);
                   }}
                   onMouseEnter={() => onSelectedIndexChange?.(globalIndex)}
@@ -422,7 +428,7 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
               
               return (
                 <button
-                  key={result.id}
+                  key={`list-${result.id}`}
                   className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-3 transition-colors ${
                     isSelected 
                       ? 'bg-primary-100 text-primary-900' 
@@ -470,7 +476,7 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
               
               return (
                 <button
-                  key={result.id}
+                  key={`folder-${result.id}`}
                   className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-3 transition-colors ${
                     isSelected 
                       ? 'bg-primary-100 text-primary-900' 
@@ -518,7 +524,7 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
               
               return (
                 <button
-                  key={result.id}
+                  key={`tag-${result.id}`}
                   className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-3 transition-colors ${
                     isSelected 
                       ? 'bg-primary-100 text-primary-900' 
