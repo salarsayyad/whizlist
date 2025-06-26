@@ -13,6 +13,7 @@ import { formatDate } from '../lib/utils';
 import ProductListSelector from '../components/product/ProductListSelector';
 import AddTagModal from '../components/product/AddTagModal';
 import CommentSection from '../components/comment/CommentSection';
+import ConfirmationModal from '../components/ui/ConfirmationModal';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ProductDetail = () => {
@@ -27,6 +28,8 @@ const ProductDetail = () => {
   const [showListSelector, setShowListSelector] = useState(false);
   const [showAddTagModal, setShowAddTagModal] = useState(false);
   const [showCommentsSidebar, setShowCommentsSidebar] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [commentsCount, setCommentsCount] = useState(0);
   
   // Get the list that contains this product
@@ -95,8 +98,20 @@ const ProductDetail = () => {
   }
   
   const handleRemove = () => {
-    deleteProduct(product.id);
-    navigate('/dashboard');
+    setShowDeleteConfirmation(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteProduct(product.id);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error deleting product:', error);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirmation(false);
+    }
   };
 
   const handleTagClick = (tag: string) => {
@@ -430,6 +445,27 @@ const ProductDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteConfirmation}
+        onClose={() => setShowDeleteConfirmation(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Product"
+        message={
+          <div>
+            <p className="mb-3">
+              Are you sure you want to delete <strong>"{product.title}"</strong>?
+            </p>
+            <p className="text-sm text-primary-500">
+              This action cannot be undone.
+            </p>
+          </div>
+        }
+        confirmText="Delete Product"
+        isLoading={isDeleting}
+        variant="danger"
+      />
       
       {showListSelector && (
         <ProductListSelector 
