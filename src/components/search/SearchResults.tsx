@@ -114,7 +114,6 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
           matchedIn
         };
         results.products.push(result);
-        results.allResults.push(result);
       }
     });
 
@@ -145,7 +144,6 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
           matchedIn
         };
         results.lists.push(result);
-        results.allResults.push(result);
       }
     });
 
@@ -177,7 +175,6 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
           matchedIn
         };
         results.folders.push(result);
-        results.allResults.push(result);
       }
     });
 
@@ -206,7 +203,6 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
         matchedIn: ['tag']
       };
       results.tags.push(result);
-      results.allResults.push(result);
     });
 
     // Sort results by relevance (pinned first, then alphabetical)
@@ -221,6 +217,14 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
     results.folders.sort(sortResults);
     results.tags.sort((a, b) => b.itemCount! - a.itemCount!); // Sort tags by usage
 
+    // Create the allResults array in the exact order they will be displayed
+    results.allResults = [
+      ...results.products,
+      ...results.lists,
+      ...results.folders,
+      ...results.tags
+    ];
+
     return results;
   }, [query, allProducts, lists, folders]);
 
@@ -229,7 +233,8 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
       id: result.id, 
       type: result.type, 
       title: result.title,
-      index 
+      index,
+      resultFromAllResults: searchResults.allResults[index || 0]
     });
     
     // Update selected index if provided
@@ -292,7 +297,7 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
           e.preventDefault();
           if (selectedIndex >= 0 && selectedIndex < searchResults.allResults.length) {
             const selectedResult = searchResults.allResults[selectedIndex];
-            console.log('🎯 Enter pressed on result:', selectedResult);
+            console.log('🎯 Enter pressed on result:', selectedResult, 'at index:', selectedIndex);
             handleResultClick(selectedResult, selectedIndex);
           }
           break;
@@ -326,22 +331,6 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
     );
   }
 
-  // Helper function to get the global index of a result
-  const getGlobalIndex = (sectionResults: SearchResult[], localIndex: number): number => {
-    let globalIndex = 0;
-    
-    // Add products count
-    if (sectionResults === searchResults.lists) {
-      globalIndex += searchResults.products.length;
-    } else if (sectionResults === searchResults.folders) {
-      globalIndex += searchResults.products.length + searchResults.lists.length;
-    } else if (sectionResults === searchResults.tags) {
-      globalIndex += searchResults.products.length + searchResults.lists.length + searchResults.folders.length;
-    }
-    
-    return globalIndex + localIndex;
-  };
-
   return (
     <motion.div 
       className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-elevated border border-primary-200 max-h-96 overflow-y-auto z-50"
@@ -360,199 +349,70 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
           </p>
         </div>
 
-        {/* Products */}
-        {searchResults.products.length > 0 && (
-          <div className="py-2">
-            <div className="px-3 py-1 text-xs font-medium text-primary-500 uppercase tracking-wide">
-              Products ({searchResults.products.length})
-            </div>
-            {searchResults.products.map((result, index) => {
-              const globalIndex = getGlobalIndex(searchResults.products, index);
-              const isSelected = selectedIndex === globalIndex;
-              
-              return (
-                <button
-                  key={`product-${result.id}`} // Ensure unique keys
-                  className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-3 transition-colors ${
-                    isSelected 
-                      ? 'bg-primary-100 text-primary-900' 
-                      : 'hover:bg-primary-50'
-                  }`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('🖱️ Product clicked:', result.id, result.title);
-                    handleResultClick(result, globalIndex);
-                  }}
-                  onMouseEnter={() => onSelectedIndexChange?.(globalIndex)}
-                >
-                  <div className="flex-shrink-0">
-                    <Package size={16} className="text-primary-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-primary-900 truncate">
-                        {result.title}
-                      </p>
-                      {result.isPinned && (
-                        <Pin size={12} className="text-primary-600 fill-current" />
-                      )}
-                    </div>
-                    {result.subtitle && (
-                      <p className="text-xs text-primary-600">{result.subtitle}</p>
+        {/* All Results in Order */}
+        <div className="py-2">
+          {searchResults.allResults.map((result, index) => {
+            const isSelected = selectedIndex === index;
+            
+            return (
+              <button
+                key={`${result.type}-${result.id}-${index}`} // Ensure unique keys with index
+                className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-3 transition-colors ${
+                  isSelected 
+                    ? 'bg-primary-100 text-primary-900' 
+                    : 'hover:bg-primary-50'
+                }`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('🖱️ Result clicked:', result.type, result.id, result.title, 'at index:', index);
+                  handleResultClick(result, index);
+                }}
+                onMouseEnter={() => onSelectedIndexChange?.(index)}
+              >
+                <div className="flex-shrink-0">
+                  {result.type === 'product' && <Package size={16} className="text-primary-500" />}
+                  {result.type === 'list' && <ListIcon size={16} className="text-primary-500" />}
+                  {result.type === 'folder' && <FolderOpen size={16} className="text-primary-500" />}
+                  {result.type === 'tag' && <Tag size={16} className="text-primary-500" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-primary-900 truncate">
+                      {result.type === 'tag' ? `#${result.title}` : result.title}
+                    </p>
+                    {result.isPinned && (
+                      <Pin size={12} className="text-primary-600 fill-current" />
                     )}
-                    <div className="flex items-center gap-2 mt-1">
+                  </div>
+                  {result.subtitle && (
+                    <p className="text-xs text-primary-600">{result.subtitle}</p>
+                  )}
+                  <div className="flex items-center gap-2 mt-1">
+                    {result.type === 'product' && result.matchedIn && (
                       <p className="text-xs text-primary-500">
-                        Matched in: {result.matchedIn?.join(', ')}
+                        Matched in: {result.matchedIn.join(', ')}
                       </p>
-                      {result.url && (
-                        <ExternalLink size={10} className="text-primary-400" />
-                      )}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Lists */}
-        {searchResults.lists.length > 0 && (
-          <div className="py-2">
-            <div className="px-3 py-1 text-xs font-medium text-primary-500 uppercase tracking-wide">
-              Lists ({searchResults.lists.length})
-            </div>
-            {searchResults.lists.map((result, index) => {
-              const globalIndex = getGlobalIndex(searchResults.lists, index);
-              const isSelected = selectedIndex === globalIndex;
-              
-              return (
-                <button
-                  key={`list-${result.id}`}
-                  className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-3 transition-colors ${
-                    isSelected 
-                      ? 'bg-primary-100 text-primary-900' 
-                      : 'hover:bg-primary-50'
-                  }`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleResultClick(result, globalIndex);
-                  }}
-                  onMouseEnter={() => onSelectedIndexChange?.(globalIndex)}
-                >
-                  <div className="flex-shrink-0">
-                    <ListIcon size={16} className="text-primary-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-primary-900 truncate">
-                      {result.title}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1">
+                    )}
+                    {(result.type === 'list' || result.type === 'folder') && (
                       <p className="text-xs text-primary-500">
-                        {result.itemCount} item{result.itemCount === 1 ? '' : 's'}
+                        {result.itemCount} {result.type === 'folder' ? 'list' : 'item'}{result.itemCount === 1 ? '' : 's'}
                       </p>
-                      <span className="text-xs text-primary-400">•</span>
+                    )}
+                    {result.type === 'tag' && (
                       <p className="text-xs text-primary-500">
-                        Matched in: {result.matchedIn?.join(', ')}
+                        Used in {result.itemCount} product{result.itemCount === 1 ? '' : 's'}
                       </p>
-                    </div>
+                    )}
+                    {result.url && (
+                      <ExternalLink size={10} className="text-primary-400" />
+                    )}
                   </div>
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Folders */}
-        {searchResults.folders.length > 0 && (
-          <div className="py-2">
-            <div className="px-3 py-1 text-xs font-medium text-primary-500 uppercase tracking-wide">
-              Folders ({searchResults.folders.length})
-            </div>
-            {searchResults.folders.map((result, index) => {
-              const globalIndex = getGlobalIndex(searchResults.folders, index);
-              const isSelected = selectedIndex === globalIndex;
-              
-              return (
-                <button
-                  key={`folder-${result.id}`}
-                  className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-3 transition-colors ${
-                    isSelected 
-                      ? 'bg-primary-100 text-primary-900' 
-                      : 'hover:bg-primary-50'
-                  }`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleResultClick(result, globalIndex);
-                  }}
-                  onMouseEnter={() => onSelectedIndexChange?.(globalIndex)}
-                >
-                  <div className="flex-shrink-0">
-                    <FolderOpen size={16} className="text-primary-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-primary-900 truncate">
-                      {result.title}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <p className="text-xs text-primary-500">
-                        {result.itemCount} list{result.itemCount === 1 ? '' : 's'}
-                      </p>
-                      <span className="text-xs text-primary-400">•</span>
-                      <p className="text-xs text-primary-500">
-                        Matched in: {result.matchedIn?.join(', ')}
-                      </p>
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Tags */}
-        {searchResults.tags.length > 0 && (
-          <div className="py-2">
-            <div className="px-3 py-1 text-xs font-medium text-primary-500 uppercase tracking-wide">
-              Tags ({searchResults.tags.length})
-            </div>
-            {searchResults.tags.map((result, index) => {
-              const globalIndex = getGlobalIndex(searchResults.tags, index);
-              const isSelected = selectedIndex === globalIndex;
-              
-              return (
-                <button
-                  key={`tag-${result.id}`}
-                  className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-3 transition-colors ${
-                    isSelected 
-                      ? 'bg-primary-100 text-primary-900' 
-                      : 'hover:bg-primary-50'
-                  }`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleResultClick(result, globalIndex);
-                  }}
-                  onMouseEnter={() => onSelectedIndexChange?.(globalIndex)}
-                >
-                  <div className="flex-shrink-0">
-                    <Tag size={16} className="text-primary-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-primary-900 truncate">
-                      #{result.title}
-                    </p>
-                    <p className="text-xs text-primary-500 mt-1">
-                      Used in {result.itemCount} product{result.itemCount === 1 ? '' : 's'}
-                    </p>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </motion.div>
   );
