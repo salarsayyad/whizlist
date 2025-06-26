@@ -2,7 +2,11 @@ import { useProductStore } from '../../store/productStore';
 import ProductCard from './ProductCard';
 import { motion } from 'framer-motion';
 
-const ProductGrid = () => {
+interface ProductGridProps {
+  showPin?: boolean; // New prop to control pin visibility
+}
+
+const ProductGrid = ({ showPin = false }: ProductGridProps) => {
   const { products } = useProductStore();
   
   // Sort products with pinned first, then by date
@@ -30,7 +34,11 @@ const ProductGrid = () => {
       animate="show"
     >
       {sortedProducts.map((product) => (
-        <ProductCard key={product.id} product={product} />
+        <ProductCard 
+          key={product.id} 
+          product={product} 
+          showPin={showPin}
+        />
       ))}
     </motion.div>
   );

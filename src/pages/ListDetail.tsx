@@ -8,7 +8,7 @@ import { useListStore } from '../store/listStore';
 import { useFolderStore } from '../store/folderStore';
 import { useProductStore } from '../store/productStore';
 import { useCommentStore } from '../store/commentStore';
-import Button from '../components/ui/Button';
+import Button from '../ui/Button';
 import ProductCard from '../components/product/ProductCard';
 import EditListModal from '../components/list/EditListModal';
 import AddProductModal from '../components/product/AddProductModal';
@@ -270,7 +270,11 @@ const ListDetail = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard 
+                  key={product.id} 
+                  product={product} 
+                  showPin={true} // Show pin button since we're in a list detail page
+                />
               ))}
             </div>
           )}

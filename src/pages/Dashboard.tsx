@@ -94,7 +94,11 @@ const Dashboard = () => {
         </div>
       ) : (
         <div className="pb-8">
-          {viewMode === 'grid' ? <ProductGrid /> : <ProductList />}
+          {viewMode === 'grid' ? (
+            <ProductGrid showPin={false} />
+          ) : (
+            <ProductList />
+          )}
         </div>
       )}
       

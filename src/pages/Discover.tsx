@@ -216,7 +216,10 @@ const Discover = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                 >
-                  <ProductCard product={product} />
+                  <ProductCard 
+                    product={product} 
+                    showPin={false} // Don't show pin in Discover page
+                  />
                 </motion.div>
               ))}
             </motion.div>

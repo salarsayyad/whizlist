@@ -195,7 +195,10 @@ const UnassignedProductDisplay = ({ products, viewMode }: { products: any[], vie
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <ProductCard product={product} />
+            <ProductCard 
+              product={product} 
+              showPin={false} // Don't show pin in Unassigned page
+            />
           </motion.div>
         ))}
       </motion.div>
@@ -279,12 +282,6 @@ const UnassignedProductListItem = ({ product }: { product: any }) => {
       
       <div className="flex flex-col justify-between items-end">
         <div className="flex items-center gap-1">
-          <button 
-            className={`p-1.5 rounded-full ${product.isPinned ? 'bg-primary-800 text-white' : 'bg-primary-100 text-primary-800'}`}
-            onClick={() => togglePin(product.id)}
-          >
-            <Pin size={16} className={product.isPinned ? 'fill-white' : ''} />
-          </button>
           <button 
             className="p-1.5 rounded-full bg-primary-100 text-primary-800 hover:bg-primary-200"
             onClick={() => window.open(product.productUrl, '_blank', 'noopener,noreferrer')}

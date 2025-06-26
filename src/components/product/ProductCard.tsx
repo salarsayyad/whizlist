@@ -10,9 +10,10 @@ import { motion } from 'framer-motion';
 
 interface ProductCardProps {
   product: Product;
+  showPin?: boolean; // New prop to control pin visibility
 }
 
-const ProductCard = ({ product }: ProductCardProps) => {
+const ProductCard = ({ product, showPin = false }: ProductCardProps) => {
   const navigate = useNavigate();
   const { togglePin, deleteProduct, extractingProducts } = useProductStore();
   const [showOptions, setShowOptions] = useState(false);
@@ -70,18 +71,59 @@ const ProductCard = ({ product }: ProductCardProps) => {
             <span className="text-primary-500">No image</span>
           </div>
         )}
-        <div className="absolute top-2 left-2 flex gap-1">
-          <button 
-            className={`p-1.5 rounded-full ${product.isPinned ? 'bg-primary-800 text-white' : 'bg-white text-primary-800'}`}
-            onClick={handleTogglePin}
-          >
-            <Pin size={16} className={product.isPinned ? 'fill-white' : ''} />
-          </button>
-        </div>
+        {/* Only show pin button if showPin prop is true */}
+        {showPin && (
+          <div className="absolute top-2 left-2 flex gap-1">
+            <button 
+              className={`p-1.5 rounded-full ${product.isPinned ? 'bg-primary-800 text-white' : 'bg-white text-primary-800'}`}
+              onClick={handleTogglePin}
+            >
+              <Pin size={16} className={product.isPinned ? 'fill-white' : ''} />
+            </button>
+          </div>
+        )}
         <div className="absolute top-2 right-2 flex gap-1">
           {isExtracting && (
             <div className="p-1.5 rounded-full bg-white text-primary-800">
               <RefreshCw size={16} className="animate-spin" />
+            </div>
+          )}
+          <button
+            className="p-1 rounded-md hover:bg-primary-100 text-primary-500"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowOptions(!showOptions);
+            }}
+          >
+            <MoreVertical size={16} />
+          </button>
+          
+          {showOptions && (
+            <div 
+              className="absolute right-0 top-full mt-1 bg-white shadow-elevated rounded-md py-1 z-10 w-40"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50"
+                onClick={handleOpenListSelector}
+              >
+                <List size={16} />
+                <span>Manage list</span>
+              </button>
+              <button
+                className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50"
+                onClick={handleOpenExternalLink}
+              >
+                <ExternalLink size={16} />
+                <span>Open original</span>
+              </button>
+              <button
+                className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50"
+                onClick={handleRemove}
+              >
+                <Trash2 size={16} />
+                <span>Remove</span>
+              </button>
             </div>
           )}
         </div>
@@ -97,46 +139,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
         <div className="flex items-start justify-between">
           <h3 className="font-medium text-primary-900 line-clamp-1">{product.title}</h3>
-          <div className="relative">
-            <button
-              className="p-1 rounded-md hover:bg-primary-100 text-primary-500"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowOptions(!showOptions);
-              }}
-            >
-              <MoreVertical size={16} />
-            </button>
-            
-            {showOptions && (
-              <div 
-                className="absolute right-0 top-full mt-1 bg-white shadow-elevated rounded-md py-1 z-10 w-40"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <button
-                  className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50"
-                  onClick={handleOpenListSelector}
-                >
-                  <List size={16} />
-                  <span>Manage list</span>
-                </button>
-                <button
-                  className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50"
-                  onClick={handleOpenExternalLink}
-                >
-                  <ExternalLink size={16} />
-                  <span>Open original</span>
-                </button>
-                <button
-                  className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50"
-                  onClick={handleRemove}
-                >
-                  <Trash2 size={16} />
-                  <span>Remove</span>
-                </button>
-              </div>
-            )}
-          </div>
         </div>
         
         {product.price && (
