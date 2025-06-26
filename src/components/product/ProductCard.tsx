@@ -70,18 +70,20 @@ const ProductCard = ({ product }: ProductCardProps) => {
             <span className="text-primary-500">No image</span>
           </div>
         )}
-        <div className="absolute top-2 right-2 flex gap-1">
-          {isExtracting && (
-            <div className="p-1.5 rounded-full bg-white text-primary-800">
-              <RefreshCw size={16} className="animate-spin" />
-            </div>
-          )}
+        <div className="absolute top-2 left-2 flex gap-1">
           <button 
             className={`p-1.5 rounded-full ${product.isPinned ? 'bg-primary-800 text-white' : 'bg-white text-primary-800'}`}
             onClick={handleTogglePin}
           >
             <Pin size={16} className={product.isPinned ? 'fill-white' : ''} />
           </button>
+        </div>
+        <div className="absolute top-2 right-2 flex gap-1">
+          {isExtracting && (
+            <div className="p-1.5 rounded-full bg-white text-primary-800">
+              <RefreshCw size={16} className="animate-spin" />
+            </div>
+          )}
         </div>
       </div>
       
