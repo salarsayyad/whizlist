@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import AddProductModal from '../product/AddProductModal';
 import SearchResults from '../search/SearchResults';
 import { useAuthStore } from '../../store/authStore';
+import { useProductStore } from '../../store/productStore';
 import { useClickOutside } from '../../hooks/useClickOutside';
 
 interface HeaderProps {
@@ -17,6 +18,7 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
   const [selectedSearchIndex, setSelectedSearchIndex] = useState(-1);
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const { fetchAllProducts } = useProductStore();
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   
@@ -36,6 +38,13 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
       setSelectedSearchIndex(-1);
     }
   }, [searchQuery]);
+
+  // Ensure we have all products loaded for search when component mounts
+  useEffect(() => {
+    if (user) {
+      fetchAllProducts();
+    }
+  }, [user, fetchAllProducts]);
   
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
