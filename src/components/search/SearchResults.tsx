@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Package, 
@@ -17,6 +17,8 @@ import { motion } from 'framer-motion';
 interface SearchResultsProps {
   query: string;
   onResultClick: () => void;
+  selectedIndex?: number;
+  onSelectedIndexChange?: (index: number) => void;
 }
 
 interface SearchResult {
@@ -31,14 +33,14 @@ interface SearchResult {
   matchedIn?: string[];
 }
 
-const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
+const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedIndexChange }: SearchResultsProps) => {
   const navigate = useNavigate();
   const { products } = useProductStore();
   const { lists } = useListStore();
   const { folders } = useFolderStore();
 
   const searchResults = useMemo(() => {
-    if (!query.trim()) return { products: [], lists: [], folders: [], tags: [] };
+    if (!query.trim()) return { products: [], lists: [], folders: [], tags: [], allResults: [] };
 
     const searchTerm = query.toLowerCase().trim();
     const results: {
@@ -46,11 +48,13 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
       lists: SearchResult[];
       folders: SearchResult[];
       tags: SearchResult[];
+      allResults: SearchResult[];
     } = {
       products: [],
       lists: [],
       folders: [],
-      tags: []
+      tags: [],
+      allResults: []
     };
 
     // Search Products
@@ -92,7 +96,7 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
       }
 
       if (isMatch) {
-        results.products.push({
+        const result: SearchResult = {
           id: product.id,
           type: 'product',
           title: product.title,
@@ -101,7 +105,9 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
           url: product.productUrl,
           isPinned: product.isPinned,
           matchedIn
-        });
+        };
+        results.products.push(result);
+        results.allResults.push(result);
       }
     });
 
@@ -123,14 +129,16 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
       }
 
       if (isMatch) {
-        results.lists.push({
+        const result: SearchResult = {
           id: list.id,
           type: 'list',
           title: list.name,
           description: list.description || undefined,
           itemCount: list.productCount || 0,
           matchedIn
-        });
+        };
+        results.lists.push(result);
+        results.allResults.push(result);
       }
     });
 
@@ -153,14 +161,16 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
 
       if (isMatch) {
         const folderLists = lists.filter(list => list.folderId === folder.id);
-        results.folders.push({
+        const result: SearchResult = {
           id: folder.id,
           type: 'folder',
           title: folder.name,
           description: folder.description || undefined,
           itemCount: folderLists.length,
           matchedIn
-        });
+        };
+        results.folders.push(result);
+        results.allResults.push(result);
       }
     });
 
@@ -181,13 +191,15 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
         return productTags.some(t => t.toLowerCase() === tag.toLowerCase());
       });
 
-      results.tags.push({
+      const result: SearchResult = {
         id: tag,
         type: 'tag',
         title: tag,
         itemCount: productsWithTag.length,
         matchedIn: ['tag']
-      });
+      };
+      results.tags.push(result);
+      results.allResults.push(result);
     });
 
     // Sort results by relevance (pinned first, then alphabetical)
@@ -205,8 +217,13 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
     return results;
   }, [query, products, lists, folders]);
 
-  const handleResultClick = (result: SearchResult) => {
+  const handleResultClick = (result: SearchResult, index?: number) => {
     console.log('🔍 Search result clicked:', result);
+    
+    // Update selected index if provided
+    if (typeof index === 'number' && onSelectedIndexChange) {
+      onSelectedIndexChange(index);
+    }
     
     // Close search results first
     onResultClick();
@@ -245,11 +262,43 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
     }, 100);
   };
 
-  const totalResults = 
-    searchResults.products.length + 
-    searchResults.lists.length + 
-    searchResults.folders.length + 
-    searchResults.tags.length;
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!searchResults.allResults.length) return;
+
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          const nextIndex = selectedIndex < searchResults.allResults.length - 1 ? selectedIndex + 1 : 0;
+          onSelectedIndexChange?.(nextIndex);
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          const prevIndex = selectedIndex > 0 ? selectedIndex - 1 : searchResults.allResults.length - 1;
+          onSelectedIndexChange?.(prevIndex);
+          break;
+        case 'Enter':
+          e.preventDefault();
+          if (selectedIndex >= 0 && selectedIndex < searchResults.allResults.length) {
+            handleResultClick(searchResults.allResults[selectedIndex], selectedIndex);
+          }
+          break;
+        case 'Escape':
+          e.preventDefault();
+          onResultClick();
+          break;
+      }
+    };
+
+    // Only add event listener if search results are visible
+    if (searchResults.allResults.length > 0) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [selectedIndex, searchResults.allResults, onSelectedIndexChange, onResultClick]);
+
+  const totalResults = searchResults.allResults.length;
 
   if (totalResults === 0) {
     return (
@@ -265,6 +314,22 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
     );
   }
 
+  // Helper function to get the global index of a result
+  const getGlobalIndex = (sectionResults: SearchResult[], localIndex: number): number => {
+    let globalIndex = 0;
+    
+    // Add products count
+    if (sectionResults === searchResults.lists) {
+      globalIndex += searchResults.products.length;
+    } else if (sectionResults === searchResults.folders) {
+      globalIndex += searchResults.products.length + searchResults.lists.length;
+    } else if (sectionResults === searchResults.tags) {
+      globalIndex += searchResults.products.length + searchResults.lists.length + searchResults.folders.length;
+    }
+    
+    return globalIndex + localIndex;
+  };
+
   return (
     <motion.div 
       className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-elevated border border-primary-200 max-h-96 overflow-y-auto z-50"
@@ -278,6 +343,9 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
           <p className="text-sm text-primary-600">
             Found {totalResults} result{totalResults === 1 ? '' : 's'} for "{query}"
           </p>
+          <p className="text-xs text-primary-500 mt-1">
+            Use ↑↓ arrows to navigate, Enter to select, Esc to close
+          </p>
         </div>
 
         {/* Products */}
@@ -286,38 +354,48 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
             <div className="px-3 py-1 text-xs font-medium text-primary-500 uppercase tracking-wide">
               Products ({searchResults.products.length})
             </div>
-            {searchResults.products.map((result) => (
-              <button
-                key={result.id}
-                className="w-full text-left px-3 py-2 hover:bg-primary-50 rounded-md flex items-center gap-3 transition-colors"
-                onClick={() => handleResultClick(result)}
-              >
-                <div className="flex-shrink-0">
-                  <Package size={16} className="text-primary-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium text-primary-900 truncate">
-                      {result.title}
-                    </p>
-                    {result.isPinned && (
-                      <Pin size={12} className="text-primary-600 fill-current" />
-                    )}
+            {searchResults.products.map((result, index) => {
+              const globalIndex = getGlobalIndex(searchResults.products, index);
+              const isSelected = selectedIndex === globalIndex;
+              
+              return (
+                <button
+                  key={result.id}
+                  className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-3 transition-colors ${
+                    isSelected 
+                      ? 'bg-primary-100 text-primary-900' 
+                      : 'hover:bg-primary-50'
+                  }`}
+                  onClick={() => handleResultClick(result, globalIndex)}
+                  onMouseEnter={() => onSelectedIndexChange?.(globalIndex)}
+                >
+                  <div className="flex-shrink-0">
+                    <Package size={16} className="text-primary-500" />
                   </div>
-                  {result.subtitle && (
-                    <p className="text-xs text-primary-600">{result.subtitle}</p>
-                  )}
-                  <div className="flex items-center gap-2 mt-1">
-                    <p className="text-xs text-primary-500">
-                      Matched in: {result.matchedIn?.join(', ')}
-                    </p>
-                    {result.url && (
-                      <ExternalLink size={10} className="text-primary-400" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-primary-900 truncate">
+                        {result.title}
+                      </p>
+                      {result.isPinned && (
+                        <Pin size={12} className="text-primary-600 fill-current" />
+                      )}
+                    </div>
+                    {result.subtitle && (
+                      <p className="text-xs text-primary-600">{result.subtitle}</p>
                     )}
+                    <div className="flex items-center gap-2 mt-1">
+                      <p className="text-xs text-primary-500">
+                        Matched in: {result.matchedIn?.join(', ')}
+                      </p>
+                      {result.url && (
+                        <ExternalLink size={10} className="text-primary-400" />
+                      )}
+                    </div>
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -327,31 +405,41 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
             <div className="px-3 py-1 text-xs font-medium text-primary-500 uppercase tracking-wide">
               Lists ({searchResults.lists.length})
             </div>
-            {searchResults.lists.map((result) => (
-              <button
-                key={result.id}
-                className="w-full text-left px-3 py-2 hover:bg-primary-50 rounded-md flex items-center gap-3 transition-colors"
-                onClick={() => handleResultClick(result)}
-              >
-                <div className="flex-shrink-0">
-                  <ListIcon size={16} className="text-primary-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-primary-900 truncate">
-                    {result.title}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <p className="text-xs text-primary-500">
-                      {result.itemCount} item{result.itemCount === 1 ? '' : 's'}
-                    </p>
-                    <span className="text-xs text-primary-400">•</span>
-                    <p className="text-xs text-primary-500">
-                      Matched in: {result.matchedIn?.join(', ')}
-                    </p>
+            {searchResults.lists.map((result, index) => {
+              const globalIndex = getGlobalIndex(searchResults.lists, index);
+              const isSelected = selectedIndex === globalIndex;
+              
+              return (
+                <button
+                  key={result.id}
+                  className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-3 transition-colors ${
+                    isSelected 
+                      ? 'bg-primary-100 text-primary-900' 
+                      : 'hover:bg-primary-50'
+                  }`}
+                  onClick={() => handleResultClick(result, globalIndex)}
+                  onMouseEnter={() => onSelectedIndexChange?.(globalIndex)}
+                >
+                  <div className="flex-shrink-0">
+                    <ListIcon size={16} className="text-primary-500" />
                   </div>
-                </div>
-              </button>
-            ))}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-primary-900 truncate">
+                      {result.title}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <p className="text-xs text-primary-500">
+                        {result.itemCount} item{result.itemCount === 1 ? '' : 's'}
+                      </p>
+                      <span className="text-xs text-primary-400">•</span>
+                      <p className="text-xs text-primary-500">
+                        Matched in: {result.matchedIn?.join(', ')}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -361,31 +449,41 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
             <div className="px-3 py-1 text-xs font-medium text-primary-500 uppercase tracking-wide">
               Folders ({searchResults.folders.length})
             </div>
-            {searchResults.folders.map((result) => (
-              <button
-                key={result.id}
-                className="w-full text-left px-3 py-2 hover:bg-primary-50 rounded-md flex items-center gap-3 transition-colors"
-                onClick={() => handleResultClick(result)}
-              >
-                <div className="flex-shrink-0">
-                  <FolderOpen size={16} className="text-primary-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-primary-900 truncate">
-                    {result.title}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <p className="text-xs text-primary-500">
-                      {result.itemCount} list{result.itemCount === 1 ? '' : 's'}
-                    </p>
-                    <span className="text-xs text-primary-400">•</span>
-                    <p className="text-xs text-primary-500">
-                      Matched in: {result.matchedIn?.join(', ')}
-                    </p>
+            {searchResults.folders.map((result, index) => {
+              const globalIndex = getGlobalIndex(searchResults.folders, index);
+              const isSelected = selectedIndex === globalIndex;
+              
+              return (
+                <button
+                  key={result.id}
+                  className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-3 transition-colors ${
+                    isSelected 
+                      ? 'bg-primary-100 text-primary-900' 
+                      : 'hover:bg-primary-50'
+                  }`}
+                  onClick={() => handleResultClick(result, globalIndex)}
+                  onMouseEnter={() => onSelectedIndexChange?.(globalIndex)}
+                >
+                  <div className="flex-shrink-0">
+                    <FolderOpen size={16} className="text-primary-500" />
                   </div>
-                </div>
-              </button>
-            ))}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-primary-900 truncate">
+                      {result.title}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <p className="text-xs text-primary-500">
+                        {result.itemCount} list{result.itemCount === 1 ? '' : 's'}
+                      </p>
+                      <span className="text-xs text-primary-400">•</span>
+                      <p className="text-xs text-primary-500">
+                        Matched in: {result.matchedIn?.join(', ')}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -395,25 +493,35 @@ const SearchResults = ({ query, onResultClick }: SearchResultsProps) => {
             <div className="px-3 py-1 text-xs font-medium text-primary-500 uppercase tracking-wide">
               Tags ({searchResults.tags.length})
             </div>
-            {searchResults.tags.map((result) => (
-              <button
-                key={result.id}
-                className="w-full text-left px-3 py-2 hover:bg-primary-50 rounded-md flex items-center gap-3 transition-colors"
-                onClick={() => handleResultClick(result)}
-              >
-                <div className="flex-shrink-0">
-                  <Tag size={16} className="text-primary-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-primary-900 truncate">
-                    #{result.title}
-                  </p>
-                  <p className="text-xs text-primary-500 mt-1">
-                    Used in {result.itemCount} product{result.itemCount === 1 ? '' : 's'}
-                  </p>
-                </div>
-              </button>
-            ))}
+            {searchResults.tags.map((result, index) => {
+              const globalIndex = getGlobalIndex(searchResults.tags, index);
+              const isSelected = selectedIndex === globalIndex;
+              
+              return (
+                <button
+                  key={result.id}
+                  className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-3 transition-colors ${
+                    isSelected 
+                      ? 'bg-primary-100 text-primary-900' 
+                      : 'hover:bg-primary-50'
+                  }`}
+                  onClick={() => handleResultClick(result, globalIndex)}
+                  onMouseEnter={() => onSelectedIndexChange?.(globalIndex)}
+                >
+                  <div className="flex-shrink-0">
+                    <Tag size={16} className="text-primary-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-primary-900 truncate">
+                      #{result.title}
+                    </p>
+                    <p className="text-xs text-primary-500 mt-1">
+                      Used in {result.itemCount} product{result.itemCount === 1 ? '' : 's'}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
       </div>

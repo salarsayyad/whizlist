@@ -14,18 +14,27 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedSearchIndex, setSelectedSearchIndex] = useState(-1);
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const searchRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   
   // Close search results when clicking outside
   useClickOutside(searchRef, () => {
     setShowSearchResults(false);
+    setSelectedSearchIndex(-1);
   });
 
   // Show/hide search results based on query
   useEffect(() => {
-    setShowSearchResults(searchQuery.trim().length > 0);
+    const shouldShow = searchQuery.trim().length > 0;
+    setShowSearchResults(shouldShow);
+    
+    // Reset selected index when query changes
+    if (shouldShow) {
+      setSelectedSearchIndex(-1);
+    }
   }, [searchQuery]);
   
   const handleSearch = (e: React.FormEvent) => {
@@ -36,6 +45,12 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
   const handleSearchResultClick = () => {
     setShowSearchResults(false);
     setSearchQuery('');
+    setSelectedSearchIndex(-1);
+    
+    // Blur the search input to remove focus
+    if (searchInputRef.current) {
+      searchInputRef.current.blur();
+    }
   };
   
   const handleLogoClick = () => {
@@ -45,6 +60,26 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
   const clearSearch = () => {
     setSearchQuery('');
     setShowSearchResults(false);
+    setSelectedSearchIndex(-1);
+    
+    // Focus the search input after clearing
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  };
+
+  const handleSearchInputKeyDown = (e: React.KeyboardEvent) => {
+    // Let SearchResults component handle navigation keys
+    if (['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(e.key)) {
+      // Don't prevent default here - let SearchResults handle it
+      return;
+    }
+  };
+
+  const handleSearchInputFocus = () => {
+    if (searchQuery.trim().length > 0) {
+      setShowSearchResults(true);
+    }
   };
 
   const getInitials = (name: string | null) => {
@@ -78,11 +113,14 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
                 <Search size={16} className="text-primary-400" />
               </div>
               <input
+                ref={searchInputRef}
                 type="text"
                 placeholder="Search products, lists, folders, and tags..."
                 className="input pl-10 pr-10 w-full"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearchInputKeyDown}
+                onFocus={handleSearchInputFocus}
               />
               {searchQuery && (
                 <button
@@ -100,6 +138,8 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
               <SearchResults 
                 query={searchQuery} 
                 onResultClick={handleSearchResultClick}
+                selectedIndex={selectedSearchIndex}
+                onSelectedIndexChange={setSelectedSearchIndex}
               />
             )}
           </div>
@@ -144,11 +184,14 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
               <Search size={16} className="text-primary-400" />
             </div>
             <input
+              ref={searchInputRef}
               type="text"
               placeholder="Search..."
               className="input pl-10 pr-10 w-full"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleSearchInputKeyDown}
+              onFocus={handleSearchInputFocus}
             />
             {searchQuery && (
               <button
@@ -177,6 +220,8 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
             <SearchResults 
               query={searchQuery} 
               onResultClick={handleSearchResultClick}
+              selectedIndex={selectedSearchIndex}
+              onSelectedIndexChange={setSelectedSearchIndex}
             />
           </div>
         )}
