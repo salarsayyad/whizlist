@@ -15,7 +15,42 @@ interface AuthState {
 
 // Helper function to convert Supabase errors to user-friendly messages
 const getAuthErrorMessage = (error: any): string => {
-  // Handle Supabase auth errors
+  // First, try to parse the error body if it exists (for Supabase API errors)
+  if (error?.body && typeof error.body === 'string') {
+    try {
+      const parsedBody = JSON.parse(error.body);
+      
+      // Check for specific error codes in the parsed body
+      if (parsedBody.code === 'user_already_exists' || parsedBody.message?.includes('User already registered')) {
+        return 'An account with this email already exists. Please try logging in or use a different email.';
+      }
+      
+      if (parsedBody.code === 'invalid_credentials' || parsedBody.message?.includes('Invalid login credentials')) {
+        return 'Invalid email or password. Please check your credentials and try again.';
+      }
+      
+      if (parsedBody.code === 'email_not_confirmed' || parsedBody.message?.includes('email not confirmed')) {
+        return 'Please check your email and click the confirmation link before signing in.';
+      }
+      
+      if (parsedBody.code === 'weak_password' || parsedBody.message?.includes('Password')) {
+        return 'Password must be at least 6 characters long.';
+      }
+      
+      if (parsedBody.code === 'invalid_email' || parsedBody.message?.includes('email')) {
+        return 'Please enter a valid email address.';
+      }
+      
+      // If we have a user-friendly message in the parsed body, use it
+      if (parsedBody.message && parsedBody.message.length < 100) {
+        return parsedBody.message;
+      }
+    } catch (parseError) {
+      // If parsing fails, continue with other error handling methods
+    }
+  }
+  
+  // Handle Supabase auth errors from error.message
   if (error?.message) {
     const message = error.message.toLowerCase();
     
