@@ -225,9 +225,6 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
       onSelectedIndexChange(index);
     }
     
-    // Close search results first
-    onResultClick();
-    
     // Navigate based on result type
     let targetPath = '';
     switch (result.type) {
@@ -247,19 +244,22 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
     
     console.log('🚀 Navigating to:', targetPath);
     
-    // Use a small delay to ensure the search results close first
-    setTimeout(() => {
-      if (targetPath) {
-        try {
-          navigate(targetPath);
-          console.log('✅ Navigation successful');
-        } catch (error) {
-          console.error('❌ Navigation failed:', error);
-          // Fallback to window.location
-          window.location.href = targetPath;
-        }
+    // Navigate immediately, then close search results
+    if (targetPath) {
+      try {
+        navigate(targetPath);
+        console.log('✅ Navigation successful');
+        // Close search results after successful navigation
+        onResultClick();
+      } catch (error) {
+        console.error('❌ Navigation failed:', error);
+        // Close search results even if navigation fails
+        onResultClick();
       }
-    }, 100);
+    } else {
+      // Close search results if no valid path
+      onResultClick();
+    }
   };
 
   // Handle keyboard navigation
@@ -366,7 +366,11 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
                       ? 'bg-primary-100 text-primary-900' 
                       : 'hover:bg-primary-50'
                   }`}
-                  onClick={() => handleResultClick(result, globalIndex)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleResultClick(result, globalIndex);
+                  }}
                   onMouseEnter={() => onSelectedIndexChange?.(globalIndex)}
                 >
                   <div className="flex-shrink-0">
@@ -417,7 +421,11 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
                       ? 'bg-primary-100 text-primary-900' 
                       : 'hover:bg-primary-50'
                   }`}
-                  onClick={() => handleResultClick(result, globalIndex)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleResultClick(result, globalIndex);
+                  }}
                   onMouseEnter={() => onSelectedIndexChange?.(globalIndex)}
                 >
                   <div className="flex-shrink-0">
@@ -461,7 +469,11 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
                       ? 'bg-primary-100 text-primary-900' 
                       : 'hover:bg-primary-50'
                   }`}
-                  onClick={() => handleResultClick(result, globalIndex)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleResultClick(result, globalIndex);
+                  }}
                   onMouseEnter={() => onSelectedIndexChange?.(globalIndex)}
                 >
                   <div className="flex-shrink-0">
@@ -505,7 +517,11 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
                       ? 'bg-primary-100 text-primary-900' 
                       : 'hover:bg-primary-50'
                   }`}
-                  onClick={() => handleResultClick(result, globalIndex)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleResultClick(result, globalIndex);
+                  }}
                   onMouseEnter={() => onSelectedIndexChange?.(globalIndex)}
                 >
                   <div className="flex-shrink-0">
