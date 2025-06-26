@@ -11,6 +11,7 @@ import Button from '../components/ui/Button';
 import CreateListModal from '../components/list/CreateListModal';
 import EditFolderModal from '../components/folder/EditFolderModal';
 import CommentSection from '../components/comment/CommentSection';
+import ConfirmationModal from '../components/ui/ConfirmationModal';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const FolderDetail = () => {
@@ -33,6 +34,8 @@ const FolderDetail = () => {
   const [showCreateListModal, setShowCreateListModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCommentsSidebar, setShowCommentsSidebar] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [commentsCount, setCommentsCount] = useState(0);
 
   // Fetch main comments count (excluding replies) independently for the floating menu
@@ -88,14 +91,20 @@ const FolderDetail = () => {
     );
   }
   
-  const handleRemove = async () => {
-    if (window.confirm('Are you sure you want to delete this folder? All lists in this folder will become unorganized.')) {
-      try {
-        await deleteFolder(folder.id);
-        navigate('/dashboard');
-      } catch (error) {
-        console.error('Error deleting folder:', error);
-      }
+  const handleRemove = () => {
+    setShowDeleteConfirmation(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteFolder(folder.id);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error deleting folder:', error);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirmation(false);
     }
   };
 
@@ -433,6 +442,27 @@ const FolderDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteConfirmation}
+        onClose={() => setShowDeleteConfirmation(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Folder"
+        message={
+          <div>
+            <p className="mb-3">
+              Are you sure you want to delete the folder <strong>"{folder.name}"</strong>?
+            </p>
+            <p className="text-sm text-primary-500">
+              All lists in this folder will become unorganized. This action cannot be undone.
+            </p>
+          </div>
+        }
+        confirmText="Delete Folder"
+        isLoading={isDeleting}
+        variant="danger"
+      />
 
       {showCreateListModal && (
         <CreateListModal 

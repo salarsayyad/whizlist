@@ -14,6 +14,7 @@ import EditListModal from '../components/list/EditListModal';
 import AddProductModal from '../components/product/AddProductModal';
 import MoveListToFolderModal from '../components/list/MoveListToFolderModal';
 import CommentSection from '../components/comment/CommentSection';
+import ConfirmationModal from '../components/ui/ConfirmationModal';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ListDetail = () => {
@@ -33,6 +34,8 @@ const ListDetail = () => {
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showMoveToFolderModal, setShowMoveToFolderModal] = useState(false);
   const [showCommentsSidebar, setShowCommentsSidebar] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [commentsCount, setCommentsCount] = useState(0);
 
   // Fetch main comments count (excluding replies) independently for the floating menu
@@ -91,14 +94,20 @@ const ListDetail = () => {
     );
   }
   
-  const handleRemove = async () => {
-    if (window.confirm('Are you sure you want to delete this list? All products in this list will be moved to unassigned.')) {
-      try {
-        await deleteList(list.id);
-        navigate('/dashboard');
-      } catch (error) {
-        console.error('Error deleting list:', error);
-      }
+  const handleRemove = () => {
+    setShowDeleteConfirmation(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteList(list.id);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error deleting list:', error);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirmation(false);
     }
   };
 
@@ -460,6 +469,27 @@ const ListDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteConfirmation}
+        onClose={() => setShowDeleteConfirmation(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete List"
+        message={
+          <div>
+            <p className="mb-3">
+              Are you sure you want to delete the list <strong>"{list.name}"</strong>?
+            </p>
+            <p className="text-sm text-primary-500">
+              All products in this list will be moved to unassigned. This action cannot be undone.
+            </p>
+          </div>
+        }
+        confirmText="Delete List"
+        isLoading={isDeleting}
+        variant="danger"
+      />
 
       {showEditModal && (
         <EditListModal

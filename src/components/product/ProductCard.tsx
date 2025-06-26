@@ -6,6 +6,7 @@ import { useProductStore } from '../../store/productStore';
 import { truncateText } from '../../lib/utils';
 import Button from '../ui/Button';
 import ProductListSelector from './ProductListSelector';
+import ConfirmationModal from '../ui/ConfirmationModal';
 import { motion } from 'framer-motion';
 
 interface ProductCardProps {
@@ -18,6 +19,8 @@ const ProductCard = ({ product, showPin = false }: ProductCardProps) => {
   const { togglePin, deleteProduct, extractingProducts } = useProductStore();
   const [showOptions, setShowOptions] = useState(false);
   const [showListSelector, setShowListSelector] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const isExtracting = extractingProducts.includes(product.id);
   
@@ -32,7 +35,19 @@ const ProductCard = ({ product, showPin = false }: ProductCardProps) => {
   
   const handleRemove = (e: React.MouseEvent) => {
     e.stopPropagation();
-    deleteProduct(product.id);
+    setShowDeleteConfirmation(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteProduct(product.id);
+    } catch (error) {
+      console.error('Error deleting product:', error);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirmation(false);
+    }
   };
   
   const handleOpenListSelector = (e: React.MouseEvent) => {
@@ -51,130 +66,153 @@ const ProductCard = ({ product, showPin = false }: ProductCardProps) => {
   };
   
   return (
-    <motion.div 
-      className="card cursor-pointer overflow-hidden flex flex-col h-full"
-      whileHover={{ y: -4 }}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      onClick={handleClick}
-    >
-      <div className="relative">
-        {product.imageUrl ? (
-          <img 
-            src={product.imageUrl} 
-            alt={product.title} 
-            className="w-full h-48 object-cover"
-          />
-        ) : (
-          <div className="w-full h-48 bg-primary-200 flex items-center justify-center">
-            <span className="text-primary-500">No image</span>
-          </div>
-        )}
-        {/* Only show pin button if showPin prop is true */}
-        {showPin && (
-          <div className="absolute top-2 left-2 flex gap-1">
-            <button 
-              className={`p-1.5 rounded-full ${product.isPinned ? 'bg-primary-800 text-white' : 'bg-white text-primary-800'}`}
-              onClick={handleTogglePin}
-            >
-              <Pin size={16} className={product.isPinned ? 'fill-white' : ''} />
-            </button>
-          </div>
-        )}
-        <div className="absolute top-2 right-2 flex gap-1">
-          {isExtracting && (
-            <div className="p-1.5 rounded-full bg-white text-primary-800">
-              <RefreshCw size={16} className="animate-spin" />
+    <>
+      <motion.div 
+        className="card cursor-pointer overflow-hidden flex flex-col h-full"
+        whileHover={{ y: -4 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        onClick={handleClick}
+      >
+        <div className="relative">
+          {product.imageUrl ? (
+            <img 
+              src={product.imageUrl} 
+              alt={product.title} 
+              className="w-full h-48 object-cover"
+            />
+          ) : (
+            <div className="w-full h-48 bg-primary-200 flex items-center justify-center">
+              <span className="text-primary-500">No image</span>
             </div>
           )}
-        </div>
-      </div>
-      
-      <div className="p-4 flex-1 flex flex-col">
-        {/* Product URL with ellipses menu - same line, right-aligned */}
-        <div className="mb-1 flex items-center justify-between">
-          <span className="text-xs text-primary-500">
-            {new URL(product.productUrl).hostname}
-          </span>
-          <div className="relative">
-            <button
-              className="p-1 rounded-md hover:bg-primary-100 text-primary-500"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowOptions(!showOptions);
-              }}
-            >
-              <MoreVertical size={16} />
-            </button>
-            
-            {showOptions && (
-              <div 
-                className="absolute right-0 top-full mt-1 bg-white shadow-elevated rounded-md py-1 z-10 w-40"
-                onClick={(e) => e.stopPropagation()}
+          {/* Only show pin button if showPin prop is true */}
+          {showPin && (
+            <div className="absolute top-2 left-2 flex gap-1">
+              <button 
+                className={`p-1.5 rounded-full ${product.isPinned ? 'bg-primary-800 text-white' : 'bg-white text-primary-800'}`}
+                onClick={handleTogglePin}
               >
-                <button
-                  className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50"
-                  onClick={handleOpenListSelector}
-                >
-                  <List size={16} />
-                  <span>Manage list</span>
-                </button>
-                <button
-                  className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50"
-                  onClick={handleOpenExternalLink}
-                >
-                  <ExternalLink size={16} />
-                  <span>Open original</span>
-                </button>
-                <button
-                  className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50"
-                  onClick={handleRemove}
-                >
-                  <Trash2 size={16} />
-                  <span>Remove</span>
-                </button>
+                <Pin size={16} className={product.isPinned ? 'fill-white' : ''} />
+              </button>
+            </div>
+          )}
+          <div className="absolute top-2 right-2 flex gap-1">
+            {isExtracting && (
+              <div className="p-1.5 rounded-full bg-white text-primary-800">
+                <RefreshCw size={16} className="animate-spin" />
               </div>
             )}
           </div>
         </div>
-
-        <div className="flex items-start justify-between">
-          <h3 className="font-medium text-primary-900 line-clamp-1">{product.title}</h3>
-        </div>
         
-        {product.price && (
-          <p className="text-primary-800 font-medium mt-1">{product.price}</p>
-        )}
-        
-        <p className="text-primary-600 text-sm mt-2 line-clamp-2">
-          {truncateText(product.description, 120)}
-        </p>
-        
-        <div className="flex flex-wrap gap-1 mt-2">
-          {product.tags.map((tag) => (
-            <button
-              key={tag} 
-              className="badge-primary hover:bg-primary-200 transition-colors"
-              onClick={(e) => handleTagClick(e, tag)}
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
-        
-        <div className="mt-auto pt-4 flex items-center justify-between text-primary-500 text-sm">
-          <div className="flex items-center gap-2">
-            <button className="p-1 rounded-full hover:bg-primary-100">
-              <MessageSquare size={16} />
-            </button>
-            <button className="p-1 rounded-full hover:bg-primary-100">
-              <Share2 size={16} />
-            </button>
+        <div className="p-4 flex-1 flex flex-col">
+          {/* Product URL with ellipses menu - same line, right-aligned */}
+          <div className="mb-1 flex items-center justify-between">
+            <span className="text-xs text-primary-500">
+              {new URL(product.productUrl).hostname}
+            </span>
+            <div className="relative">
+              <button
+                className="p-1 rounded-md hover:bg-primary-100 text-primary-500"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowOptions(!showOptions);
+                }}
+              >
+                <MoreVertical size={16} />
+              </button>
+              
+              {showOptions && (
+                <div 
+                  className="absolute right-0 top-full mt-1 bg-white shadow-elevated rounded-md py-1 z-10 w-40"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50"
+                    onClick={handleOpenListSelector}
+                  >
+                    <List size={16} />
+                    <span>Manage list</span>
+                  </button>
+                  <button
+                    className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50"
+                    onClick={handleOpenExternalLink}
+                  >
+                    <ExternalLink size={16} />
+                    <span>Open original</span>
+                  </button>
+                  <button
+                    className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50 text-error-600"
+                    onClick={handleRemove}
+                  >
+                    <Trash2 size={16} />
+                    <span>Remove</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-          <span>{new Date(product.createdAt).toLocaleDateString()}</span>
+
+          <div className="flex items-start justify-between">
+            <h3 className="font-medium text-primary-900 line-clamp-1">{product.title}</h3>
+          </div>
+          
+          {product.price && (
+            <p className="text-primary-800 font-medium mt-1">{product.price}</p>
+          )}
+          
+          <p className="text-primary-600 text-sm mt-2 line-clamp-2">
+            {truncateText(product.description, 120)}
+          </p>
+          
+          <div className="flex flex-wrap gap-1 mt-2">
+            {product.tags.map((tag) => (
+              <button
+                key={tag} 
+                className="badge-primary hover:bg-primary-200 transition-colors"
+                onClick={(e) => handleTagClick(e, tag)}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+          
+          <div className="mt-auto pt-4 flex items-center justify-between text-primary-500 text-sm">
+            <div className="flex items-center gap-2">
+              <button className="p-1 rounded-full hover:bg-primary-100">
+                <MessageSquare size={16} />
+              </button>
+              <button className="p-1 rounded-full hover:bg-primary-100">
+                <Share2 size={16} />
+              </button>
+            </div>
+            <span>{new Date(product.createdAt).toLocaleDateString()}</span>
+          </div>
         </div>
-      </div>
+      </motion.div>
+      
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteConfirmation}
+        onClose={() => setShowDeleteConfirmation(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Product"
+        message={
+          <div>
+            <p className="mb-3">
+              Are you sure you want to delete <strong>"{product.title}"</strong>?
+            </p>
+            <p className="text-sm text-primary-500">
+              This action cannot be undone.
+            </p>
+          </div>
+        }
+        confirmText="Delete Product"
+        isLoading={isDeleting}
+        variant="danger"
+      />
       
       {showListSelector && (
         <ProductListSelector 
@@ -183,7 +221,7 @@ const ProductCard = ({ product, showPin = false }: ProductCardProps) => {
           onClose={() => setShowListSelector(false)}
         />
       )}
-    </motion.div>
+    </>
   );
 };
 
