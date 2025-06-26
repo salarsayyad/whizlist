@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Share2, ExternalLink, Trash2, Edit2, 
-  Plus, List as ListIcon, X, ChevronRight, FolderOpen, MessageSquare
+  Plus, List as ListIcon, X, ChevronRight, FolderOpen, MessageSquare, Package
 } from 'lucide-react';
 import { useProductStore } from '../store/productStore';
 import { useListStore } from '../store/listStore';
@@ -37,6 +37,9 @@ const ProductDetail = () => {
   
   // Get the folder that contains the list (if applicable)
   const parentFolder = productList?.folderId ? folders.find(folder => folder.id === productList.folderId) : null;
+
+  // Check if this is an unassigned product
+  const isUnassignedProduct = product && !product.listId;
 
   // Fetch main comments count (excluding replies) independently for the floating menu
   useEffect(() => {
@@ -138,13 +141,18 @@ const ProductDetail = () => {
       navigate(`/list/${productList.id}`);
     }
   };
+
+  const handleUnassignedClick = () => {
+    navigate('/unassigned');
+  };
   
   return (
     <div className="pb-24 relative"> {/* Add relative positioning for sidebar */}
-      {/* Breadcrumb Navigation - Only show if there's a folder or list */}
-      {(parentFolder || productList) && (
+      {/* Breadcrumb Navigation - Show for folder/list products OR unassigned products */}
+      {(parentFolder || productList || isUnassignedProduct) && (
         <div className="mb-6">
           <nav className="flex items-center text-sm text-primary-600 mb-4">
+            {/* Folder breadcrumb */}
             {parentFolder && (
               <>
                 <button
@@ -161,6 +169,7 @@ const ProductDetail = () => {
               </>
             )}
             
+            {/* List breadcrumb */}
             {productList && (
               <button
                 onClick={handleListClick}
@@ -168,6 +177,17 @@ const ProductDetail = () => {
               >
                 <ListIcon size={14} className="group-hover:text-primary-700" />
                 <span className="group-hover:underline">{productList.name}</span>
+              </button>
+            )}
+
+            {/* Unassigned breadcrumb */}
+            {isUnassignedProduct && (
+              <button
+                onClick={handleUnassignedClick}
+                className="flex items-center gap-1 hover:text-primary-800 transition-colors group"
+              >
+                <Package size={14} className="group-hover:text-primary-700" />
+                <span className="group-hover:underline">Unassigned</span>
               </button>
             )}
           </nav>
