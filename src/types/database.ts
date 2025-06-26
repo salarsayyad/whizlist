@@ -23,6 +23,7 @@ export type List = {
   name: string;
   description: string | null;
   is_public: boolean;
+  is_pinned: boolean;
   folder_id: string | null;
   owner_id: string;
   created_at: string;
