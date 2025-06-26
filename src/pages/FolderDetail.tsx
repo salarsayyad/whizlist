@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Edit2, Share2, Users, Trash2, 
-  Lock, Globe, Plus, List as ListIcon, FolderOpen, MessageSquare, X 
+  Lock, Globe, Plus, List as ListIcon, FolderOpen, MessageSquare, X, Pin 
 } from 'lucide-react';
 import { useFolderStore } from '../store/folderStore';
 import { useListStore } from '../store/listStore';
@@ -17,11 +17,18 @@ const FolderDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { folders, deleteFolder } = useFolderStore();
-  const { lists, fetchLists } = useListStore();
+  const { lists, fetchLists, togglePin } = useListStore();
   const { comments } = useCommentStore();
   
   const folder = folders.find(f => f.id === id);
   const folderLists = lists.filter(list => list.folderId === id);
+  
+  // Sort lists with pinned first, then by creation date
+  const sortedFolderLists = [...folderLists].sort((a, b) => {
+    if (a.isPinned && !b.isPinned) return -1;
+    if (!a.isPinned && b.isPinned) return 1;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
   
   const [showCreateListModal, setShowCreateListModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -96,6 +103,15 @@ const FolderDetail = () => {
     navigate(`/list/${listId}`);
   };
 
+  const handleToggleListPin = async (e: React.MouseEvent, listId: string) => {
+    e.stopPropagation(); // Prevent navigation to list detail
+    try {
+      await togglePin(listId);
+    } catch (error) {
+      console.error('Error toggling list pin:', error);
+    }
+  };
+
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -167,7 +183,7 @@ const FolderDetail = () => {
       {/* Main content area - adjust margin when sidebar is open */}
       <div className={`transition-all duration-300 ${showCommentsSidebar ? 'lg:mr-96' : ''}`}>
         <div>
-          {folderLists.length === 0 ? (
+          {sortedFolderLists.length === 0 ? (
             <div className="text-center py-16 card p-8">
               <ListIcon size={64} className="mx-auto mb-4 text-primary-300" />
               <h3 className="text-xl font-medium text-primary-700 mb-2">No lists in this folder yet</h3>
@@ -187,15 +203,30 @@ const FolderDetail = () => {
               initial="hidden"
               animate="show"
             >
-              {folderLists.map((list) => (
+              {sortedFolderLists.map((list) => (
                 <motion.div 
                   key={list.id}
-                  className="card cursor-pointer overflow-hidden flex flex-col h-full hover:shadow-elevated transition-shadow duration-300"
+                  className="card cursor-pointer overflow-hidden flex flex-col h-full hover:shadow-elevated transition-shadow duration-300 relative"
                   variants={item}
                   whileHover={{ y: -4 }}
                   onClick={() => handleListClick(list.id)}
                 >
-                  <div className="p-6 flex-1 flex flex-col">
+                  {/* Pin button in top-left corner */}
+                  <div className="absolute top-3 left-3 z-10">
+                    <button
+                      className={`p-1.5 rounded-full transition-colors ${
+                        list.isPinned 
+                          ? 'bg-primary-800 text-white' 
+                          : 'bg-white text-primary-800 hover:bg-primary-100'
+                      }`}
+                      onClick={(e) => handleToggleListPin(e, list.id)}
+                      title={list.isPinned ? 'Unpin list' : 'Pin list'}
+                    >
+                      <Pin size={14} className={list.isPinned ? 'fill-white' : ''} />
+                    </button>
+                  </div>
+
+                  <div className="p-6 flex-1 flex flex-col pt-12"> {/* Add top padding to account for pin button */}
                     {/* LIST indicator above list name */}
                     <div className="mb-2">
                       <span className="inline-block text-xs font-medium text-primary-500 uppercase tracking-wide">

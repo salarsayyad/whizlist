@@ -11,6 +11,7 @@ interface ListState {
   createList: (list: Pick<List, 'name' | 'description' | 'isPublic' | 'folderId'>) => Promise<List>;
   updateList: (id: string, updates: Partial<List>) => Promise<void>;
   deleteList: (id: string) => Promise<void>;
+  togglePin: (id: string) => Promise<void>;
   getProductCount: (listId: string) => Promise<number>;
   refreshProductCounts: () => Promise<void>;
   updateListProductCount: (listId: string, count: number) => void;
@@ -21,7 +22,7 @@ const mapDbListToUiList = (dbList: any, productCount: number = 0): List => ({
   name: dbList.name,
   description: dbList.description,
   isPublic: dbList.is_public,
-  isPinned: false, // Not stored in DB
+  isPinned: dbList.is_pinned || false,
   createdAt: dbList.created_at,
   updatedAt: dbList.updated_at,
   folderId: dbList.folder_id,
@@ -128,7 +129,8 @@ export const useListStore = create<ListState>((set, get) => ({
           description: list.description,
           is_public: list.isPublic,
           folder_id: list.folderId,
-          owner_id: userId
+          owner_id: userId,
+          is_pinned: false
         }])
         .select(`
           *,
@@ -162,6 +164,7 @@ export const useListStore = create<ListState>((set, get) => ({
         ...(updates.description !== undefined && { description: updates.description }),
         ...(updates.isPublic !== undefined && { is_public: updates.isPublic }),
         ...(updates.folderId !== undefined && { folder_id: updates.folderId }),
+        ...(updates.isPinned !== undefined && { is_pinned: updates.isPinned }),
       };
       
       const { data, error } = await supabase
@@ -186,6 +189,46 @@ export const useListStore = create<ListState>((set, get) => ({
       set(state => ({
         lists: state.lists.map(list => 
           list.id === id ? updatedList : list
+        )
+      }));
+      
+    } catch (error) {
+      set({ error: (error as Error).message });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  togglePin: async (id) => {
+    const list = get().lists.find(l => l.id === id);
+    if (!list) return;
+
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('lists')
+        .update({ is_pinned: !list.isPinned })
+        .eq('id', id)
+        .select(`
+          *,
+          folders (
+            id,
+            name
+          )
+        `)
+        .single();
+
+      if (error) throw error;
+      
+      // Preserve product count from existing state
+      const existingList = get().lists.find(list => list.id === id);
+      const updatedList = mapDbListToUiList(data, existingList?.productCount || 0);
+      
+      set(state => ({
+        lists: state.lists.map(l => 
+          l.id === id ? updatedList : l
         )
       }));
       
