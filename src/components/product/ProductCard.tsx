@@ -88,53 +88,55 @@ const ProductCard = ({ product, showPin = false }: ProductCardProps) => {
               <RefreshCw size={16} className="animate-spin" />
             </div>
           )}
-          <button
-            className="p-1 rounded-md hover:bg-primary-100 text-primary-500"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowOptions(!showOptions);
-            }}
-          >
-            <MoreVertical size={16} />
-          </button>
-          
-          {showOptions && (
-            <div 
-              className="absolute right-0 top-full mt-1 bg-white shadow-elevated rounded-md py-1 z-10 w-40"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50"
-                onClick={handleOpenListSelector}
-              >
-                <List size={16} />
-                <span>Manage list</span>
-              </button>
-              <button
-                className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50"
-                onClick={handleOpenExternalLink}
-              >
-                <ExternalLink size={16} />
-                <span>Open original</span>
-              </button>
-              <button
-                className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50"
-                onClick={handleRemove}
-              >
-                <Trash2 size={16} />
-                <span>Remove</span>
-              </button>
-            </div>
-          )}
         </div>
       </div>
       
       <div className="p-4 flex-1 flex flex-col">
-        {/* Product URL - above title with reduced padding */}
-        <div className="mb-1">
+        {/* Product URL with ellipses menu - same line, right-aligned */}
+        <div className="mb-1 flex items-center justify-between">
           <span className="text-xs text-primary-500">
             {new URL(product.productUrl).hostname}
           </span>
+          <div className="relative">
+            <button
+              className="p-1 rounded-md hover:bg-primary-100 text-primary-500"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowOptions(!showOptions);
+              }}
+            >
+              <MoreVertical size={16} />
+            </button>
+            
+            {showOptions && (
+              <div 
+                className="absolute right-0 top-full mt-1 bg-white shadow-elevated rounded-md py-1 z-10 w-40"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50"
+                  onClick={handleOpenListSelector}
+                >
+                  <List size={16} />
+                  <span>Manage list</span>
+                </button>
+                <button
+                  className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50"
+                  onClick={handleOpenExternalLink}
+                >
+                  <ExternalLink size={16} />
+                  <span>Open original</span>
+                </button>
+                <button
+                  className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50"
+                  onClick={handleRemove}
+                >
+                  <Trash2 size={16} />
+                  <span>Remove</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex items-start justify-between">
