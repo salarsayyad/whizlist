@@ -287,12 +287,21 @@ const FolderDetail = () => {
       <AnimatePresence>
         {showCommentsSidebar && (
           <>
-            {/* Backdrop for all screen sizes */}
+            {/* Mobile backdrop with blur */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-primary-900/20 backdrop-blur-sm z-40"
+              className="fixed inset-0 bg-primary-900/20 backdrop-blur-sm z-40 lg:hidden"
+              onClick={() => setShowCommentsSidebar(false)}
+            />
+            
+            {/* Desktop backdrop without blur */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-primary-900/10 z-40 hidden lg:block"
               onClick={() => setShowCommentsSidebar(false)}
             />
             
