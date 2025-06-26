@@ -39,7 +39,7 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
   };
   
   const handleLogoClick = () => {
-    navigate(user ? '/dashboard' : '/');
+    navigate(user ? '/discover' : '/');
   };
 
   const clearSearch = () => {
