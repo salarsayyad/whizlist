@@ -6,11 +6,13 @@ import { uploadImageFromUrl, deleteProductImage } from '../lib/imageUpload';
 
 interface ProductState {
   products: Product[];
+  allProducts: Product[]; // New: Store all products separately for search
   isLoading: boolean;
   error: string | null;
   viewMode: 'grid' | 'list';
   extractingProducts: string[];
   fetchProducts: () => Promise<void>;
+  fetchAllProducts: () => Promise<void>; // New: Fetch all products for search
   fetchProductsByList: (listId: string | null) => Promise<void>;
   createProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'ownerId'>) => Promise<Product>;
   updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
@@ -54,6 +56,7 @@ const mapUiProductToDbProduct = (uiProduct: Partial<Product>) => ({
 
 export const useProductStore = create<ProductState>((set, get) => ({
   products: [],
+  allProducts: [], // Initialize empty
   isLoading: false,
   error: null,
   viewMode: 'grid',
@@ -71,12 +74,31 @@ export const useProductStore = create<ProductState>((set, get) => ({
       if (error) throw error;
       
       const mappedProducts = (data || []).map(mapDbProductToUiProduct);
-      set({ products: mappedProducts });
+      set({ products: mappedProducts, allProducts: mappedProducts });
       
     } catch (error) {
       set({ error: (error as Error).message });
     } finally {
       set({ isLoading: false });
+    }
+  },
+
+  fetchAllProducts: async () => {
+    try {
+      // Don't set loading state for this background fetch
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      const mappedProducts = (data || []).map(mapDbProductToUiProduct);
+      set({ allProducts: mappedProducts });
+      
+    } catch (error) {
+      console.error('Error fetching all products for search:', error);
+      // Don't update error state for background fetch
     }
   },
 
@@ -103,6 +125,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
       
       const mappedProducts = (data || []).map(mapDbProductToUiProduct);
       set({ products: mappedProducts });
+      
+      // Also update allProducts in the background to keep search current
+      get().fetchAllProducts();
       
     } catch (error) {
       set({ error: (error as Error).message });
@@ -192,7 +217,10 @@ export const useProductStore = create<ProductState>((set, get) => ({
         }
       }
 
-      set(state => ({ products: [mappedProduct, ...state.products] }));
+      set(state => ({ 
+        products: [mappedProduct, ...state.products],
+        allProducts: [mappedProduct, ...state.allProducts]
+      }));
 
       // Update list product count if product was assigned to a list
       if (mappedProduct.listId) {
@@ -229,6 +257,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
       set(state => ({
         products: state.products.map(product => 
           product.id === id ? mappedProduct : product
+        ),
+        allProducts: state.allProducts.map(product => 
+          product.id === id ? mappedProduct : product
         )
       }));
       
@@ -245,7 +276,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
       set({ isLoading: true, error: null });
       
       // Get the product to know which list it was in and for image cleanup
-      const product = get().products.find(p => p.id === id);
+      const product = get().products.find(p => p.id === id) || get().allProducts.find(p => p.id === id);
       const oldListId = product?.listId;
       const userId = useAuthStore.getState().user?.id;
       
@@ -268,7 +299,8 @@ export const useProductStore = create<ProductState>((set, get) => ({
       }
 
       set(state => ({
-        products: state.products.filter(product => product.id !== id)
+        products: state.products.filter(product => product.id !== id),
+        allProducts: state.allProducts.filter(product => product.id !== id)
       }));
 
       // Update list product count if product was in a list
@@ -286,7 +318,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
   },
 
   togglePin: async (id) => {
-    const product = get().products.find(p => p.id === id);
+    const product = get().products.find(p => p.id === id) || get().allProducts.find(p => p.id === id);
     if (!product) return;
 
     try {
@@ -305,6 +337,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
       set(state => ({
         products: state.products.map(p => 
           p.id === id ? mappedProduct : p
+        ),
+        allProducts: state.allProducts.map(p => 
+          p.id === id ? mappedProduct : p
         )
       }));
       
@@ -321,7 +356,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
       set({ isLoading: true, error: null });
       
       // Get the current product to know its old list
-      const currentProduct = get().products.find(p => p.id === productId);
+      const currentProduct = get().products.find(p => p.id === productId) || get().allProducts.find(p => p.id === productId);
       const oldListId = currentProduct?.listId;
       
       const { data, error } = await supabase
@@ -336,6 +371,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
       const mappedProduct = mapDbProductToUiProduct(data);
       set(state => ({
         products: state.products.map(product => 
+          product.id === productId ? mappedProduct : product
+        ),
+        allProducts: state.allProducts.map(product => 
           product.id === productId ? mappedProduct : product
         )
       }));
@@ -356,7 +394,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
-      const originalProduct = get().products.find(p => p.id === productId);
+      const originalProduct = get().products.find(p => p.id === productId) || get().allProducts.find(p => p.id === productId);
       if (!originalProduct) throw new Error('Product not found');
 
       const userId = useAuthStore.getState().user?.id;
@@ -412,7 +450,10 @@ export const useProductStore = create<ProductState>((set, get) => ({
         }
       }
 
-      set(state => ({ products: [mappedProduct, ...state.products] }));
+      set(state => ({ 
+        products: [mappedProduct, ...state.products],
+        allProducts: [mappedProduct, ...state.allProducts]
+      }));
 
       // Update product counts for the target list
       const { useListStore } = await import('./listStore');
@@ -441,6 +482,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
   updateProductInStore: (product) => {
     set(state => ({
       products: state.products.map(p => 
+        p.id === product.id ? product : p
+      ),
+      allProducts: state.allProducts.map(p => 
         p.id === product.id ? product : p
       )
     }));
