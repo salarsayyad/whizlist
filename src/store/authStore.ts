@@ -13,6 +13,70 @@ interface AuthState {
   initializeAuth: () => Promise<void>;
 }
 
+// Helper function to convert Supabase errors to user-friendly messages
+const getAuthErrorMessage = (error: any): string => {
+  // Handle Supabase auth errors
+  if (error?.message) {
+    const message = error.message.toLowerCase();
+    
+    // User already exists
+    if (message.includes('user already registered') || message.includes('user_already_exists')) {
+      return 'An account with this email already exists. Please try logging in or use a different email.';
+    }
+    
+    // Invalid email format
+    if (message.includes('invalid email') || message.includes('email not valid')) {
+      return 'Please enter a valid email address.';
+    }
+    
+    // Password too weak
+    if (message.includes('password') && (message.includes('weak') || message.includes('short') || message.includes('minimum'))) {
+      return 'Password must be at least 6 characters long.';
+    }
+    
+    // Invalid login credentials
+    if (message.includes('invalid login credentials') || message.includes('email not confirmed')) {
+      return 'Invalid email or password. Please check your credentials and try again.';
+    }
+    
+    // Rate limiting
+    if (message.includes('rate limit') || message.includes('too many requests')) {
+      return 'Too many attempts. Please wait a moment before trying again.';
+    }
+    
+    // Email not confirmed
+    if (message.includes('email not confirmed')) {
+      return 'Please check your email and click the confirmation link before signing in.';
+    }
+    
+    // Network or connection errors
+    if (message.includes('network') || message.includes('connection') || message.includes('fetch')) {
+      return 'Connection error. Please check your internet connection and try again.';
+    }
+  }
+  
+  // Handle HTTP status codes
+  if (error?.status) {
+    switch (error.status) {
+      case 422:
+        return 'Invalid request. Please check your information and try again.';
+      case 429:
+        return 'Too many attempts. Please wait a moment before trying again.';
+      case 500:
+        return 'Server error. Please try again later.';
+      case 503:
+        return 'Service temporarily unavailable. Please try again later.';
+    }
+  }
+  
+  // Fallback to original error message if it's user-friendly, otherwise use generic message
+  if (error?.message && error.message.length < 100 && !error.message.includes('HTTP')) {
+    return error.message;
+  }
+  
+  return 'An unexpected error occurred. Please try again.';
+};
+
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isLoading: true,
@@ -27,7 +91,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       });
     } catch (error) {
       set({ 
-        error: (error as Error).message,
+        error: getAuthErrorMessage(error),
         isLoading: false 
       });
     }
@@ -51,8 +115,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ user: data.user });
       
     } catch (error) {
-      set({ error: (error as Error).message });
-      throw error;
+      const friendlyMessage = getAuthErrorMessage(error);
+      set({ error: friendlyMessage });
+      throw new Error(friendlyMessage);
     } finally {
       set({ isLoading: false });
     }
@@ -71,8 +136,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ user: data.user });
       
     } catch (error) {
-      set({ error: (error as Error).message });
-      throw error;
+      const friendlyMessage = getAuthErrorMessage(error);
+      set({ error: friendlyMessage });
+      throw new Error(friendlyMessage);
     } finally {
       set({ isLoading: false });
     }
