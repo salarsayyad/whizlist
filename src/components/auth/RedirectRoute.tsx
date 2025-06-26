@@ -13,7 +13,7 @@ const RedirectRoute = () => {
   }
 
   if (user) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/discover" replace />;
   }
 
   return <Outlet />;

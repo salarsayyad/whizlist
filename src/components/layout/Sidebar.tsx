@@ -1,4 +1,4 @@
-import { X, Grid, List as ListIcon, FolderOpen, Share2, Star, Trash2, Settings, Plus, ChevronDown, ChevronRight, Package } from 'lucide-react';
+import { X, Grid, List as ListIcon, FolderOpen, Share2, Star, Trash2, Settings, Plus, ChevronDown, ChevronRight, Package, TrendingUp } from 'lucide-react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { useState, useEffect } from 'react';
@@ -180,6 +180,19 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         
         <nav className="flex-1 overflow-y-auto py-4 px-3">
           <ul className="space-y-1">
+            <li>
+              <NavLink 
+                to="/discover" 
+                end
+                className={({ isActive }) => 
+                  cn("nav-link", isActive && "nav-link-active")
+                }
+                onClick={handleNavLinkClick}
+              >
+                <TrendingUp size={18} />
+                <span>Discover</span>
+              </NavLink>
+            </li>
             <li>
               <NavLink 
                 to="/dashboard" 

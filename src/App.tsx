@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
+import Discover from './pages/Discover';
 import Dashboard from './pages/Dashboard';
 import ProductDetail from './pages/ProductDetail';
 import ListDetail from './pages/ListDetail';
@@ -25,6 +26,7 @@ function App() {
       
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
+          <Route path="/discover" element={<Discover />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/list/:id" element={<ListDetail />} />
