@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
 import { Product } from '../types/database';
 import { useAuthStore } from './authStore';
+import { uploadImageFromUrl, deleteProductImage } from '../lib/imageUpload';
 
 interface ProductState {
   products: Product[];
@@ -117,7 +118,34 @@ export const useProductStore = create<ProductState>((set, get) => ({
       const userId = useAuthStore.getState().user?.id;
       if (!userId) throw new Error('User not authenticated');
 
-      const dbProduct = mapUiProductToDbProduct({ ...product, ownerId: userId });
+      let finalImageUrl = product.imageUrl;
+
+      // If we have an image URL, upload it to Supabase Storage
+      if (finalImageUrl && finalImageUrl.startsWith('http')) {
+        try {
+          // Generate a temporary product ID for the image upload
+          const tempProductId = crypto.randomUUID();
+          
+          const uploadResult = await uploadImageFromUrl(
+            finalImageUrl,
+            tempProductId,
+            userId
+          );
+
+          if (uploadResult.success && uploadResult.url) {
+            finalImageUrl = uploadResult.url;
+          }
+        } catch (uploadError) {
+          console.warn('Failed to upload image to storage, using original URL:', uploadError);
+          // Continue with original URL if upload fails
+        }
+      }
+
+      const dbProduct = mapUiProductToDbProduct({ 
+        ...product, 
+        imageUrl: finalImageUrl,
+        ownerId: userId 
+      });
 
       const { data, error } = await supabase
         .from('products')
@@ -128,6 +156,42 @@ export const useProductStore = create<ProductState>((set, get) => ({
       if (error) throw error;
       
       const mappedProduct = mapDbProductToUiProduct(data);
+
+      // If we uploaded with a temp ID, we need to rename the file to use the actual product ID
+      if (finalImageUrl && finalImageUrl.includes('supabase') && product.imageUrl !== finalImageUrl) {
+        try {
+          const tempProductId = crypto.randomUUID();
+          const oldPath = `${userId}/${tempProductId}`;
+          const newPath = `${userId}/${mappedProduct.id}`;
+          
+          // Copy the file to the new location
+          const { error: copyError } = await supabase.storage
+            .from('product-images')
+            .copy(oldPath, newPath);
+
+          if (!copyError) {
+            // Delete the old file
+            await supabase.storage
+              .from('product-images')
+              .remove([oldPath]);
+
+            // Update the product with the new image URL
+            const { data: { publicUrl } } = supabase.storage
+              .from('product-images')
+              .getPublicUrl(newPath);
+
+            await supabase
+              .from('products')
+              .update({ image_url: publicUrl })
+              .eq('id', mappedProduct.id);
+
+            mappedProduct.imageUrl = publicUrl;
+          }
+        } catch (renameError) {
+          console.warn('Failed to rename uploaded image:', renameError);
+        }
+      }
+
       set(state => ({ products: [mappedProduct, ...state.products] }));
 
       // Update list product count if product was assigned to a list
@@ -180,16 +244,29 @@ export const useProductStore = create<ProductState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
-      // Get the product to know which list it was in
+      // Get the product to know which list it was in and for image cleanup
       const product = get().products.find(p => p.id === id);
       const oldListId = product?.listId;
+      const userId = useAuthStore.getState().user?.id;
       
+      // Delete the product from database first
       const { error } = await supabase
         .from('products')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
+
+      // Delete associated image from storage
+      if (userId) {
+        try {
+          await deleteProductImage(id, userId);
+        } catch (imageError) {
+          console.warn('Failed to delete product image:', imageError);
+          // Don't fail the entire operation if image deletion fails
+        }
+      }
+
       set(state => ({
         products: state.products.filter(product => product.id !== id)
       }));
@@ -307,6 +384,34 @@ export const useProductStore = create<ProductState>((set, get) => ({
       if (error) throw error;
       
       const mappedProduct = mapDbProductToUiProduct(data);
+
+      // If the original product has a Supabase-hosted image, copy it for the new product
+      if (originalProduct.imageUrl && originalProduct.imageUrl.includes('supabase')) {
+        try {
+          const oldPath = `${userId}/${originalProduct.id}`;
+          const newPath = `${userId}/${mappedProduct.id}`;
+          
+          const { error: copyError } = await supabase.storage
+            .from('product-images')
+            .copy(oldPath, newPath);
+
+          if (!copyError) {
+            const { data: { publicUrl } } = supabase.storage
+              .from('product-images')
+              .getPublicUrl(newPath);
+
+            await supabase
+              .from('products')
+              .update({ image_url: publicUrl })
+              .eq('id', mappedProduct.id);
+
+            mappedProduct.imageUrl = publicUrl;
+          }
+        } catch (copyError) {
+          console.warn('Failed to copy product image:', copyError);
+        }
+      }
+
       set(state => ({ products: [mappedProduct, ...state.products] }));
 
       // Update product counts for the target list

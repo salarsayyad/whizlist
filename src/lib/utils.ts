@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { supabase } from './supabase';
 import { useProductStore } from '../store/productStore';
+import { uploadImageFromUrl } from './imageUpload';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -71,6 +72,29 @@ export async function extractProductDetails(url: string) {
           }
 
           if (firecrawlData) {
+            let finalImageUrl = firecrawlData.image_url || initialProduct.imageUrl;
+
+            // If we have an image URL, upload it to Supabase Storage
+            if (finalImageUrl && finalImageUrl.startsWith('http')) {
+              try {
+                const { user } = await supabase.auth.getUser();
+                if (user.data.user) {
+                  const uploadResult = await uploadImageFromUrl(
+                    finalImageUrl,
+                    productId,
+                    user.data.user.id
+                  );
+
+                  if (uploadResult.success && uploadResult.url) {
+                    finalImageUrl = uploadResult.url;
+                  }
+                }
+              } catch (uploadError) {
+                console.warn('Failed to upload image to storage, using original URL:', uploadError);
+                // Continue with original URL if upload fails
+              }
+            }
+
             // Update the product with enhanced details
             const { data: updatedProduct, error: updateError } = await supabase
               .from('products')
@@ -78,7 +102,7 @@ export async function extractProductDetails(url: string) {
                 title: firecrawlData.title || initialProduct.title,
                 description: firecrawlData.description || initialProduct.description,
                 price: firecrawlData.price || initialProduct.price,
-                image_url: firecrawlData.image_url || initialProduct.imageUrl
+                image_url: finalImageUrl
               })
               .eq('id', productId)
               .select()
@@ -123,6 +147,7 @@ function mapDbProductToUiProduct(dbProduct: any): Product {
     productUrl: dbProduct.product_url,
     isPinned: dbProduct.is_pinned || false,
     tags: dbProduct.tags || [],
+    listId: dbProduct.list_id,
     ownerId: dbProduct.owner_id,
     createdAt: dbProduct.created_at,
     updatedAt: dbProduct.updated_at

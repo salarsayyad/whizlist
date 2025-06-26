@@ -2,11 +2,13 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import Modal from '../ui/Modal';
 import { extractProductDetails } from '../../lib/utils';
+import { uploadImageFile } from '../../lib/imageUpload';
 import { useProductStore } from '../../store/productStore';
 import { useListStore } from '../../store/listStore';
 import { useFolderStore } from '../../store/folderStore';
+import { useAuthStore } from '../../store/authStore';
 import Button from '../ui/Button';
-import { Link2, ChevronDown, X, Plus, Check, FolderOpen, ChevronRight, List as ListIcon, Search } from 'lucide-react';
+import { Link2, ChevronDown, X, Plus, Check, FolderOpen, ChevronRight, List as ListIcon, Search, Upload, Image } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 interface AddProductModalProps {
@@ -31,22 +33,29 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const [newlyCreatedListId, setNewlyCreatedListId] = useState<string | null>(null);
   
+  // Image upload states
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadMethod, setUploadMethod] = useState<'url' | 'file'>('url');
+  
   // Ref for auto-focusing the URL input
   const urlInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { createProduct, products } = useProductStore();
   const { lists, fetchLists, createList } = useListStore();
   const { folders, fetchFolders } = useFolderStore();
+  const { user } = useAuthStore();
   
   useEffect(() => {
     fetchLists();
     fetchFolders();
     
     // Auto-focus the URL input when the modal opens
-    if (urlInputRef.current) {
+    if (urlInputRef.current && uploadMethod === 'url') {
       urlInputRef.current.focus();
     }
-  }, []);
+  }, [uploadMethod]);
 
   // Auto-expand folder containing the current list
   useEffect(() => {
@@ -123,6 +132,30 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
       setExpandedFolders(foldersWithMatches);
     }
   }, [searchQuery, filteredFolders]);
+
+  // Handle image file selection
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Clear selected image
+  const clearSelectedImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
   
   const handleAddTag = (tagToAdd?: string) => {
     const trimmedTag = (tagToAdd || tagInput).trim();
@@ -259,12 +292,17 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!url) {
+    if (uploadMethod === 'url' && !url) {
       setError('Please enter a URL');
       return;
     }
+
+    if (uploadMethod === 'file' && !selectedImage) {
+      setError('Please select an image file');
+      return;
+    }
     
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    if (uploadMethod === 'url' && (!url.startsWith('http://') && !url.startsWith('https://'))) {
       setError('Please enter a valid URL starting with http:// or https://');
       return;
     }
@@ -273,13 +311,41 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
     setError('');
     
     try {
-      const { product, updateDetails } = await extractProductDetails(url);
-      
-      // Include user-added tags with the product
-      const baseProduct = {
-        ...product,
-        tags: [...(product.tags || []), ...tags],
-      };
+      let baseProduct: any;
+
+      if (uploadMethod === 'url') {
+        // Extract product details from URL
+        const { product } = await extractProductDetails(url);
+        baseProduct = {
+          ...product,
+          tags: [...(product.tags || []), ...tags],
+        };
+      } else {
+        // Handle file upload
+        if (!user) {
+          throw new Error('User not authenticated');
+        }
+
+        // Generate a temporary product ID for image upload
+        const tempProductId = crypto.randomUUID();
+        
+        // Upload the image file
+        const uploadResult = await uploadImageFile(selectedImage!, tempProductId, user.id);
+        
+        if (!uploadResult.success) {
+          throw new Error(uploadResult.error || 'Failed to upload image');
+        }
+
+        baseProduct = {
+          title: selectedImage!.name.split('.')[0], // Use filename as title
+          description: '',
+          price: null,
+          imageUrl: uploadResult.url,
+          productUrl: '', // No URL for file uploads
+          isPinned: false,
+          tags: [...tags],
+        };
+      }
 
       // Create products for each selected list (or one unassigned product if no lists selected)
       const listsToCreate = selectedListIds.length > 0 ? selectedListIds : [null];
@@ -294,8 +360,11 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
         
         const createdProduct = await createProduct(productWithNewList);
         
-        // Start the enhanced details extraction for this product
-        updateDetails(createdProduct.id).catch(console.error);
+        // Start the enhanced details extraction for URL-based products
+        if (uploadMethod === 'url') {
+          const { updateDetails } = await extractProductDetails(url);
+          updateDetails(createdProduct.id).catch(console.error);
+        }
         
         // Remove the newly created list from the remaining lists to process
         const remainingListIds = listsToCreate.filter(id => id !== newlyCreatedListId);
@@ -311,8 +380,11 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
               
               const createdProduct = await createProduct(productWithList);
               
-              // Start the enhanced details extraction for each product
-              updateDetails(createdProduct.id).catch(console.error);
+              // Start the enhanced details extraction for URL-based products
+              if (uploadMethod === 'url') {
+                const { updateDetails } = await extractProductDetails(url);
+                updateDetails(createdProduct.id).catch(console.error);
+              }
               
               return createdProduct;
             })
@@ -329,8 +401,11 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
             
             const createdProduct = await createProduct(productWithList);
             
-            // Start the enhanced details extraction for each product
-            updateDetails(createdProduct.id).catch(console.error);
+            // Start the enhanced details extraction for URL-based products
+            if (uploadMethod === 'url') {
+              const { updateDetails } = await extractProductDetails(url);
+              updateDetails(createdProduct.id).catch(console.error);
+            }
             
             return createdProduct;
           })
@@ -366,30 +441,121 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
     <Modal isOpen={true} onClose={onClose} title="Add Product" size="xl">
       <form onSubmit={handleSubmit}>
         <div className="space-y-6">
+          {/* Upload Method Selector */}
           <div>
-            <label htmlFor="url" className="block text-sm font-medium text-primary-700 mb-1">
-              Product URL
+            <label className="block text-sm font-medium text-primary-700 mb-3">
+              How would you like to add the product?
             </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Link2 size={16} className="text-primary-400" />
-              </div>
-              <input
-                ref={urlInputRef}
-                type="text"
-                id="url"
-                placeholder="https://www.example.com/product"
-                className="input pl-10"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                required
-              />
+            <div className="flex bg-primary-100 rounded-lg p-1">
+              <button
+                type="button"
+                className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                  uploadMethod === 'url' 
+                    ? 'bg-white shadow-sm text-primary-900' 
+                    : 'text-primary-600 hover:text-primary-800'
+                }`}
+                onClick={() => setUploadMethod('url')}
+              >
+                <Link2 size={16} />
+                From URL
+              </button>
+              <button
+                type="button"
+                className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                  uploadMethod === 'file' 
+                    ? 'bg-white shadow-sm text-primary-900' 
+                    : 'text-primary-600 hover:text-primary-800'
+                }`}
+                onClick={() => setUploadMethod('file')}
+              >
+                <Upload size={16} />
+                Upload Image
+              </button>
             </div>
-            <p className="mt-1 text-xs text-primary-500">
-              Paste a product URL from any website to save it to your Whizlist
-            </p>
           </div>
 
+          {/* URL Input */}
+          {uploadMethod === 'url' && (
+            <div>
+              <label htmlFor="url" className="block text-sm font-medium text-primary-700 mb-1">
+                Product URL
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Link2 size={16} className="text-primary-400" />
+                </div>
+                <input
+                  ref={urlInputRef}
+                  type="text"
+                  id="url"
+                  placeholder="https://www.example.com/product"
+                  className="input pl-10"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  required
+                />
+              </div>
+              <p className="mt-1 text-xs text-primary-500">
+                Paste a product URL from any website to save it to your Whizlist
+              </p>
+            </div>
+          )}
+
+          {/* File Upload */}
+          {uploadMethod === 'file' && (
+            <div>
+              <label className="block text-sm font-medium text-primary-700 mb-1">
+                Product Image
+              </label>
+              
+              {!selectedImage ? (
+                <div 
+                  className="border-2 border-dashed border-primary-300 rounded-lg p-6 text-center hover:border-primary-400 transition-colors cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Image size={48} className="mx-auto text-primary-400 mb-3" />
+                  <p className="text-primary-600 mb-1">Click to select an image</p>
+                  <p className="text-xs text-primary-500">PNG, JPG, GIF up to 5MB</p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                  />
+                </div>
+              ) : (
+                <div className="relative">
+                  <div className="border border-primary-300 rounded-lg p-4">
+                    <div className="flex items-center gap-4">
+                      {imagePreview && (
+                        <img 
+                          src={imagePreview} 
+                          alt="Preview" 
+                          className="w-16 h-16 object-cover rounded-md"
+                        />
+                      )}
+                      <div className="flex-1">
+                        <p className="font-medium text-primary-900">{selectedImage.name}</p>
+                        <p className="text-sm text-primary-600">
+                          {(selectedImage.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={clearSelectedImage}
+                        className="p-1 rounded-full hover:bg-primary-100 text-primary-500"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Tags Section */}
           <div>
             <label className="block text-sm font-medium text-primary-700 mb-1">
               Tags
@@ -472,6 +638,7 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
             </p>
           </div>
 
+          {/* List Selection */}
           <div>
             <label className="block text-sm font-medium text-primary-700 mb-2">
               Add to Lists ({selectedListIds.length} selected)
@@ -802,7 +969,11 @@ const AddProductModal = ({ onClose }: AddProductModalProps) => {
           <Button 
             type="submit"
             isLoading={isLoading}
-            disabled={!url.trim() || isLoading}
+            disabled={
+              (uploadMethod === 'url' && !url.trim()) || 
+              (uploadMethod === 'file' && !selectedImage) || 
+              isLoading
+            }
           >
             {isLoading ? 'Adding...' : 'Add Product'}
           </Button>
