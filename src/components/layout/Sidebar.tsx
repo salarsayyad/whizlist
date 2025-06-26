@@ -1,4 +1,4 @@
-import { X, Grid, List as ListIcon, FolderOpen, Share2, Star, Trash2, Settings, Plus, ChevronDown, ChevronRight, Package, TrendingUp } from 'lucide-react';
+import { X, Grid, List as ListIcon, FolderOpen, Share2, Star, Trash2, Settings, Plus, ChevronDown, ChevronRight, Package, TrendingUp, Pin } from 'lucide-react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { useState, useEffect } from 'react';
@@ -19,7 +19,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const location = useLocation();
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
   const { folders, fetchFolders } = useFolderStore();
-  const { lists, fetchLists } = useListStore();
+  const { lists, fetchLists, togglePin } = useListStore();
   const { fetchProducts } = useProductStore();
   const [showCreateFolder, setShowCreateFolder] = useState(false);
   const [showCreateList, setShowCreateList] = useState(false);
@@ -110,13 +110,34 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     // Only toggle the folder expansion
     toggleFolder(folderId);
   };
+
+  const handleListPin = async (e: React.MouseEvent, listId: string) => {
+    e.stopPropagation(); // Prevent navigation to list detail
+    try {
+      await togglePin(listId);
+    } catch (error) {
+      console.error('Error toggling list pin:', error);
+    }
+  };
   
   const getFolderLists = (folderId: string) => {
-    return lists.filter(list => list.folderId === folderId);
+    const folderLists = lists.filter(list => list.folderId === folderId);
+    // Sort lists with pinned first, then by creation date
+    return folderLists.sort((a, b) => {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
   };
   
   const getUnorganizedLists = () => {
-    return lists.filter(list => !list.folderId);
+    const unorganizedLists = lists.filter(list => !list.folderId);
+    // Sort lists with pinned first, then by creation date
+    return unorganizedLists.sort((a, b) => {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
   };
 
   // Get count of unassigned products (products without a list_id) using allProducts
@@ -316,15 +337,33 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                           <NavLink 
                             to={`/list/${list.id}`}
                             className={({ isActive }) => 
-                              cn("nav-link text-sm py-1.5", isActive && "nav-link-active")
+                              cn("nav-link text-sm py-1.5 group", isActive && "nav-link-active")
                             }
                             onClick={handleNavLinkClick}
                           >
-                            <ListIcon size={16} />
+                            {/* Use Pin icon if list is pinned, otherwise use List icon */}
+                            {list.isPinned ? (
+                              <Pin size={16} className="fill-current" />
+                            ) : (
+                              <ListIcon size={16} />
+                            )}
                             <span className="flex-1">{list.name}</span>
-                            <span className="text-xs text-primary-500">
+                            <span className="text-xs text-primary-500 mr-2">
                               {list.productCount}
                             </span>
+                            {/* Pin/Unpin button - only visible on hover */}
+                            <button
+                              onClick={(e) => handleListPin(e, list.id)}
+                              className={cn(
+                                "opacity-0 group-hover:opacity-100 p-1 rounded transition-all",
+                                list.isPinned 
+                                  ? "text-primary-700 hover:bg-primary-200" 
+                                  : "text-primary-500 hover:bg-primary-200"
+                              )}
+                              title={list.isPinned ? "Unpin list" : "Pin list"}
+                            >
+                              <Pin size={12} className={list.isPinned ? "fill-current" : ""} />
+                            </button>
                           </NavLink>
                         </li>
                       ))}
@@ -348,15 +387,33 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                   <NavLink 
                     to={`/list/${list.id}`}
                     className={({ isActive }) => 
-                      cn("nav-link", isActive && "nav-link-active")
+                      cn("nav-link group", isActive && "nav-link-active")
                     }
                     onClick={handleNavLinkClick}
                   >
-                    <ListIcon size={18} />
+                    {/* Use Pin icon if list is pinned, otherwise use List icon */}
+                    {list.isPinned ? (
+                      <Pin size={18} className="fill-current" />
+                    ) : (
+                      <ListIcon size={18} />
+                    )}
                     <span className="flex-1">{list.name}</span>
-                    <span className="text-xs text-primary-500">
+                    <span className="text-xs text-primary-500 mr-2">
                       {list.productCount}
                     </span>
+                    {/* Pin/Unpin button - only visible on hover */}
+                    <button
+                      onClick={(e) => handleListPin(e, list.id)}
+                      className={cn(
+                        "opacity-0 group-hover:opacity-100 p-1 rounded transition-all",
+                        list.isPinned 
+                          ? "text-primary-700 hover:bg-primary-200" 
+                          : "text-primary-500 hover:bg-primary-200"
+                      )}
+                      title={list.isPinned ? "Unpin list" : "Pin list"}
+                    >
+                      <Pin size={12} className={list.isPinned ? "fill-current" : ""} />
+                    </button>
                   </NavLink>
                 </li>
               ))}
