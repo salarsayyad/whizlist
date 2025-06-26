@@ -6,13 +6,13 @@ import { uploadImageFromUrl, deleteProductImage } from '../lib/imageUpload';
 
 interface ProductState {
   products: Product[];
-  allProducts: Product[]; // New: Store all products separately for search
+  allProducts: Product[]; // Store all products separately for search
   isLoading: boolean;
   error: string | null;
   viewMode: 'grid' | 'list';
   extractingProducts: string[];
   fetchProducts: () => Promise<void>;
-  fetchAllProducts: () => Promise<void>; // New: Fetch all products for search
+  fetchAllProducts: () => Promise<void>; // Fetch all products for search
   fetchProductsByList: (listId: string | null) => Promise<void>;
   createProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'ownerId'>) => Promise<Product>;
   updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;

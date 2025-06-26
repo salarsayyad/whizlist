@@ -35,7 +35,7 @@ interface SearchResult {
 
 const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedIndexChange }: SearchResultsProps) => {
   const navigate = useNavigate();
-  const { allProducts, fetchAllProducts } = useProductStore(); // Use allProducts instead of products
+  const { allProducts, fetchAllProducts } = useProductStore();
   const { lists } = useListStore();
   const { folders } = useFolderStore();
 
@@ -222,7 +222,7 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
     results.tags.sort((a, b) => b.itemCount! - a.itemCount!); // Sort tags by usage
 
     return results;
-  }, [query, allProducts, lists, folders]); // Use allProducts instead of products
+  }, [query, allProducts, lists, folders]);
 
   const handleResultClick = (result: SearchResult, index?: number) => {
     console.log('🔍 Search result clicked:', result);
@@ -231,6 +231,9 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
     if (typeof index === 'number' && onSelectedIndexChange) {
       onSelectedIndexChange(index);
     }
+    
+    // Close search results first
+    onResultClick();
     
     // Navigate based on result type
     let targetPath = '';
@@ -251,22 +254,19 @@ const SearchResults = ({ query, onResultClick, selectedIndex = -1, onSelectedInd
     
     console.log('🚀 Navigating to:', targetPath);
     
-    // Navigate immediately, then close search results
-    if (targetPath) {
-      try {
-        navigate(targetPath);
-        console.log('✅ Navigation successful');
-        // Close search results after successful navigation
-        onResultClick();
-      } catch (error) {
-        console.error('❌ Navigation failed:', error);
-        // Close search results even if navigation fails
-        onResultClick();
+    // Use a small delay to ensure the search results close first
+    setTimeout(() => {
+      if (targetPath) {
+        try {
+          navigate(targetPath);
+          console.log('✅ Navigation successful');
+        } catch (error) {
+          console.error('❌ Navigation failed:', error);
+          // Fallback to window.location
+          window.location.href = targetPath;
+        }
       }
-    } else {
-      // Close search results if no valid path
-      onResultClick();
-    }
+    }, 100);
   };
 
   // Handle keyboard navigation
