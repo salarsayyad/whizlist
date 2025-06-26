@@ -78,6 +78,13 @@ const ListDetail = () => {
       fetchProductsByList(id);
     }
   }, [id, fetchProductsByList]);
+
+  // Sort products with pinned first, then by creation date
+  const sortedProducts = [...products].sort((a, b) => {
+    if (a.isPinned && !b.isPinned) return -1;
+    if (!a.isPinned && b.isPinned) return 1;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
   
   if (!list) {
     return (
@@ -264,7 +271,7 @@ const ListDetail = () => {
         <div>
           {/* Removed the separate header with view toggle since it's now in the main header */}
           
-          {products.length === 0 ? (
+          {sortedProducts.length === 0 ? (
             <div className="text-center py-16 card p-8">
               <h3 className="text-xl font-medium text-primary-700 mb-2">No products in this list yet</h3>
               <p className="text-primary-600 mb-6">Add products to this list to start organizing.</p>
@@ -278,7 +285,7 @@ const ListDetail = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {products.map((product) => (
+              {sortedProducts.map((product) => (
                 <ProductCard 
                   key={product.id} 
                   product={product} 
