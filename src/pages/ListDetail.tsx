@@ -38,41 +38,55 @@ const ListDetail = () => {
   const [showCommentsSidebar, setShowCommentsSidebar] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [commentsCount, setCommentsCount] = useState(0);
+  const [listCommentsCount, setListCommentsCount] = useState(0); // Separate state for list comments
 
-  // Fetch main comments count (excluding replies) independently for the floating menu
+  // Fetch list comments count independently from product comments
+  const fetchListCommentsCount = async () => {
+    if (!id) return;
+    
+    try {
+      const { supabase } = await import('../lib/supabase');
+      const { count, error } = await supabase
+        .from('comments')
+        .select('*', { count: 'exact', head: true })
+        .eq('entity_type', 'list')
+        .eq('entity_id', id)
+        .is('parent_id', null); // Only count main comments, not replies
+
+      if (error) throw error;
+      setListCommentsCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching list comments count:', error);
+      setListCommentsCount(0);
+    }
+  };
+
+  // Initial list comments count fetch
   useEffect(() => {
-    const fetchCommentsCount = async () => {
-      if (!id) return;
-      
-      try {
-        const { supabase } = await import('../lib/supabase');
-        const { count, error } = await supabase
-          .from('comments')
-          .select('*', { count: 'exact', head: true })
-          .eq('entity_type', 'list')
-          .eq('entity_id', id)
-          .is('parent_id', null); // Only count main comments, not replies
-
-        if (error) throw error;
-        setCommentsCount(count || 0);
-      } catch (error) {
-        console.error('Error fetching comments count:', error);
-        setCommentsCount(0);
-      }
-    };
-
-    fetchCommentsCount();
+    fetchListCommentsCount();
   }, [id]);
 
-  // Update comments count when comments change (when sidebar is open)
-  // Count only main comments, not replies
+  // Update list comments count when comments change AND sidebar is open for THIS list
   useEffect(() => {
-    if (comments.length > 0) {
+    if (showCommentsSidebar && comments.length > 0) {
+      // Only update if the comments are for this list (check by ensuring we're in list comment mode)
+      // We can determine this by checking if the comment section is showing list comments
       const mainCommentsCount = comments.filter(comment => !comment.parentId).length;
-      setCommentsCount(mainCommentsCount);
+      setListCommentsCount(mainCommentsCount);
     }
-  }, [comments]);
+  }, [comments, showCommentsSidebar]);
+
+  // Refresh list comments count when sidebar closes
+  useEffect(() => {
+    if (!showCommentsSidebar) {
+      // When list comments sidebar closes, refresh the count from database
+      const timeoutId = setTimeout(() => {
+        fetchListCommentsCount();
+      }, 150);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [showCommentsSidebar]);
 
   // Fetch products for this list
   useEffect(() => {
@@ -498,7 +512,7 @@ const ListDetail = () => {
                 <div className="flex items-center gap-2">
                   <MessageSquare size={18} className="text-primary-700" />
                   <h2 className="text-lg font-medium text-primary-900">
-                    Comments ({commentsCount})
+                    Comments ({listCommentsCount})
                   </h2>
                 </div>
                 <button
@@ -561,9 +575,9 @@ const ListDetail = () => {
                     title="Comments"
                   >
                     <MessageSquare size={20} />
-                    {commentsCount > 0 && (
+                    {listCommentsCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 font-medium">
-                        {commentsCount}
+                        {listCommentsCount}
                       </span>
                     )}
                   </Button>
@@ -617,9 +631,9 @@ const ListDetail = () => {
                   >
                     <MessageSquare size={16} />
                     <span>Comments</span>
-                    {commentsCount > 0 && (
+                    {listCommentsCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 font-medium">
-                        {commentsCount}
+                        {listCommentsCount}
                       </span>
                     )}
                   </Button>
