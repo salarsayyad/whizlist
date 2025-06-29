@@ -123,6 +123,131 @@ const ListDetail = () => {
       navigate(`/folder/${parentFolder.id}`);
     }
   };
+
+  // Product List Item component for list view
+  const ProductListItem = ({ product }: { product: any }) => {
+    const { togglePin, deleteProduct } = useProductStore();
+    const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const handleConfirmDelete = async () => {
+      setIsDeleting(true);
+      try {
+        await deleteProduct(product.id);
+      } catch (error) {
+        console.error('Error deleting product:', error);
+      } finally {
+        setIsDeleting(false);
+        setShowDeleteConfirmation(false);
+      }
+    };
+
+    const handleTagClick = (e: React.MouseEvent, tag: string) => {
+      e.stopPropagation();
+      navigate(`/tag/${encodeURIComponent(tag)}`);
+    };
+    
+    return (
+      <>
+        <div className="card p-4 flex gap-4 hover:bg-primary-50 transition-colors duration-200">
+          <div 
+            className="w-16 h-16 flex-shrink-0 rounded-md overflow-hidden cursor-pointer"
+            onClick={() => navigate(`/product/${product.id}`)}
+          >
+            {product.imageUrl ? (
+              <img 
+                src={product.imageUrl} 
+                alt={product.title} 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-primary-200 flex items-center justify-center">
+                <span className="text-primary-500 text-xs">No image</span>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex-1 min-w-0">
+            <div 
+              className="cursor-pointer"
+              onClick={() => navigate(`/product/${product.id}`)}
+            >
+              <h3 className="font-medium text-primary-900">{product.title}</h3>
+              {product.price && (
+                <p className="text-primary-800 text-sm">{product.price}</p>
+              )}
+              <p className="text-primary-600 text-sm mt-1 line-clamp-2">
+                {product.description}
+              </p>
+            </div>
+            
+            <div className="mt-2 flex flex-wrap gap-1">
+              {product.tags?.map((tag: string) => (
+                <button
+                  key={tag} 
+                  className="badge-primary text-xs cursor-pointer hover:bg-primary-200 transition-colors"
+                  onClick={(e) => handleTagClick(e, tag)}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          <div className="flex flex-col justify-between items-end">
+            <div className="flex items-center gap-1">
+              <button 
+                className={`p-1.5 rounded-full ${product.isPinned ? 'bg-primary-800 text-white' : 'bg-primary-100 text-primary-800'} hover:bg-primary-200`}
+                onClick={() => togglePin(product.id)}
+                title={product.isPinned ? 'Unpin product' : 'Pin product'}
+              >
+                <Pin size={16} className={product.isPinned ? 'fill-white' : ''} />
+              </button>
+              <button 
+                className="p-1.5 rounded-full bg-primary-100 text-primary-800 hover:bg-primary-200"
+                onClick={() => window.open(product.productUrl, '_blank', 'noopener,noreferrer')}
+                title="Open original link"
+              >
+                <ExternalLink size={16} />
+              </button>
+              <button 
+                className="p-1.5 rounded-full bg-primary-100 text-error-600 hover:bg-error-50"
+                onClick={() => setShowDeleteConfirmation(true)}
+                title="Delete product"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+            
+            <div className="flex items-center gap-3 text-primary-500 text-xs mt-2">
+              <span>{new Date(product.createdAt).toLocaleDateString()}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Delete Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={showDeleteConfirmation}
+          onClose={() => setShowDeleteConfirmation(false)}
+          onConfirm={handleConfirmDelete}
+          title="Delete Product"
+          message={
+            <div>
+              <p className="mb-3">
+                Are you sure you want to delete <strong>"{product.title}"</strong>?
+              </p>
+              <p className="text-sm text-primary-500">
+                This action cannot be undone.
+              </p>
+            </div>
+          }
+          confirmText="Delete Product"
+          isLoading={isDeleting}
+          variant="danger"
+        />
+      </>
+    );
+  };
   
   return (
     <div className="pb-24 relative"> {/* Add relative positioning for sidebar */}
@@ -269,8 +394,6 @@ const ListDetail = () => {
       {/* Main content area - adjust margin when sidebar is open */}
       <div className={`transition-all duration-300 ${showCommentsSidebar ? 'lg:mr-96' : ''}`}>
         <div>
-          {/* Removed the separate header with view toggle since it's now in the main header */}
-          
           {sortedProducts.length === 0 ? (
             <div className="text-center py-16 card p-8">
               <h3 className="text-xl font-medium text-primary-700 mb-2">No products in this list yet</h3>
@@ -284,14 +407,27 @@ const ListDetail = () => {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {sortedProducts.map((product) => (
-                <ProductCard 
-                  key={product.id} 
-                  product={product} 
-                  showPin={true} // Show pin button since we're in a list detail page
-                />
-              ))}
+            <div className="pb-8">
+              {viewMode === 'grid' ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {sortedProducts.map((product) => (
+                    <ProductCard 
+                      key={product.id} 
+                      product={product} 
+                      showPin={true} // Show pin button since we're in a list detail page
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {sortedProducts.map((product) => (
+                    <ProductListItem 
+                      key={product.id} 
+                      product={product} 
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
