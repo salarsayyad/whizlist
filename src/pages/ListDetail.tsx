@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Edit2, Share2, Users, Trash2, 
-  Lock, Globe, Grid, List as ListIcon, FolderOpen, Plus, MessageSquare, X, Folder 
+  Lock, Globe, Grid, List as ListIcon, FolderOpen, Plus, MessageSquare, X, Folder, Pin, ExternalLink 
 } from 'lucide-react';
 import { useListStore } from '../store/listStore';
 import { useFolderStore } from '../store/folderStore';
