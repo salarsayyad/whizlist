@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Share2, ExternalLink, Trash2, Edit2, 
   Plus, List as ListIcon, X, ChevronRight, FolderOpen, MessageSquare, Package
@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { products, deleteProduct, updateProduct } = useProductStore();
   const { lists } = useListStore();
   const { folders } = useFolderStore();
@@ -40,6 +41,15 @@ const ProductDetail = () => {
 
   // Check if this is an unassigned product
   const isUnassignedProduct = product && !product.listId;
+
+  // Check if we should auto-open comments sidebar based on navigation state
+  useEffect(() => {
+    if (location.state?.openComments) {
+      setShowCommentsSidebar(true);
+      // Clear the state to prevent reopening on subsequent visits
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname]);
 
   // Fetch main comments count (excluding replies) independently for the floating menu
   useEffect(() => {

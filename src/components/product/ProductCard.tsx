@@ -117,7 +117,10 @@ const ProductCard = ({
 
   const handleCommentClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate(`/product/${product.id}`);
+    // Navigate to product detail page with comments sidebar open
+    navigate(`/product/${product.id}`, { 
+      state: { openComments: true } 
+    });
   };
 
   const handleShareClick = (e: React.MouseEvent) => {
