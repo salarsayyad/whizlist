@@ -69,32 +69,47 @@ const ProductCard = ({
     }
   }, [product.id, showActions]);
 
-  // Update comment count when comments change in the global store
-  // This happens when comments are added/removed from the sidebar
+  // Real-time comment count updates based on global comments store
   useEffect(() => {
-    // Only update if this product is the one currently being viewed in the sidebar
-    // or if the sidebar is closed (to catch updates from other sources)
-    if (activeProductId === product.id || !isCommentsOpen) {
-      // If comments are loaded for this product, count them directly
-      if (activeProductId === product.id && comments.length >= 0) {
-        const mainCommentsCount = comments.filter(comment => !comment.parentId).length;
-        setCommentCount(mainCommentsCount);
-      } else {
-        // Otherwise, refetch from database to ensure accuracy
-        if (showActions) {
-          fetchCommentCount();
-        }
-      }
+    if (!showActions) return;
+
+    // If this product is currently active in the sidebar, use the live comment count
+    if (activeProductId === product.id && isCommentsOpen) {
+      const mainCommentsCount = comments.filter(comment => !comment.parentId).length;
+      setCommentCount(mainCommentsCount);
+    } else {
+      // For inactive products or when sidebar is closed, fetch from database
+      // This ensures all cards stay in sync when comments are added/removed
+      fetchCommentCount();
     }
   }, [comments, activeProductId, product.id, isCommentsOpen, showActions]);
 
-  // Also refetch when the sidebar closes to ensure all cards are updated
+  // Listen for comment store changes to update all product cards
+  // This is crucial for keeping comment counts in sync across all cards
+  useEffect(() => {
+    if (!showActions) return;
+
+    // Create a small delay to allow database operations to complete
+    // before refetching comment counts for all cards
+    const timeoutId = setTimeout(() => {
+      // Only refetch if this product is not currently active in the sidebar
+      // (active products get real-time updates from the comments array)
+      if (activeProductId !== product.id) {
+        fetchCommentCount();
+      }
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [comments.length, showActions, activeProductId, product.id]);
+
+  // Additional sync when sidebar closes to ensure all cards are updated
   useEffect(() => {
     if (!isCommentsOpen && showActions) {
-      // Small delay to ensure any pending database operations are complete
+      // When sidebar closes, refresh comment count for all cards
+      // This catches any changes that might have been made
       const timeoutId = setTimeout(() => {
         fetchCommentCount();
-      }, 100);
+      }, 150);
       
       return () => clearTimeout(timeoutId);
     }
