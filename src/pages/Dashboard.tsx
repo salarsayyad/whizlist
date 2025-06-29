@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Grid, List as ListIcon, Plus, Filter } from 'lucide-react';
+import { Grid, List as ListIcon, Filter } from 'lucide-react';
 import { useProductStore } from '../store/productStore';
 import ProductGrid from '../components/product/ProductGrid';
 import ProductList from '../components/product/ProductList';
@@ -73,14 +73,6 @@ const Dashboard = () => {
           >
             <Filter size={16} />
             <span>Filter</span>
-          </Button>
-          
-          <Button 
-            className="flex items-center gap-1"
-            onClick={handleAddProduct}
-          >
-            <Plus size={16} />
-            <span>Add Product</span>
           </Button>
         </div>
       </div>
