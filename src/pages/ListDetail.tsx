@@ -277,23 +277,23 @@ const ListDetail = () => {
   return (
     <div className="pb-24 relative"> {/* Add relative positioning for sidebar */}
       <div className="mb-4">
-        {/* Folder Breadcrumb and List Name in a more compact layout */}
-        <div className="flex flex-col space-y-1">
-          {/* Folder Breadcrumb */}
-          {parentFolder && (
-            <button
-              onClick={handleFolderClick}
-              className="flex items-center text-primary-600 hover:text-primary-800 transition-colors group"
-            >
-              <FolderOpen size={16} className="mr-1 group-hover:text-primary-700" />
-              <span className="text-sm font-medium group-hover:underline">
-                {parentFolder.name}
-              </span>
-            </button>
-          )}
+        {/* Folder Breadcrumb */}
+        {parentFolder && (
+          <button
+            onClick={handleFolderClick}
+            className="flex items-center text-primary-600 hover:text-primary-800 transition-colors group mb-2"
+          >
+            <FolderOpen size={16} className="mr-1 group-hover:text-primary-700" />
+            <span className="text-sm font-medium group-hover:underline">
+              {parentFolder.name}
+            </span>
+          </button>
+        )}
 
-          {/* List Name and Edit Button */}
-          <div className="flex items-center gap-2">
+        {/* List Header - Keep everything on one line */}
+        <div className="flex flex-wrap items-center justify-between">
+          {/* Left side: List name, edit button, and indicators */}
+          <div className="flex items-center gap-2 flex-grow">
             <h1 className="text-2xl font-medium text-primary-900">{list.name}</h1>
             <button
               onClick={() => setShowEditModal(true)}
@@ -302,38 +302,31 @@ const ListDetail = () => {
             >
               <Edit2 size={16} />
             </button>
-          </div>
-        </div>
-
-        {/* List Description */}
-        {list.description && (
-          <p className="text-primary-600 text-sm mt-2">{list.description}</p>
-        )}
-
-        {/* List Metadata and View Toggle */}
-        <div className="flex flex-wrap items-center justify-between mt-3">
-          <div className="flex items-center gap-2">
-            <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-200 text-primary-800">
-              <ListIcon size={10} />
-              <span>List</span>
-            </div>
-            <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-100 text-primary-700">
-              {list.isPublic ? (
-                <>
-                  <Globe size={12} />
-                  <span>Public</span>
-                </>
-              ) : (
-                <>
-                  <Lock size={12} />
-                  <span>Private</span>
-                </>
-              )}
+            
+            {/* List and Privacy indicators */}
+            <div className="flex items-center gap-2 ml-2">
+              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-200 text-primary-800">
+                <ListIcon size={10} />
+                <span>List</span>
+              </div>
+              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-100 text-primary-700">
+                {list.isPublic ? (
+                  <>
+                    <Globe size={12} />
+                    <span>Public</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock size={12} />
+                    <span>Private</span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Grid/List toggle */}
-          <div className="flex bg-primary-100 rounded-md p-1 mt-2 sm:mt-0">
+          {/* Right side: Grid/List toggle */}
+          <div className="flex bg-primary-100 rounded-md p-1">
             <button
               className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-white shadow-soft' : 'text-primary-600 hover:text-primary-800'}`}
               onClick={() => setViewMode('grid')}
@@ -350,6 +343,11 @@ const ListDetail = () => {
             </button>
           </div>
         </div>
+
+        {/* List Description */}
+        {list.description && (
+          <p className="text-primary-600 text-sm mt-2">{list.description}</p>
+        )}
       </div>
       
       {/* Main content area - adjust margin when sidebar is open */}
