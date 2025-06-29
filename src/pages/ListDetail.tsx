@@ -509,11 +509,20 @@ const ListDetail = () => {
             >
               {/* Sidebar Header */}
               <div className="flex items-center justify-between p-4 border-b border-primary-200 bg-primary-50">
-                <div className="flex items-center gap-2">
-                  <MessageSquare size={18} className="text-primary-700" />
-                  <h2 className="text-lg font-medium text-primary-900">
-                    Comments ({listCommentsCount})
-                  </h2>
+                <div className="flex items-center gap-3">
+                  {/* List thumbnail/icon */}
+                  <div className="w-10 h-10 rounded-md bg-primary-100 flex items-center justify-center flex-shrink-0 border border-primary-200">
+                    <ListIcon size={18} className="text-primary-600" />
+                  </div>
+                  
+                  <div className="flex flex-col">
+                    <h2 className="text-lg font-medium text-primary-900">
+                      Comments ({listCommentsCount})
+                    </h2>
+                    <p className="text-sm text-primary-600 truncate max-w-xs">
+                      {list.name}
+                    </p>
+                  </div>
                 </div>
                 <button
                   onClick={() => setShowCommentsSidebar(false)}
