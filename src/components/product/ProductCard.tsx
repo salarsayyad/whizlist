@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Star, Share2, MoreVertical, Pin, Trash2, ExternalLink, MessageSquare, List, RefreshCw, Plus } from 'lucide-react';
 import { Product } from '../../types';
@@ -34,8 +34,35 @@ const ProductCard = ({
   const [showAddToListModal, setShowAddToListModal] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [commentCount, setCommentCount] = useState(0);
   
   const isExtracting = extractingProducts.includes(product.id);
+
+  // Fetch comment count for this product
+  useEffect(() => {
+    const fetchCommentCount = async () => {
+      try {
+        const { supabase } = await import('../../lib/supabase');
+        const { count, error } = await supabase
+          .from('comments')
+          .select('*', { count: 'exact', head: true })
+          .eq('entity_type', 'product')
+          .eq('entity_id', product.id)
+          .is('parent_id', null); // Only count main comments, not replies
+
+        if (error) throw error;
+        setCommentCount(count || 0);
+      } catch (error) {
+        console.error('Error fetching comment count:', error);
+        setCommentCount(0);
+      }
+    };
+
+    // Only fetch comment count if we're showing actions (comment button)
+    if (showActions) {
+      fetchCommentCount();
+    }
+  }, [product.id, showActions]);
   
   const handleClick = (e: React.MouseEvent) => {
     // Don't navigate if clicking on interactive elements
@@ -254,7 +281,7 @@ const ProductCard = ({
                     title="View comments"
                   >
                     <MessageSquare size={14} />
-                    <span className="text-xs">0</span>
+                    <span className="text-xs">{commentCount}</span>
                   </button>
                   <button 
                     className="interactive-element text-primary-500 hover:text-primary-700 transition-colors"
