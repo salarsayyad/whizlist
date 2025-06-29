@@ -196,29 +196,24 @@ const ProductCard = ({ product, showPin = false }: ProductCardProps) => {
           </div>
         </div>
 
-        {/* Grey bottom section */}
+        {/* Grey bottom section - removed date */}
         <div className="px-4 py-3 bg-primary-50 border-t border-primary-100">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button 
-                className="interactive-element flex items-center gap-1 text-primary-500 hover:text-primary-700 transition-colors"
-                onClick={handleCommentClick}
-                title="View comments"
-              >
-                <MessageSquare size={14} />
-                <span className="text-xs">0</span>
-              </button>
-              <button 
-                className="interactive-element text-primary-500 hover:text-primary-700 transition-colors"
-                onClick={handleShareClick}
-                title="Share product"
-              >
-                <Share2 size={14} />
-              </button>
-            </div>
-            <span className="text-xs text-primary-500">
-              {new Date(product.createdAt).toLocaleDateString()}
-            </span>
+          <div className="flex items-center gap-3">
+            <button 
+              className="interactive-element flex items-center gap-1 text-primary-500 hover:text-primary-700 transition-colors"
+              onClick={handleCommentClick}
+              title="View comments"
+            >
+              <MessageSquare size={14} />
+              <span className="text-xs">0</span>
+            </button>
+            <button 
+              className="interactive-element text-primary-500 hover:text-primary-700 transition-colors"
+              onClick={handleShareClick}
+              title="Share product"
+            >
+              <Share2 size={14} />
+            </button>
           </div>
         </div>
       </motion.div>
