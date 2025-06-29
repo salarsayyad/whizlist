@@ -220,6 +220,7 @@ const Discover = () => {
                     product={product} 
                     showPin={false} // Don't show pin in Discover page
                     showTags={false} // Don't show tags in Discover page
+                    showActions={false} // Don't show comment/share buttons in Discover page
                   />
                 </motion.div>
               ))}

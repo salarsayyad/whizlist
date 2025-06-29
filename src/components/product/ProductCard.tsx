@@ -13,9 +13,10 @@ interface ProductCardProps {
   product: Product;
   showPin?: boolean; // New prop to control pin visibility
   showTags?: boolean; // New prop to control tags visibility
+  showActions?: boolean; // New prop to control comment/share buttons visibility
 }
 
-const ProductCard = ({ product, showPin = false, showTags = true }: ProductCardProps) => {
+const ProductCard = ({ product, showPin = false, showTags = true, showActions = true }: ProductCardProps) => {
   const navigate = useNavigate();
   const { togglePin, deleteProduct, extractingProducts } = useProductStore();
   const [showOptions, setShowOptions] = useState(false);
@@ -198,7 +199,7 @@ const ProductCard = ({ product, showPin = false, showTags = true }: ProductCardP
           )}
         </div>
 
-        {/* Grey bottom section - URL on left, buttons on right */}
+        {/* Grey bottom section - URL on left, buttons on right (conditionally) */}
         <div className="px-4 py-3 bg-primary-50 border-t border-primary-100">
           <div className="flex items-center justify-between">
             {/* Clickable base URL with external link icon on the left */}
@@ -211,24 +212,26 @@ const ProductCard = ({ product, showPin = false, showTags = true }: ProductCardP
               <ExternalLink size={12} />
             </button>
             
-            {/* Comment and share buttons on the right */}
-            <div className="flex items-center gap-3">
-              <button 
-                className="interactive-element flex items-center gap-1 text-primary-500 hover:text-primary-700 transition-colors"
-                onClick={handleCommentClick}
-                title="View comments"
-              >
-                <MessageSquare size={14} />
-                <span className="text-xs">0</span>
-              </button>
-              <button 
-                className="interactive-element text-primary-500 hover:text-primary-700 transition-colors"
-                onClick={handleShareClick}
-                title="Share product"
-              >
-                <Share2 size={14} />
-              </button>
-            </div>
+            {/* Comment and share buttons on the right - only show if showActions is true */}
+            {showActions && (
+              <div className="flex items-center gap-3">
+                <button 
+                  className="interactive-element flex items-center gap-1 text-primary-500 hover:text-primary-700 transition-colors"
+                  onClick={handleCommentClick}
+                  title="View comments"
+                >
+                  <MessageSquare size={14} />
+                  <span className="text-xs">0</span>
+                </button>
+                <button 
+                  className="interactive-element text-primary-500 hover:text-primary-700 transition-colors"
+                  onClick={handleShareClick}
+                  title="Share product"
+                >
+                  <Share2 size={14} />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </motion.div>
