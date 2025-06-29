@@ -113,8 +113,12 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
   const handleListPin = async (e: React.MouseEvent, listId: string) => {
     e.stopPropagation(); // Prevent navigation to list detail
+    e.preventDefault(); // Prevent any default behavior
+    
     try {
+      console.log('Toggling pin for list:', listId); // Debug log
       await togglePin(listId);
+      console.log('Pin toggle completed'); // Debug log
     } catch (error) {
       console.error('Error toggling list pin:', error);
     }
@@ -355,7 +359,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                             <button
                               onClick={(e) => handleListPin(e, list.id)}
                               className={cn(
-                                "opacity-0 group-hover:opacity-100 p-1 rounded transition-all",
+                                "opacity-0 group-hover:opacity-100 p-1 rounded transition-all duration-200",
                                 list.isPinned 
                                   ? "text-primary-700 hover:bg-primary-200" 
                                   : "text-primary-500 hover:bg-primary-200"
@@ -405,7 +409,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                     <button
                       onClick={(e) => handleListPin(e, list.id)}
                       className={cn(
-                        "opacity-0 group-hover:opacity-100 p-1 rounded transition-all",
+                        "opacity-0 group-hover:opacity-100 p-1 rounded transition-all duration-200",
                         list.isPinned 
                           ? "text-primary-700 hover:bg-primary-200" 
                           : "text-primary-500 hover:bg-primary-200"
