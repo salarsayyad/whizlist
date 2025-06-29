@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Grid, List as ListIcon, Filter } from 'lucide-react';
+import { Grid, List as ListIcon, Filter, Plus } from 'lucide-react';
 import { useProductStore } from '../store/productStore';
 import ProductGrid from '../components/product/ProductGrid';
 import ProductList from '../components/product/ProductList';
@@ -50,6 +50,14 @@ const Dashboard = () => {
         </motion.h1>
         
         <div className="flex items-center gap-3">
+          <Button 
+            variant="secondary"
+            className="flex items-center gap-1"
+          >
+            <Filter size={16} />
+            <span>Filter</span>
+          </Button>
+          
           <div className="flex bg-primary-100 rounded-md p-1">
             <button
               className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-white shadow-soft' : 'text-primary-600 hover:text-primary-800'}`}
@@ -66,14 +74,6 @@ const Dashboard = () => {
               <ListIcon size={18} />
             </button>
           </div>
-          
-          <Button 
-            variant="secondary"
-            className="flex items-center gap-1"
-          >
-            <Filter size={16} />
-            <span>Filter</span>
-          </Button>
         </div>
       </div>
       
