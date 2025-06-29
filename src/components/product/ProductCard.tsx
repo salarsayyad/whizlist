@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Star, Share2, MoreVertical, Pin, Trash2, ExternalLink, MessageSquare, List, RefreshCw, Plus } from 'lucide-react';
+import { Star, Share2, MoreVertical, Pin, Trash2, ExternalLink, MessageSquare, List, RefreshCw, Plus, FolderOpen, ChevronRight } from 'lucide-react';
 import { Product } from '../../types';
 import { useProductStore } from '../../store/productStore';
 import { useGlobalCommentsStore } from '../../store/globalCommentsStore';
 import { useCommentStore } from '../../store/commentStore';
+import { useListStore } from '../../store/listStore';
+import { useFolderStore } from '../../store/folderStore';
 import { truncateText } from '../../lib/utils';
 import Button from '../ui/Button';
 import ProductListSelector from './ProductListSelector';
@@ -19,6 +21,7 @@ interface ProductCardProps {
   showActions?: boolean; // New prop to control comment/share buttons visibility
   showAddToList?: boolean; // New prop to show "Add to List" button for products not in collection
   isInUserCollection?: boolean; // New prop to indicate if product is in user's collection
+  showBreadcrumbs?: boolean; // New prop to control breadcrumbs visibility
 }
 
 const ProductCard = ({ 
@@ -27,12 +30,15 @@ const ProductCard = ({
   showTags = true, 
   showActions = true, 
   showAddToList = false,
-  isInUserCollection = true 
+  isInUserCollection = true,
+  showBreadcrumbs = false
 }: ProductCardProps) => {
   const navigate = useNavigate();
   const { togglePin, deleteProduct, extractingProducts } = useProductStore();
   const { openComments, isOpen: isCommentsOpen, productId: activeProductId } = useGlobalCommentsStore();
   const { comments } = useCommentStore();
+  const { lists } = useListStore();
+  const { folders } = useFolderStore();
   const [showOptions, setShowOptions] = useState(false);
   const [showListSelector, setShowListSelector] = useState(false);
   const [showAddToListModal, setShowAddToListModal] = useState(false);
@@ -41,6 +47,12 @@ const ProductCard = ({
   const [commentCount, setCommentCount] = useState(0);
   
   const isExtracting = extractingProducts.includes(product.id);
+
+  // Get the list that contains this product
+  const productList = lists.find(list => list.id === product.listId);
+  
+  // Get the folder that contains the list (if applicable)
+  const parentFolder = productList?.folderId ? folders.find(folder => folder.id === productList.folderId) : null;
 
   // Fetch comment count for this product
   const fetchCommentCount = async () => {
@@ -182,6 +194,20 @@ const ProductCard = ({
     e.stopPropagation();
     window.open(product.productUrl, '_blank', 'noopener,noreferrer');
   };
+
+  const handleFolderClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (parentFolder) {
+      navigate(`/folder/${parentFolder.id}`);
+    }
+  };
+
+  const handleListClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (productList) {
+      navigate(`/list/${productList.id}`);
+    }
+  };
   
   return (
     <>
@@ -269,6 +295,46 @@ const ProductCard = ({
         </div>
         
         <div className="p-4 flex-1 flex flex-col">
+          {/* Breadcrumbs - only show if showBreadcrumbs is true and product has a list or folder */}
+          {showBreadcrumbs && (productList || parentFolder) && (
+            <div className="mb-2 flex items-center text-xs text-primary-500">
+              {parentFolder && (
+                <>
+                  <button 
+                    className="interactive-element flex items-center hover:text-primary-700 transition-colors"
+                    onClick={handleFolderClick}
+                  >
+                    <FolderOpen size={12} className="mr-1" />
+                    <span className="truncate max-w-[80px]">{parentFolder.name}</span>
+                  </button>
+                  
+                  {productList && (
+                    <>
+                      <ChevronRight size={12} className="mx-1" />
+                      <button 
+                        className="interactive-element flex items-center hover:text-primary-700 transition-colors"
+                        onClick={handleListClick}
+                      >
+                        <List size={12} className="mr-1" />
+                        <span className="truncate max-w-[80px]">{productList.name}</span>
+                      </button>
+                    </>
+                  )}
+                </>
+              )}
+              
+              {!parentFolder && productList && (
+                <button 
+                  className="interactive-element flex items-center hover:text-primary-700 transition-colors"
+                  onClick={handleListClick}
+                >
+                  <List size={12} className="mr-1" />
+                  <span className="truncate max-w-[120px]">{productList.name}</span>
+                </button>
+              )}
+            </div>
+          )}
+
           <div className="flex items-start justify-between mb-2">
             <h3 className="text-xl font-medium text-primary-900 line-clamp-1 flex-1">{product.title}</h3>
           </div>

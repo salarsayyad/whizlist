@@ -3,10 +3,11 @@ import ProductCard from './ProductCard';
 import { motion } from 'framer-motion';
 
 interface ProductGridProps {
-  showPin?: boolean; // New prop to control pin visibility
+  showPin?: boolean; // Prop to control pin visibility
+  showBreadcrumbs?: boolean; // New prop to control breadcrumbs visibility
 }
 
-const ProductGrid = ({ showPin = false }: ProductGridProps) => {
+const ProductGrid = ({ showPin = false, showBreadcrumbs = false }: ProductGridProps) => {
   const { products } = useProductStore();
   
   // Sort products with pinned first, then by date
@@ -38,6 +39,7 @@ const ProductGrid = ({ showPin = false }: ProductGridProps) => {
           key={product.id} 
           product={product} 
           showPin={showPin}
+          showBreadcrumbs={showBreadcrumbs}
         />
       ))}
     </motion.div>
