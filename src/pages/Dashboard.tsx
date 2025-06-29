@@ -4,7 +4,8 @@ import { useProductStore } from '../store/productStore';
 import ProductGrid from '../components/product/ProductGrid';
 import ProductList from '../components/product/ProductList';
 import Button from '../components/ui/Button';
-import ProductsLoadingState from '../components/ui/ProductsLoadingState';
+import SkeletonProductCard from '../components/ui/SkeletonProductCard';
+import SkeletonListItem from '../components/ui/SkeletonListItem';
 import { motion } from 'framer-motion';
 
 const Dashboard = () => {
@@ -14,6 +15,17 @@ const Dashboard = () => {
     // Fetch all products for dashboard view
     fetchProducts();
   }, []);
+
+  // Generate skeleton count based on typical grid layout
+  const getSkeletonCount = () => {
+    if (viewMode === 'grid') {
+      // Show 8 skeleton cards for grid view (2 rows of 4 on desktop)
+      return 8;
+    } else {
+      // Show 6 skeleton items for list view
+      return 6;
+    }
+  };
   
   return (
     <div>
@@ -24,7 +36,7 @@ const Dashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          All Products ({products.length})
+          All Products {!isLoading && `(${products.length})`}
         </motion.h1>
         
         <div className="flex items-center gap-3">
@@ -55,9 +67,23 @@ const Dashboard = () => {
         </div>
       </div>
       
-      {/* Show loading state while products are being fetched */}
+      {/* Show skeleton loading state while products are being fetched */}
       {isLoading ? (
-        <ProductsLoadingState message="Loading your products..." />
+        <div className="pb-8">
+          {viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {Array.from({ length: getSkeletonCount() }).map((_, index) => (
+                <SkeletonProductCard key={index} index={index} />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {Array.from({ length: getSkeletonCount() }).map((_, index) => (
+                <SkeletonListItem key={index} index={index} />
+              ))}
+            </div>
+          )}
+        </div>
       ) : products.length === 0 ? (
         <div className="text-center py-16">
           <h3 className="text-xl font-medium text-primary-700 mb-2">No products yet</h3>

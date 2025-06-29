@@ -15,7 +15,8 @@ import AddProductModal from '../components/product/AddProductModal';
 import MoveListToFolderModal from '../components/list/MoveListToFolderModal';
 import CommentSection from '../components/comment/CommentSection';
 import ConfirmationModal from '../components/ui/ConfirmationModal';
-import ProductsLoadingState from '../components/ui/ProductsLoadingState';
+import SkeletonProductCard from '../components/ui/SkeletonProductCard';
+import SkeletonListItem from '../components/ui/SkeletonListItem';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ListDetail = () => {
@@ -86,6 +87,15 @@ const ListDetail = () => {
     if (!a.isPinned && b.isPinned) return 1;
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
+
+  // Generate skeleton count based on list's expected product count or default
+  const getSkeletonCount = () => {
+    if (list?.productCount && list.productCount > 0) {
+      return Math.min(list.productCount, 12); // Cap at 12 for performance
+    }
+    // Default skeleton count if we don't know the expected count
+    return viewMode === 'grid' ? 8 : 6;
+  };
   
   if (!list) {
     return (
@@ -252,6 +262,22 @@ const ListDetail = () => {
   
   return (
     <div className="pb-24 relative"> {/* Add relative positioning for sidebar */}
+      {/* Breadcrumb Navigation - Show for folder/list products OR unassigned products */}
+      {parentFolder && (
+        <div className="mb-6">
+          <nav className="flex items-center text-sm text-primary-600 mb-4">
+            {/* Folder breadcrumb */}
+            <button
+              onClick={handleFolderClick}
+              className="flex items-center gap-1 hover:text-primary-800 transition-colors group"
+            >
+              <FolderOpen size={14} className="group-hover:text-primary-700" />
+              <span className="group-hover:underline">{parentFolder.name}</span>
+            </button>
+          </nav>
+        </div>
+      )}
+
       <div className="mb-6">
         <div className="flex flex-col md:flex-row justify-between">
           <div className="flex-1">
@@ -260,21 +286,6 @@ const ListDetail = () => {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
             >
-              {/* Folder Breadcrumb */}
-              {parentFolder && (
-                <div className="mb-2">
-                  <button
-                    onClick={handleFolderClick}
-                    className="flex items-center text-primary-600 hover:text-primary-800 transition-colors group"
-                  >
-                    <FolderOpen size={16} className="mr-1 group-hover:text-primary-700" />
-                    <span className="text-sm font-medium group-hover:underline">
-                      {parentFolder.name}
-                    </span>
-                  </button>
-                </div>
-              )}
-
               {/* Desktop: List name with edit icon, indicators, and view toggle on the same line */}
               <div className="hidden md:flex items-center justify-between mb-2">
                 <div className="flex items-center gap-3">
@@ -395,9 +406,23 @@ const ListDetail = () => {
       {/* Main content area - adjust margin when sidebar is open */}
       <div className={`transition-all duration-300 ${showCommentsSidebar ? 'lg:mr-96' : ''}`}>
         <div>
-          {/* Show loading state while products are being fetched */}
+          {/* Show skeleton loading state while products are being fetched */}
           {productsLoading ? (
-            <ProductsLoadingState message="Loading list products..." />
+            <div className="pb-8">
+              {viewMode === 'grid' ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {Array.from({ length: getSkeletonCount() }).map((_, index) => (
+                    <SkeletonProductCard key={index} index={index} />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {Array.from({ length: getSkeletonCount() }).map((_, index) => (
+                    <SkeletonListItem key={index} index={index} />
+                  ))}
+                </div>
+              )}
+            </div>
           ) : sortedProducts.length === 0 ? (
             <div className="text-center py-16 card p-8">
               <h3 className="text-xl font-medium text-primary-700 mb-2">No products in this list yet</h3>

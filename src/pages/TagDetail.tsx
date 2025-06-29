@@ -5,7 +5,8 @@ import { useProductStore } from '../store/productStore';
 import ProductGrid from '../components/product/ProductGrid';
 import ProductList from '../components/product/ProductList';
 import Button from '../components/ui/Button';
-import ProductsLoadingState from '../components/ui/ProductsLoadingState';
+import SkeletonProductCard from '../components/ui/SkeletonProductCard';
+import SkeletonListItem from '../components/ui/SkeletonListItem';
 import { motion } from 'framer-motion';
 
 const TagDetail = () => {
@@ -38,6 +39,12 @@ const TagDetail = () => {
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  // Generate skeleton count based on expected tagged products or default
+  const getSkeletonCount = () => {
+    // Default skeleton count for tagged products
+    return viewMode === 'grid' ? 8 : 6;
+  };
 
   const handleRelatedTagClick = (relatedTag: string) => {
     navigate(`/tag/${encodeURIComponent(relatedTag)}`);
@@ -81,7 +88,7 @@ const TagDetail = () => {
                 <h1 className="text-2xl font-medium text-primary-900">#{decodedTag}</h1>
               </div>
               <p className="text-primary-600">
-                {taggedProducts.length} product{taggedProducts.length === 1 ? '' : 's'} tagged with "{decodedTag}"
+                {!isLoading && `${taggedProducts.length} product${taggedProducts.length === 1 ? '' : 's'} tagged with "${decodedTag}"`}
               </p>
             </motion.div>
           </div>
@@ -134,9 +141,23 @@ const TagDetail = () => {
         </div>
       )}
       
-      {/* Show loading state while products are being fetched */}
+      {/* Show skeleton loading state while products are being fetched */}
       {isLoading ? (
-        <ProductsLoadingState message={`Loading products tagged with "${decodedTag}"...`} />
+        <div className="pb-8">
+          {viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {Array.from({ length: getSkeletonCount() }).map((_, index) => (
+                <SkeletonProductCard key={index} index={index} />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {Array.from({ length: getSkeletonCount() }).map((_, index) => (
+                <SkeletonListItem key={index} index={index} />
+              ))}
+            </div>
+          )}
+        </div>
       ) : taggedProducts.length === 0 ? (
         <div className="text-center py-16 card p-8">
           <Tag size={64} className="mx-auto mb-4 text-primary-300" />

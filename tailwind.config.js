@@ -7,6 +7,7 @@ export default {
         primary: {
           50: '#f8fafc',
           100: '#f1f5f9',
+          150: '#e8f0f7', // Added intermediate shade for skeleton loading
           200: '#e2e8f0',
           300: '#cbd5e1',
           400: '#94a3b8',
@@ -104,6 +105,7 @@ export default {
         'fadeIn': 'fadeIn 0.3s ease-in-out',
         'slideUp': 'slideUp 0.3s ease-out',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'shimmer': 'shimmer 2s infinite',
       },
       keyframes: {
         fadeIn: {
@@ -113,6 +115,10 @@ export default {
         slideUp: {
           '0%': { transform: 'translateY(10px)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        shimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
         },
       },
       boxShadow: {

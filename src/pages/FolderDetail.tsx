@@ -12,7 +12,7 @@ import CreateListModal from '../components/list/CreateListModal';
 import EditFolderModal from '../components/folder/EditFolderModal';
 import CommentSection from '../components/comment/CommentSection';
 import ConfirmationModal from '../components/ui/ConfirmationModal';
-import ProductsLoadingState from '../components/ui/ProductsLoadingState';
+import SkeletonFolderCard from '../components/ui/SkeletonFolderCard';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const FolderDetail = () => {
@@ -76,6 +76,13 @@ const FolderDetail = () => {
   useEffect(() => {
     fetchLists();
   }, []);
+
+  // Generate skeleton count based on expected lists or default
+  const getSkeletonCount = () => {
+    // If we know how many lists to expect, show that many skeletons
+    // Otherwise, show a reasonable default
+    return 4; // Default to 4 skeleton cards for folders
+  };
   
   if (!folder) {
     return (
@@ -193,9 +200,13 @@ const FolderDetail = () => {
       {/* Main content area - adjust margin when sidebar is open */}
       <div className={`transition-all duration-300 ${showCommentsSidebar ? 'lg:mr-96' : ''}`}>
         <div>
-          {/* Show loading state while lists are being fetched */}
+          {/* Show skeleton loading state while lists are being fetched */}
           {listsLoading ? (
-            <ProductsLoadingState message="Loading folder contents..." showIcon={false} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {Array.from({ length: getSkeletonCount() }).map((_, index) => (
+                <SkeletonFolderCard key={index} index={index} />
+              ))}
+            </div>
           ) : sortedFolderLists.length === 0 ? (
             <div className="text-center py-16 card p-8">
               <ListIcon size={64} className="mx-auto mb-4 text-primary-300" />

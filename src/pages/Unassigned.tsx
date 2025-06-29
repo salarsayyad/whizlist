@@ -5,7 +5,8 @@ import ProductCard from '../components/product/ProductCard';
 import Button from '../components/ui/Button';
 import AddProductModal from '../components/product/AddProductModal';
 import ConfirmationModal from '../components/ui/ConfirmationModal';
-import ProductsLoadingState from '../components/ui/ProductsLoadingState';
+import SkeletonProductCard from '../components/ui/SkeletonProductCard';
+import SkeletonListItem from '../components/ui/SkeletonListItem';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
@@ -20,6 +21,12 @@ const Unassigned = () => {
     // Fetch all products to get unassigned ones
     fetchProducts();
   }, []);
+
+  // Generate skeleton count based on expected unassigned products or default
+  const getSkeletonCount = () => {
+    // Default skeleton count for unassigned products
+    return viewMode === 'grid' ? 8 : 6;
+  };
   
   const handleAddProduct = () => {
     setShowAddModal(true);
@@ -39,7 +46,7 @@ const Unassigned = () => {
           transition={{ duration: 0.3 }}
         >
           <h1 className="text-2xl font-medium text-primary-900">
-            Unassigned Products ({unassignedProducts.length})
+            Unassigned Products {!isLoading && `(${unassignedProducts.length})`}
           </h1>
           <p className="text-primary-600 text-sm mt-1">
             Products that haven't been added to any list
@@ -83,7 +90,7 @@ const Unassigned = () => {
           className="mb-4"
         >
           <h1 className="text-2xl font-medium text-primary-900">
-            Unassigned Products ({unassignedProducts.length})
+            Unassigned Products {!isLoading && `(${unassignedProducts.length})`}
           </h1>
           <p className="text-primary-600 text-sm mt-1">
             Products that haven't been added to any list
@@ -124,9 +131,23 @@ const Unassigned = () => {
         </div>
       </div>
       
-      {/* Show loading state while products are being fetched */}
+      {/* Show skeleton loading state while products are being fetched */}
       {isLoading ? (
-        <ProductsLoadingState message="Loading unassigned products..." />
+        <div className="pb-8">
+          {viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {Array.from({ length: getSkeletonCount() }).map((_, index) => (
+                <SkeletonProductCard key={index} index={index} />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {Array.from({ length: getSkeletonCount() }).map((_, index) => (
+                <SkeletonListItem key={index} index={index} />
+              ))}
+            </div>
+          )}
+        </div>
       ) : unassignedProducts.length === 0 ? (
         <div className="text-center py-16 card p-8">
           <Package size={64} className="mx-auto mb-4 text-primary-300" />
