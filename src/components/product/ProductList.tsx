@@ -1,11 +1,11 @@
 import { useProductStore } from '../../store/productStore';
 import { useNavigate } from 'react-router-dom';
-import { Share2, Pin, Trash2, ExternalLink, List, MessageSquare } from 'lucide-react';
+import { Share2, Trash2, ExternalLink, List, MessageSquare } from 'lucide-react';
 import { formatDate, truncateText } from '../../lib/utils';
 import { motion } from 'framer-motion';
 
 const ProductList = () => {
-  const { products, togglePin, deleteProduct } = useProductStore();
+  const { products, deleteProduct } = useProductStore();
   const navigate = useNavigate();
   
   // Sort products with pinned first, then by date
@@ -88,12 +88,6 @@ const ProductList = () => {
           
           <div className="flex flex-col justify-between items-end">
             <div className="flex items-center gap-1">
-              <button 
-                className={`p-1.5 rounded-full ${product.isPinned ? 'bg-primary-800 text-white' : 'bg-primary-100 text-primary-800'}`}
-                onClick={() => togglePin(product.id)}
-              >
-                <Pin size={16} className={product.isPinned ? 'fill-white' : ''} />
-              </button>
               <button 
                 className="p-1.5 rounded-full bg-primary-100 text-primary-800 hover:bg-primary-200"
                 onClick={() => window.open(product.productUrl, '_blank', 'noopener,noreferrer')}
