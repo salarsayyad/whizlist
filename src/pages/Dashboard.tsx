@@ -1,28 +1,18 @@
 import { useState, useEffect } from 'react';
-import { Grid, List as ListIcon, Plus, Filter } from 'lucide-react';
+import { Grid, List as ListIcon, Filter } from 'lucide-react';
 import { useProductStore } from '../store/productStore';
 import ProductGrid from '../components/product/ProductGrid';
 import ProductList from '../components/product/ProductList';
 import Button from '../components/ui/Button';
-import AddProductModal from '../components/product/AddProductModal';
 import { motion } from 'framer-motion';
 
 const Dashboard = () => {
   const { viewMode, setViewMode, products, fetchProducts, isLoading } = useProductStore();
-  const [showAddModal, setShowAddModal] = useState(false);
   
   useEffect(() => {
     // Fetch all products for dashboard view
     fetchProducts();
   }, []);
-  
-  const handleAddProduct = () => {
-    setShowAddModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowAddModal(false);
-  };
   
   if (isLoading) {
     return (
@@ -69,14 +59,6 @@ const Dashboard = () => {
             <Filter size={16} />
             <span>Filter</span>
           </Button>
-          
-          <Button 
-            className="flex items-center gap-1"
-            onClick={handleAddProduct}
-          >
-            <Plus size={16} />
-            <span>Add Product</span>
-          </Button>
         </div>
       </div>
       
@@ -84,13 +66,9 @@ const Dashboard = () => {
         <div className="text-center py-16">
           <h3 className="text-xl font-medium text-primary-700 mb-2">No products yet</h3>
           <p className="text-primary-600 mb-6">Start by adding your first product from around the web.</p>
-          <Button 
-            onClick={handleAddProduct}
-            className="flex items-center gap-1 mx-auto"
-          >
-            <Plus size={16} />
-            <span>Add Your First Product</span>
-          </Button>
+          <p className="text-primary-500 text-sm">
+            Use the + button in the header to add products to your collection.
+          </p>
         </div>
       ) : (
         <div className="pb-8">
@@ -100,10 +78,6 @@ const Dashboard = () => {
             <ProductList />
           )}
         </div>
-      )}
-      
-      {showAddModal && (
-        <AddProductModal onClose={handleCloseModal} />
       )}
     </div>
   );
