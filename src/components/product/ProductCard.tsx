@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Star, Share2, MoreVertical, Pin, Trash2, ExternalLink, MessageSquare, List, RefreshCw, Plus, FolderOpen, ChevronRight } from 'lucide-react';
+import { Star, Share2, MoreVertical, Pin, Trash2, ExternalLink, MessageSquare, List, RefreshCw, Plus, FolderOpen, ChevronRight, Package } from 'lucide-react';
 import { Product } from '../../types';
 import { useProductStore } from '../../store/productStore';
 import { useGlobalCommentsStore } from '../../store/globalCommentsStore';
@@ -53,6 +53,9 @@ const ProductCard = ({
   
   // Get the folder that contains the list (if applicable)
   const parentFolder = productList?.folderId ? folders.find(folder => folder.id === productList.folderId) : null;
+
+  // Check if this is an unassigned product
+  const isUnassignedProduct = !product.listId;
 
   // Fetch comment count for this product
   const fetchCommentCount = async () => {
@@ -208,6 +211,11 @@ const ProductCard = ({
       navigate(`/list/${productList.id}`);
     }
   };
+
+  const handleUnassignedClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate('/unassigned');
+  };
   
   return (
     <>
@@ -295,8 +303,8 @@ const ProductCard = ({
         </div>
         
         <div className="p-4 flex-1 flex flex-col">
-          {/* Breadcrumbs - only show if showBreadcrumbs is true and product has a list or folder */}
-          {showBreadcrumbs && (productList || parentFolder) && (
+          {/* Breadcrumbs - only show if showBreadcrumbs is true */}
+          {showBreadcrumbs && (
             <div className="mb-2 flex items-center text-xs text-primary-500">
               {parentFolder && (
                 <>
@@ -330,6 +338,17 @@ const ProductCard = ({
                 >
                   <List size={12} className="mr-1" />
                   <span className="truncate max-w-[120px]">{productList.name}</span>
+                </button>
+              )}
+              
+              {/* Show "Unassigned" breadcrumb for unassigned products */}
+              {isUnassignedProduct && (
+                <button 
+                  className="interactive-element flex items-center hover:text-primary-700 transition-colors"
+                  onClick={handleUnassignedClick}
+                >
+                  <Package size={12} className="mr-1" />
+                  <span className="truncate max-w-[120px]">Unassigned</span>
                 </button>
               )}
             </div>
