@@ -80,6 +80,11 @@ const ProductCard = ({ product, showPin = false }: ProductCardProps) => {
     // TODO: Implement share functionality
     console.log('Share product:', product.title);
   };
+
+  const handleUrlClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    window.open(product.productUrl, '_blank', 'noopener,noreferrer');
+  };
   
   return (
     <>
@@ -192,10 +197,15 @@ const ProductCard = ({ product, showPin = false }: ProductCardProps) => {
         {/* Grey bottom section - URL on left, buttons on right */}
         <div className="px-4 py-3 bg-primary-50 border-t border-primary-100">
           <div className="flex items-center justify-between">
-            {/* Base URL on the left */}
-            <span className="text-xs text-primary-500">
-              {new URL(product.productUrl).hostname}
-            </span>
+            {/* Clickable base URL with external link icon on the left */}
+            <button 
+              className="interactive-element flex items-center gap-1 text-xs text-primary-500 hover:text-primary-700 transition-colors"
+              onClick={handleUrlClick}
+              title="Open original link"
+            >
+              <span>{new URL(product.productUrl).hostname}</span>
+              <ExternalLink size={12} />
+            </button>
             
             {/* Comment and share buttons on the right */}
             <div className="flex items-center gap-3">
