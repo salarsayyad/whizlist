@@ -172,7 +172,7 @@ const ProductCard = ({ product, showPin = false }: ProductCardProps) => {
           </div>
 
           <div className="flex items-start justify-between mb-2">
-            <h3 className="text-base font-medium text-primary-900 line-clamp-1 flex-1">{product.title}</h3>
+            <h3 className="text-lg font-medium text-primary-900 line-clamp-1 flex-1">{product.title}</h3>
           </div>
           
           {product.price && (
