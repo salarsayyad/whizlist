@@ -12,9 +12,10 @@ import { motion } from 'framer-motion';
 interface ProductCardProps {
   product: Product;
   showPin?: boolean; // New prop to control pin visibility
+  showTags?: boolean; // New prop to control tags visibility
 }
 
-const ProductCard = ({ product, showPin = false }: ProductCardProps) => {
+const ProductCard = ({ product, showPin = false, showTags = true }: ProductCardProps) => {
   const navigate = useNavigate();
   const { togglePin, deleteProduct, extractingProducts } = useProductStore();
   const [showOptions, setShowOptions] = useState(false);
@@ -181,17 +182,20 @@ const ProductCard = ({ product, showPin = false }: ProductCardProps) => {
             {truncateText(product.description, 120)}
           </p>
           
-          <div className="flex flex-wrap gap-1 mb-3">
-            {product.tags.map((tag) => (
-              <button
-                key={tag} 
-                className="interactive-element badge-primary hover:bg-primary-200 transition-colors"
-                onClick={(e) => handleTagClick(e, tag)}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
+          {/* Only show tags if showTags prop is true */}
+          {showTags && (
+            <div className="flex flex-wrap gap-1 mb-3">
+              {product.tags.map((tag) => (
+                <button
+                  key={tag} 
+                  className="interactive-element badge-primary hover:bg-primary-200 transition-colors"
+                  onClick={(e) => handleTagClick(e, tag)}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Grey bottom section - URL on left, buttons on right */}

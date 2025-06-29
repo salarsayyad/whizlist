@@ -219,6 +219,7 @@ const Discover = () => {
                   <ProductCard 
                     product={product} 
                     showPin={false} // Don't show pin in Discover page
+                    showTags={false} // Don't show tags in Discover page
                   />
                 </motion.div>
               ))}
@@ -295,6 +296,7 @@ const ProductListItem = ({ product }: { product: any }) => {
           </div>
         </div>
         
+        {/* Show tags in list view for Discover page */}
         {product.tags && product.tags.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">
             {product.tags.slice(0, 3).map((tag: string) => (
