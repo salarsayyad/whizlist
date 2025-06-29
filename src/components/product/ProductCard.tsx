@@ -24,7 +24,12 @@ const ProductCard = ({ product, showPin = false }: ProductCardProps) => {
   
   const isExtracting = extractingProducts.includes(product.id);
   
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on interactive elements
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('.interactive-element')) {
+      return;
+    }
     navigate(`/product/${product.id}`);
   };
   
@@ -64,6 +69,17 @@ const ProductCard = ({ product, showPin = false }: ProductCardProps) => {
     e.stopPropagation();
     navigate(`/tag/${encodeURIComponent(tag)}`);
   };
+
+  const handleCommentClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/product/${product.id}`);
+  };
+
+  const handleShareClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // TODO: Implement share functionality
+    console.log('Share product:', product.title);
+  };
   
   return (
     <>
@@ -91,7 +107,7 @@ const ProductCard = ({ product, showPin = false }: ProductCardProps) => {
           {showPin && (
             <div className="absolute top-2 left-2 flex gap-1">
               <button 
-                className={`p-1.5 rounded-full ${product.isPinned ? 'bg-primary-800 text-white' : 'bg-white text-primary-800'}`}
+                className={`interactive-element p-1.5 rounded-full ${product.isPinned ? 'bg-primary-800 text-white' : 'bg-white text-primary-800'}`}
                 onClick={handleTogglePin}
               >
                 <Pin size={16} className={product.isPinned ? 'fill-white' : ''} />
@@ -104,18 +120,9 @@ const ProductCard = ({ product, showPin = false }: ProductCardProps) => {
                 <RefreshCw size={16} className="animate-spin" />
               </div>
             )}
-          </div>
-        </div>
-        
-        <div className="p-4 flex-1 flex flex-col">
-          {/* Product URL with ellipses menu - same line, right-aligned */}
-          <div className="mb-1 flex items-center justify-between">
-            <span className="text-xs text-primary-500">
-              {new URL(product.productUrl).hostname}
-            </span>
             <div className="relative">
               <button
-                className="p-1 rounded-md hover:bg-primary-100 text-primary-500"
+                className="interactive-element p-1.5 rounded-full bg-white text-primary-800 hover:bg-primary-100"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowOptions(!showOptions);
@@ -154,41 +161,64 @@ const ProductCard = ({ product, showPin = false }: ProductCardProps) => {
               )}
             </div>
           </div>
+        </div>
+        
+        <div className="p-4 flex-1 flex flex-col">
+          {/* Product URL */}
+          <div className="mb-2">
+            <span className="text-xs text-primary-500">
+              {new URL(product.productUrl).hostname}
+            </span>
+          </div>
 
-          <div className="flex items-start justify-between">
-            <h3 className="font-medium text-primary-900 line-clamp-1">{product.title}</h3>
+          <div className="flex items-start justify-between mb-2">
+            <h3 className="font-medium text-primary-900 line-clamp-1 flex-1">{product.title}</h3>
           </div>
           
           {product.price && (
-            <p className="text-primary-800 font-medium mt-1">{product.price}</p>
+            <p className="text-primary-800 font-medium mb-2">{product.price}</p>
           )}
           
-          <p className="text-primary-600 text-sm mt-2 line-clamp-2">
+          <p className="text-primary-600 text-sm mb-3 line-clamp-2 flex-1">
             {truncateText(product.description, 120)}
           </p>
           
-          <div className="flex flex-wrap gap-1 mt-2">
+          <div className="flex flex-wrap gap-1 mb-3">
             {product.tags.map((tag) => (
               <button
                 key={tag} 
-                className="badge-primary hover:bg-primary-200 transition-colors"
+                className="interactive-element badge-primary hover:bg-primary-200 transition-colors"
                 onClick={(e) => handleTagClick(e, tag)}
               >
                 {tag}
               </button>
             ))}
           </div>
-          
-          <div className="mt-auto pt-4 flex items-center justify-between text-primary-500 text-sm">
-            <div className="flex items-center gap-2">
-              <button className="p-1 rounded-full hover:bg-primary-100">
-                <MessageSquare size={16} />
+        </div>
+
+        {/* Grey bottom section */}
+        <div className="px-4 py-3 bg-primary-50 border-t border-primary-100">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button 
+                className="interactive-element flex items-center gap-1 text-primary-500 hover:text-primary-700 transition-colors"
+                onClick={handleCommentClick}
+                title="View comments"
+              >
+                <MessageSquare size={14} />
+                <span className="text-xs">0</span>
               </button>
-              <button className="p-1 rounded-full hover:bg-primary-100">
-                <Share2 size={16} />
+              <button 
+                className="interactive-element text-primary-500 hover:text-primary-700 transition-colors"
+                onClick={handleShareClick}
+                title="Share product"
+              >
+                <Share2 size={14} />
               </button>
             </div>
-            <span>{new Date(product.createdAt).toLocaleDateString()}</span>
+            <span className="text-xs text-primary-500">
+              {new Date(product.createdAt).toLocaleDateString()}
+            </span>
           </div>
         </div>
       </motion.div>
