@@ -15,6 +15,7 @@ import AddProductModal from '../components/product/AddProductModal';
 import MoveListToFolderModal from '../components/list/MoveListToFolderModal';
 import CommentSection from '../components/comment/CommentSection';
 import ConfirmationModal from '../components/ui/ConfirmationModal';
+import ProductsLoadingState from '../components/ui/ProductsLoadingState';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ListDetail = () => {
@@ -22,7 +23,7 @@ const ListDetail = () => {
   const navigate = useNavigate();
   const { lists, deleteList, isLoading: listLoading } = useListStore();
   const { folders } = useFolderStore();
-  const { fetchProductsByList, products, viewMode, setViewMode } = useProductStore();
+  const { fetchProductsByList, products, viewMode, setViewMode, isLoading: productsLoading } = useProductStore();
   const { comments } = useCommentStore();
   
   const list = lists.find(l => l.id === id);
@@ -394,7 +395,10 @@ const ListDetail = () => {
       {/* Main content area - adjust margin when sidebar is open */}
       <div className={`transition-all duration-300 ${showCommentsSidebar ? 'lg:mr-96' : ''}`}>
         <div>
-          {sortedProducts.length === 0 ? (
+          {/* Show loading state while products are being fetched */}
+          {productsLoading ? (
+            <ProductsLoadingState message="Loading list products..." />
+          ) : sortedProducts.length === 0 ? (
             <div className="text-center py-16 card p-8">
               <h3 className="text-xl font-medium text-primary-700 mb-2">No products in this list yet</h3>
               <p className="text-primary-600 mb-6">Add products to this list to start organizing.</p>

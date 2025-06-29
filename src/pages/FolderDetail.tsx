@@ -12,13 +12,14 @@ import CreateListModal from '../components/list/CreateListModal';
 import EditFolderModal from '../components/folder/EditFolderModal';
 import CommentSection from '../components/comment/CommentSection';
 import ConfirmationModal from '../components/ui/ConfirmationModal';
+import ProductsLoadingState from '../components/ui/ProductsLoadingState';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const FolderDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { folders, deleteFolder } = useFolderStore();
-  const { lists, fetchLists, togglePin } = useListStore();
+  const { lists, fetchLists, togglePin, isLoading: listsLoading } = useListStore();
   const { comments } = useCommentStore();
   
   const folder = folders.find(f => f.id === id);
@@ -192,7 +193,10 @@ const FolderDetail = () => {
       {/* Main content area - adjust margin when sidebar is open */}
       <div className={`transition-all duration-300 ${showCommentsSidebar ? 'lg:mr-96' : ''}`}>
         <div>
-          {sortedFolderLists.length === 0 ? (
+          {/* Show loading state while lists are being fetched */}
+          {listsLoading ? (
+            <ProductsLoadingState message="Loading folder contents..." showIcon={false} />
+          ) : sortedFolderLists.length === 0 ? (
             <div className="text-center py-16 card p-8">
               <ListIcon size={64} className="mx-auto mb-4 text-primary-300" />
               <h3 className="text-xl font-medium text-primary-700 mb-2">No lists in this folder yet</h3>

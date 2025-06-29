@@ -4,6 +4,7 @@ import { useProductStore } from '../store/productStore';
 import ProductGrid from '../components/product/ProductGrid';
 import ProductList from '../components/product/ProductList';
 import Button from '../components/ui/Button';
+import ProductsLoadingState from '../components/ui/ProductsLoadingState';
 import { motion } from 'framer-motion';
 
 const Dashboard = () => {
@@ -13,14 +14,6 @@ const Dashboard = () => {
     // Fetch all products for dashboard view
     fetchProducts();
   }, []);
-  
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-700"></div>
-      </div>
-    );
-  }
   
   return (
     <div>
@@ -62,7 +55,10 @@ const Dashboard = () => {
         </div>
       </div>
       
-      {products.length === 0 ? (
+      {/* Show loading state while products are being fetched */}
+      {isLoading ? (
+        <ProductsLoadingState message="Loading your products..." />
+      ) : products.length === 0 ? (
         <div className="text-center py-16">
           <h3 className="text-xl font-medium text-primary-700 mb-2">No products yet</h3>
           <p className="text-primary-600 mb-6">Start by adding your first product from around the web.</p>

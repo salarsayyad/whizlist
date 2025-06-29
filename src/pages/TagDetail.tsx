@@ -5,6 +5,7 @@ import { useProductStore } from '../store/productStore';
 import ProductGrid from '../components/product/ProductGrid';
 import ProductList from '../components/product/ProductList';
 import Button from '../components/ui/Button';
+import ProductsLoadingState from '../components/ui/ProductsLoadingState';
 import { motion } from 'framer-motion';
 
 const TagDetail = () => {
@@ -41,14 +42,6 @@ const TagDetail = () => {
   const handleRelatedTagClick = (relatedTag: string) => {
     navigate(`/tag/${encodeURIComponent(relatedTag)}`);
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-700"></div>
-      </div>
-    );
-  }
 
   if (!decodedTag) {
     return (
@@ -141,7 +134,10 @@ const TagDetail = () => {
         </div>
       )}
       
-      {taggedProducts.length === 0 ? (
+      {/* Show loading state while products are being fetched */}
+      {isLoading ? (
+        <ProductsLoadingState message={`Loading products tagged with "${decodedTag}"...`} />
+      ) : taggedProducts.length === 0 ? (
         <div className="text-center py-16 card p-8">
           <Tag size={64} className="mx-auto mb-4 text-primary-300" />
           <h3 className="text-xl font-medium text-primary-700 mb-2">No products found</h3>

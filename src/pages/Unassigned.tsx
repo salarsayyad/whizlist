@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Grid, List as ListIcon, Filter, Package } from 'lucide-react';
+import { Grid, List as ListIcon, Filter, Package, ExternalLink, Trash2, Plus } from 'lucide-react';
 import { useProductStore } from '../store/productStore';
-import ProductGrid from '../components/product/ProductGrid';
-import ProductList from '../components/product/ProductList';
+import ProductCard from '../components/product/ProductCard';
 import Button from '../components/ui/Button';
 import AddProductModal from '../components/product/AddProductModal';
+import ConfirmationModal from '../components/ui/ConfirmationModal';
+import ProductsLoadingState from '../components/ui/ProductsLoadingState';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const Unassigned = () => {
   const { viewMode, setViewMode, products, fetchProducts, isLoading } = useProductStore();
@@ -26,14 +28,6 @@ const Unassigned = () => {
   const handleCloseModal = () => {
     setShowAddModal(false);
   };
-  
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-700"></div>
-      </div>
-    );
-  }
   
   return (
     <div>
@@ -130,7 +124,10 @@ const Unassigned = () => {
         </div>
       </div>
       
-      {unassignedProducts.length === 0 ? (
+      {/* Show loading state while products are being fetched */}
+      {isLoading ? (
+        <ProductsLoadingState message="Loading unassigned products..." />
+      ) : unassignedProducts.length === 0 ? (
         <div className="text-center py-16 card p-8">
           <Package size={64} className="mx-auto mb-4 text-primary-300" />
           <h3 className="text-xl font-medium text-primary-700 mb-2">No unassigned products</h3>
@@ -164,15 +161,6 @@ const Unassigned = () => {
 
 // Component to display unassigned products using existing grid/list components
 const UnassignedProductDisplay = ({ products, viewMode }: { products: any[], viewMode: 'grid' | 'list' }) => {
-  // Temporarily override the product store to show only unassigned products
-  const { products: originalProducts, ...productStore } = useProductStore();
-  
-  // Create a temporary store state
-  const tempStore = {
-    ...productStore,
-    products: products
-  };
-  
   // Sort products with pinned first, then by date
   const sortedProducts = [...products].sort((a, b) => {
     if (a.isPinned && !b.isPinned) return -1;
@@ -225,9 +213,6 @@ const UnassignedProductDisplay = ({ products, viewMode }: { products: any[], vie
     </motion.div>
   );
 };
-
-// Import ProductCard component
-import ProductCard from '../components/product/ProductCard';
 
 // Simple list item component for unassigned products
 const UnassignedProductListItem = ({ product }: { product: any }) => {
@@ -340,10 +325,5 @@ const UnassignedProductListItem = ({ product }: { product: any }) => {
     </>
   );
 };
-
-// Import missing components
-import { useNavigate } from 'react-router-dom';
-import { ExternalLink, Trash2, Plus } from 'lucide-react';
-import ConfirmationModal from '../components/ui/ConfirmationModal';
 
 export default Unassigned;
