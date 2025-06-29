@@ -39,7 +39,7 @@ const Unassigned = () => {
   return (
     <div>
       {/* Desktop Layout */}
-      <div className="hidden md:flex items-center justify-between mb-6">
+      <div className="hidden md:flex items-center justify-between mb-4">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -82,7 +82,7 @@ const Unassigned = () => {
       </div>
 
       {/* Mobile Layout */}
-      <div className="md:hidden mb-6">
+      <div className="md:hidden mb-4">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -130,6 +130,9 @@ const Unassigned = () => {
           </div>
         </div>
       </div>
+      
+      {/* Divider line between header and content */}
+      <div className="h-px bg-primary-200 mb-6 mt-4"></div>
       
       {/* Show skeleton loading state while products are being fetched */}
       {isLoading ? (

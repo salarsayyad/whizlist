@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Grid, List as ListIcon, Filter } from 'lucide-react';
+import { Grid, List as ListIcon, Plus, Filter } from 'lucide-react';
 import { useProductStore } from '../store/productStore';
 import ProductGrid from '../components/product/ProductGrid';
 import ProductList from '../components/product/ProductList';
 import Button from '../components/ui/Button';
+import AddProductModal from '../components/product/AddProductModal';
 import SkeletonProductCard from '../components/ui/SkeletonProductCard';
 import SkeletonListItem from '../components/ui/SkeletonListItem';
 import { motion } from 'framer-motion';
 
 const Dashboard = () => {
   const { viewMode, setViewMode, products, fetchProducts, isLoading } = useProductStore();
+  const [showAddModal, setShowAddModal] = useState(false);
   
   useEffect(() => {
     // Fetch all products for dashboard view
@@ -27,9 +29,17 @@ const Dashboard = () => {
     }
   };
   
+  const handleAddProduct = () => {
+    setShowAddModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowAddModal(false);
+  };
+  
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <motion.h1 
           className="text-2xl font-medium text-primary-900"
           initial={{ opacity: 0, y: -10 }}
@@ -64,8 +74,19 @@ const Dashboard = () => {
             <Filter size={16} />
             <span>Filter</span>
           </Button>
+          
+          <Button 
+            className="flex items-center gap-1"
+            onClick={handleAddProduct}
+          >
+            <Plus size={16} />
+            <span>Add Product</span>
+          </Button>
         </div>
       </div>
+      
+      {/* Divider line between header and content */}
+      <div className="h-px bg-primary-200 mb-6 mt-4"></div>
       
       {/* Show skeleton loading state while products are being fetched */}
       {isLoading ? (
@@ -88,9 +109,13 @@ const Dashboard = () => {
         <div className="text-center py-16">
           <h3 className="text-xl font-medium text-primary-700 mb-2">No products yet</h3>
           <p className="text-primary-600 mb-6">Start by adding your first product from around the web.</p>
-          <p className="text-primary-500 text-sm">
-            Use the + button in the header to add products to your collection.
-          </p>
+          <Button 
+            onClick={handleAddProduct}
+            className="flex items-center gap-1 mx-auto"
+          >
+            <Plus size={16} />
+            <span>Add Your First Product</span>
+          </Button>
         </div>
       ) : (
         <div className="pb-8">
@@ -100,6 +125,10 @@ const Dashboard = () => {
             <ProductList />
           )}
         </div>
+      )}
+      
+      {showAddModal && (
+        <AddProductModal onClose={handleCloseModal} />
       )}
     </div>
   );

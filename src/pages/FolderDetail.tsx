@@ -146,7 +146,7 @@ const FolderDetail = () => {
   
   return (
     <div className="pb-24 relative"> {/* Add relative positioning for sidebar */}
-      <div className="mb-6">
+      <div className="mb-4">
         <div className="flex flex-col md:flex-row justify-between">
           <div className="flex-1">
             <motion.div
@@ -196,6 +196,9 @@ const FolderDetail = () => {
           </div>
         </div>
       </div>
+      
+      {/* Divider line between header and content */}
+      <div className="h-px bg-primary-200 mb-6 mt-4"></div>
       
       {/* Main content area - adjust margin when sidebar is open */}
       <div className={`transition-all duration-300 ${showCommentsSidebar ? 'lg:mr-96' : ''}`}>
@@ -287,7 +290,7 @@ const FolderDetail = () => {
                         )}
                       </div>
                       <div className="text-xs text-primary-500 font-medium">
-                        {list.productCount || 0} items
+                        {list.productCount} items
                       </div>
                     </div>
                   </div>
