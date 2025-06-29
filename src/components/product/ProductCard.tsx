@@ -164,13 +164,6 @@ const ProductCard = ({ product, showPin = false }: ProductCardProps) => {
         </div>
         
         <div className="p-4 flex-1 flex flex-col">
-          {/* Product URL */}
-          <div className="mb-2">
-            <span className="text-xs text-primary-500">
-              {new URL(product.productUrl).hostname}
-            </span>
-          </div>
-
           <div className="flex items-start justify-between mb-2">
             <h3 className="text-xl font-medium text-primary-900 line-clamp-1 flex-1">{product.title}</h3>
           </div>
@@ -196,24 +189,32 @@ const ProductCard = ({ product, showPin = false }: ProductCardProps) => {
           </div>
         </div>
 
-        {/* Grey bottom section - removed date */}
+        {/* Grey bottom section - URL on left, buttons on right */}
         <div className="px-4 py-3 bg-primary-50 border-t border-primary-100">
-          <div className="flex items-center gap-3">
-            <button 
-              className="interactive-element flex items-center gap-1 text-primary-500 hover:text-primary-700 transition-colors"
-              onClick={handleCommentClick}
-              title="View comments"
-            >
-              <MessageSquare size={14} />
-              <span className="text-xs">0</span>
-            </button>
-            <button 
-              className="interactive-element text-primary-500 hover:text-primary-700 transition-colors"
-              onClick={handleShareClick}
-              title="Share product"
-            >
-              <Share2 size={14} />
-            </button>
+          <div className="flex items-center justify-between">
+            {/* Base URL on the left */}
+            <span className="text-xs text-primary-500">
+              {new URL(product.productUrl).hostname}
+            </span>
+            
+            {/* Comment and share buttons on the right */}
+            <div className="flex items-center gap-3">
+              <button 
+                className="interactive-element flex items-center gap-1 text-primary-500 hover:text-primary-700 transition-colors"
+                onClick={handleCommentClick}
+                title="View comments"
+              >
+                <MessageSquare size={14} />
+                <span className="text-xs">0</span>
+              </button>
+              <button 
+                className="interactive-element text-primary-500 hover:text-primary-700 transition-colors"
+                onClick={handleShareClick}
+                title="Share product"
+              >
+                <Share2 size={14} />
+              </button>
+            </div>
           </div>
         </div>
       </motion.div>
