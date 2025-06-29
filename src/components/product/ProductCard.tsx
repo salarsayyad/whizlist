@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Star, Share2, MoreVertical, Pin, Trash2, ExternalLink, MessageSquare, List, RefreshCw, Plus } from 'lucide-react';
 import { Product } from '../../types';
 import { useProductStore } from '../../store/productStore';
+import { useGlobalCommentsStore } from '../../store/globalCommentsStore';
 import { truncateText } from '../../lib/utils';
 import Button from '../ui/Button';
 import ProductListSelector from './ProductListSelector';
@@ -29,6 +30,7 @@ const ProductCard = ({
 }: ProductCardProps) => {
   const navigate = useNavigate();
   const { togglePin, deleteProduct, extractingProducts } = useProductStore();
+  const { openComments } = useGlobalCommentsStore();
   const [showOptions, setShowOptions] = useState(false);
   const [showListSelector, setShowListSelector] = useState(false);
   const [showAddToListModal, setShowAddToListModal] = useState(false);
@@ -117,10 +119,8 @@ const ProductCard = ({
 
   const handleCommentClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Navigate to product detail page with comments sidebar open
-    navigate(`/product/${product.id}`, { 
-      state: { openComments: true } 
-    });
+    // Open global comments sidebar for this product
+    openComments(product.id, product.title);
   };
 
   const handleShareClick = (e: React.MouseEvent) => {
