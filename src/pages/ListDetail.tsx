@@ -276,143 +276,78 @@ const ListDetail = () => {
   
   return (
     <div className="pb-24 relative"> {/* Add relative positioning for sidebar */}
-      {/* Breadcrumb Navigation - Show for folder/list products OR unassigned products */}
-      {parentFolder && (
-        <div className="mb-6">
-          <nav className="flex items-center text-sm text-primary-600 mb-4">
-            {/* Folder breadcrumb */}
+      <div className="mb-4">
+        {/* Folder Breadcrumb and List Name in a more compact layout */}
+        <div className="flex flex-col space-y-1">
+          {/* Folder Breadcrumb */}
+          {parentFolder && (
             <button
               onClick={handleFolderClick}
-              className="flex items-center gap-1 hover:text-primary-800 transition-colors group"
+              className="flex items-center text-primary-600 hover:text-primary-800 transition-colors group"
             >
-              <FolderOpen size={14} className="group-hover:text-primary-700" />
-              <span className="group-hover:underline">{parentFolder.name}</span>
+              <FolderOpen size={16} className="mr-1 group-hover:text-primary-700" />
+              <span className="text-sm font-medium group-hover:underline">
+                {parentFolder.name}
+              </span>
             </button>
-          </nav>
-        </div>
-      )}
+          )}
 
-      <div className="mb-6">
-        <div className="flex flex-col md:flex-row justify-between">
-          <div className="flex-1">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
+          {/* List Name and Edit Button */}
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-medium text-primary-900">{list.name}</h1>
+            <button
+              onClick={() => setShowEditModal(true)}
+              className="text-primary-500 hover:text-primary-700 p-1 rounded-md hover:bg-primary-100"
+              disabled={listLoading}
             >
-              {/* Desktop: List name with edit icon, indicators, and view toggle on the same line */}
-              <div className="hidden md:flex items-center justify-between mb-2">
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-medium text-primary-900">{list.name}</h1>
-                  <button
-                    onClick={() => setShowEditModal(true)}
-                    className="text-primary-500 hover:text-primary-700 p-1 rounded-md hover:bg-primary-100"
-                    disabled={listLoading}
-                  >
-                    <Edit2 size={16} />
-                  </button>
-                  
-                  {/* List and Privacy indicators */}
-                  <div className="flex items-center gap-2">
-                    <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-200 text-primary-800">
-                      <ListIcon size={10} />
-                      <span>List</span>
-                    </div>
-                    <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-100 text-primary-700">
-                      {list.isPublic ? (
-                        <>
-                          <Globe size={12} />
-                          <span>Public</span>
-                        </>
-                      ) : (
-                        <>
-                          <Lock size={12} />
-                          <span>Private</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
+              <Edit2 size={16} />
+            </button>
+          </div>
+        </div>
 
-                {/* Grid/List toggle aligned to the right */}
-                <div className="flex bg-primary-100 rounded-md p-1">
-                  <button
-                    className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-white shadow-soft' : 'text-primary-600 hover:text-primary-800'}`}
-                    onClick={() => setViewMode('grid')}
-                    aria-label="Grid view"
-                  >
-                    <Grid size={18} />
-                  </button>
-                  <button
-                    className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-white shadow-soft' : 'text-primary-600 hover:text-primary-800'}`}
-                    onClick={() => setViewMode('list')}
-                    aria-label="List view"
-                  >
-                    <ListIcon size={18} />
-                  </button>
-                </div>
-              </div>
+        {/* List Description */}
+        {list.description && (
+          <p className="text-primary-600 text-sm mt-2">{list.description}</p>
+        )}
 
-              {/* Mobile: List name with edit icon on first line */}
-              <div className="md:hidden">
-                <div className="flex items-center gap-2 mb-3">
-                  <h1 className="text-2xl font-medium text-primary-900">{list.name}</h1>
-                  <button
-                    onClick={() => setShowEditModal(true)}
-                    className="text-primary-500 hover:text-primary-700 p-1 rounded-md hover:bg-primary-100"
-                    disabled={listLoading}
-                  >
-                    <Edit2 size={16} />
-                  </button>
-                </div>
-
-                {/* Mobile: Indicators and view toggle on second line */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-200 text-primary-800">
-                      <ListIcon size={10} />
-                      <span>List</span>
-                    </div>
-                    <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-100 text-primary-700">
-                      {list.isPublic ? (
-                        <>
-                          <Globe size={12} />
-                          <span>Public</span>
-                        </>
-                      ) : (
-                        <>
-                          <Lock size={12} />
-                          <span>Private</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Grid/List toggle */}
-                  <div className="flex bg-primary-100 rounded-md p-1">
-                    <button
-                      className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-white shadow-soft' : 'text-primary-600 hover:text-primary-800'}`}
-                      onClick={() => setViewMode('grid')}
-                      aria-label="Grid view"
-                    >
-                      <Grid size={18} />
-                    </button>
-                    <button
-                      className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-white shadow-soft' : 'text-primary-600 hover:text-primary-800'}`}
-                      onClick={() => setViewMode('list')}
-                      aria-label="List view"
-                    >
-                      <ListIcon size={18} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Description moved under title */}
-              {list.description && (
-                <p className="text-primary-600 text-sm mt-2">{list.description}</p>
+        {/* List Metadata and View Toggle */}
+        <div className="flex flex-wrap items-center justify-between mt-3">
+          <div className="flex items-center gap-2">
+            <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-200 text-primary-800">
+              <ListIcon size={10} />
+              <span>List</span>
+            </div>
+            <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary-100 text-primary-700">
+              {list.isPublic ? (
+                <>
+                  <Globe size={12} />
+                  <span>Public</span>
+                </>
+              ) : (
+                <>
+                  <Lock size={12} />
+                  <span>Private</span>
+                </>
               )}
-            </motion.div>
+            </div>
+          </div>
+
+          {/* Grid/List toggle */}
+          <div className="flex bg-primary-100 rounded-md p-1 mt-2 sm:mt-0">
+            <button
+              className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-white shadow-soft' : 'text-primary-600 hover:text-primary-800'}`}
+              onClick={() => setViewMode('grid')}
+              aria-label="Grid view"
+            >
+              <Grid size={18} />
+            </button>
+            <button
+              className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-white shadow-soft' : 'text-primary-600 hover:text-primary-800'}`}
+              onClick={() => setViewMode('list')}
+              aria-label="List view"
+            >
+              <ListIcon size={18} />
+            </button>
           </div>
         </div>
       </div>
