@@ -4,6 +4,7 @@ import { Star, Share2, MoreVertical, Pin, Trash2, ExternalLink, MessageSquare, L
 import { Product } from '../../types';
 import { useProductStore } from '../../store/productStore';
 import { useGlobalCommentsStore } from '../../store/globalCommentsStore';
+import { useCommentStore } from '../../store/commentStore';
 import { truncateText } from '../../lib/utils';
 import Button from '../ui/Button';
 import ProductListSelector from './ProductListSelector';
@@ -30,7 +31,8 @@ const ProductCard = ({
 }: ProductCardProps) => {
   const navigate = useNavigate();
   const { togglePin, deleteProduct, extractingProducts } = useProductStore();
-  const { openComments, isOpen: isCommentsOpen } = useGlobalCommentsStore();
+  const { openComments, isOpen: isCommentsOpen, productId: activeProductId } = useGlobalCommentsStore();
+  const { comments } = useCommentStore();
   const [showOptions, setShowOptions] = useState(false);
   const [showListSelector, setShowListSelector] = useState(false);
   const [showAddToListModal, setShowAddToListModal] = useState(false);
@@ -41,30 +43,62 @@ const ProductCard = ({
   const isExtracting = extractingProducts.includes(product.id);
 
   // Fetch comment count for this product
+  const fetchCommentCount = async () => {
+    try {
+      const { supabase } = await import('../../lib/supabase');
+      const { count, error } = await supabase
+        .from('comments')
+        .select('*', { count: 'exact', head: true })
+        .eq('entity_type', 'product')
+        .eq('entity_id', product.id)
+        .is('parent_id', null); // Only count main comments, not replies
+
+      if (error) throw error;
+      setCommentCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching comment count:', error);
+      setCommentCount(0);
+    }
+  };
+
+  // Initial comment count fetch
   useEffect(() => {
-    const fetchCommentCount = async () => {
-      try {
-        const { supabase } = await import('../../lib/supabase');
-        const { count, error } = await supabase
-          .from('comments')
-          .select('*', { count: 'exact', head: true })
-          .eq('entity_type', 'product')
-          .eq('entity_id', product.id)
-          .is('parent_id', null); // Only count main comments, not replies
-
-        if (error) throw error;
-        setCommentCount(count || 0);
-      } catch (error) {
-        console.error('Error fetching comment count:', error);
-        setCommentCount(0);
-      }
-    };
-
     // Only fetch comment count if we're showing actions (comment button)
     if (showActions) {
       fetchCommentCount();
     }
   }, [product.id, showActions]);
+
+  // Update comment count when comments change in the global store
+  // This happens when comments are added/removed from the sidebar
+  useEffect(() => {
+    // Only update if this product is the one currently being viewed in the sidebar
+    // or if the sidebar is closed (to catch updates from other sources)
+    if (activeProductId === product.id || !isCommentsOpen) {
+      // If comments are loaded for this product, count them directly
+      if (activeProductId === product.id && comments.length >= 0) {
+        const mainCommentsCount = comments.filter(comment => !comment.parentId).length;
+        setCommentCount(mainCommentsCount);
+      } else {
+        // Otherwise, refetch from database to ensure accuracy
+        if (showActions) {
+          fetchCommentCount();
+        }
+      }
+    }
+  }, [comments, activeProductId, product.id, isCommentsOpen, showActions]);
+
+  // Also refetch when the sidebar closes to ensure all cards are updated
+  useEffect(() => {
+    if (!isCommentsOpen && showActions) {
+      // Small delay to ensure any pending database operations are complete
+      const timeoutId = setTimeout(() => {
+        fetchCommentCount();
+      }, 100);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isCommentsOpen, showActions]);
   
   const handleClick = (e: React.MouseEvent) => {
     // Don't navigate if clicking on interactive elements
@@ -287,12 +321,16 @@ const ProductCard = ({
               {showActions && (
                 <>
                   <button 
-                    className="interactive-element flex items-center gap-1 text-primary-500 hover:text-primary-700 transition-colors"
+                    className={`interactive-element flex items-center gap-1 transition-colors ${
+                      activeProductId === product.id 
+                        ? 'text-primary-700 bg-primary-100 px-2 py-1 rounded-md' 
+                        : 'text-primary-500 hover:text-primary-700'
+                    }`}
                     onClick={handleCommentClick}
                     title="View comments"
                   >
                     <MessageSquare size={14} />
-                    <span className="text-xs">{commentCount}</span>
+                    <span className="text-xs font-medium">{commentCount}</span>
                   </button>
                   <button 
                     className="interactive-element text-primary-500 hover:text-primary-700 transition-colors"
