@@ -30,7 +30,7 @@ const ProductCard = ({
 }: ProductCardProps) => {
   const navigate = useNavigate();
   const { togglePin, deleteProduct, extractingProducts } = useProductStore();
-  const { openComments } = useGlobalCommentsStore();
+  const { openComments, isOpen: isCommentsOpen } = useGlobalCommentsStore();
   const [showOptions, setShowOptions] = useState(false);
   const [showListSelector, setShowListSelector] = useState(false);
   const [showAddToListModal, setShowAddToListModal] = useState(false);
@@ -251,14 +251,22 @@ const ProductCard = ({
         {/* Grey bottom section - URL on left, buttons on right (conditionally) */}
         <div className="px-4 py-3 bg-primary-50 border-t border-primary-100">
           <div className="flex items-center justify-between">
-            {/* Clickable base URL with external link icon on the left */}
+            {/* Clickable URL - show only icon when comments sidebar is open, otherwise show hostname + icon */}
             <button 
               className="interactive-element flex items-center gap-1 text-xs text-primary-500 hover:text-primary-700 transition-colors"
               onClick={handleUrlClick}
               title="Open original link"
             >
-              <span>{new URL(product.productUrl).hostname}</span>
-              <ExternalLink size={12} />
+              {isCommentsOpen ? (
+                // When comments sidebar is open, show only the external link icon
+                <ExternalLink size={14} />
+              ) : (
+                // When comments sidebar is closed, show hostname + icon
+                <>
+                  <span>{new URL(product.productUrl).hostname}</span>
+                  <ExternalLink size={12} />
+                </>
+              )}
             </button>
             
             {/* Right side buttons - conditional based on props */}
