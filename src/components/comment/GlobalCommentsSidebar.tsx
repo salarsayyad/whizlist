@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCommentStore } from '../../store/commentStore';
+import { useProductStore } from '../../store/productStore';
 import CommentSection from './CommentSection';
 
 interface GlobalCommentsSidebarProps {
@@ -18,7 +19,19 @@ const GlobalCommentsSidebar = ({
   productTitle 
 }: GlobalCommentsSidebarProps) => {
   const { comments } = useCommentStore();
+  const { products } = useProductStore();
   const [commentsCount, setCommentsCount] = useState(0);
+  const [productImageUrl, setProductImageUrl] = useState<string | null>(null);
+
+  // Find the product to get its image
+  useEffect(() => {
+    if (productId) {
+      const product = products.find(p => p.id === productId);
+      setProductImageUrl(product?.imageUrl || null);
+    } else {
+      setProductImageUrl(null);
+    }
+  }, [productId, products]);
 
   // Fetch main comments count (excluding replies) for the current product
   useEffect(() => {
@@ -88,8 +101,22 @@ const GlobalCommentsSidebar = ({
           >
             {/* Sidebar Header */}
             <div className="flex items-center justify-between p-4 border-b border-primary-200 bg-primary-50">
-              <div className="flex items-center gap-2">
-                <MessageSquare size={18} className="text-primary-700" />
+              <div className="flex items-center gap-3">
+                {/* Product thumbnail */}
+                {productImageUrl ? (
+                  <div className="w-10 h-10 rounded-md overflow-hidden flex-shrink-0 border border-primary-200">
+                    <img 
+                      src={productImageUrl} 
+                      alt={productTitle || 'Product'} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-10 h-10 rounded-md bg-primary-200 flex items-center justify-center flex-shrink-0">
+                    <MessageSquare size={16} className="text-primary-500" />
+                  </div>
+                )}
+                
                 <div className="flex flex-col">
                   <h2 className="text-lg font-medium text-primary-900">
                     Comments ({commentsCount})

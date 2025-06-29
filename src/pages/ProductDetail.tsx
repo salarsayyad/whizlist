@@ -331,11 +331,30 @@ const ProductDetail = () => {
             >
               {/* Sidebar Header */}
               <div className="flex items-center justify-between p-4 border-b border-primary-200 bg-primary-50">
-                <div className="flex items-center gap-2">
-                  <MessageSquare size={18} className="text-primary-700" />
-                  <h2 className="text-lg font-medium text-primary-900">
-                    Comments ({commentsCount})
-                  </h2>
+                <div className="flex items-center gap-3">
+                  {/* Product thumbnail */}
+                  {product.imageUrl ? (
+                    <div className="w-10 h-10 rounded-md overflow-hidden flex-shrink-0 border border-primary-200">
+                      <img 
+                        src={product.imageUrl} 
+                        alt={product.title} 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-10 h-10 rounded-md bg-primary-200 flex items-center justify-center flex-shrink-0">
+                      <MessageSquare size={16} className="text-primary-500" />
+                    </div>
+                  )}
+                  
+                  <div className="flex flex-col">
+                    <h2 className="text-lg font-medium text-primary-900">
+                      Comments ({commentsCount})
+                    </h2>
+                    <p className="text-sm text-primary-600 truncate max-w-xs">
+                      {product.title}
+                    </p>
+                  </div>
                 </div>
                 <button
                   onClick={() => setShowCommentsSidebar(false)}

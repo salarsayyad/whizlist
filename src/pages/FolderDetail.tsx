@@ -331,11 +331,20 @@ const FolderDetail = () => {
             >
               {/* Sidebar Header */}
               <div className="flex items-center justify-between p-4 border-b border-primary-200 bg-primary-50">
-                <div className="flex items-center gap-2">
-                  <MessageSquare size={18} className="text-primary-700" />
-                  <h2 className="text-lg font-medium text-primary-900">
-                    Comments ({commentsCount})
-                  </h2>
+                <div className="flex items-center gap-3">
+                  {/* Folder thumbnail/icon */}
+                  <div className="w-10 h-10 rounded-md bg-primary-200 flex items-center justify-center flex-shrink-0">
+                    <FolderOpen size={18} className="text-primary-600" />
+                  </div>
+                  
+                  <div className="flex flex-col">
+                    <h2 className="text-lg font-medium text-primary-900">
+                      Comments ({commentsCount})
+                    </h2>
+                    <p className="text-sm text-primary-600 truncate max-w-xs">
+                      {folder.name}
+                    </p>
+                  </div>
                 </div>
                 <button
                   onClick={() => setShowCommentsSidebar(false)}
@@ -346,7 +355,7 @@ const FolderDetail = () => {
               </div>
 
               {/* Sidebar Content */}
-              <div className="flex-1 overflow-y-auto p-4">
+              <div className="flex-1 overflow-hidden p-4">
                 <CommentSection 
                   entityType="folder"
                   entityId={folder.id}
