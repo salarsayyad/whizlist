@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Star, Share2, MoreVertical, Pin, Trash2, ExternalLink, MessageSquare, List, RefreshCw } from 'lucide-react';
+import { Star, Share2, MoreVertical, Pin, Trash2, ExternalLink, MessageSquare, List, RefreshCw, Plus } from 'lucide-react';
 import { Product } from '../../types';
 import { useProductStore } from '../../store/productStore';
 import { truncateText } from '../../lib/utils';
 import Button from '../ui/Button';
 import ProductListSelector from './ProductListSelector';
+import ListSelectorModal from '../list/ListSelectorModal';
 import ConfirmationModal from '../ui/ConfirmationModal';
 import { motion } from 'framer-motion';
 
@@ -14,13 +15,23 @@ interface ProductCardProps {
   showPin?: boolean; // New prop to control pin visibility
   showTags?: boolean; // New prop to control tags visibility
   showActions?: boolean; // New prop to control comment/share buttons visibility
+  showAddToList?: boolean; // New prop to show "Add to List" button for products not in collection
+  isInUserCollection?: boolean; // New prop to indicate if product is in user's collection
 }
 
-const ProductCard = ({ product, showPin = false, showTags = true, showActions = true }: ProductCardProps) => {
+const ProductCard = ({ 
+  product, 
+  showPin = false, 
+  showTags = true, 
+  showActions = true, 
+  showAddToList = false,
+  isInUserCollection = true 
+}: ProductCardProps) => {
   const navigate = useNavigate();
   const { togglePin, deleteProduct, extractingProducts } = useProductStore();
   const [showOptions, setShowOptions] = useState(false);
   const [showListSelector, setShowListSelector] = useState(false);
+  const [showAddToListModal, setShowAddToListModal] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   
@@ -60,6 +71,11 @@ const ProductCard = ({ product, showPin = false, showTags = true, showActions = 
   const handleOpenListSelector = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowListSelector(true);
+  };
+
+  const handleAddToList = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowAddToListModal(true);
   };
   
   const handleOpenExternalLink = (e: React.MouseEvent) => {
@@ -127,46 +143,49 @@ const ProductCard = ({ product, showPin = false, showTags = true, showActions = 
                 <RefreshCw size={16} className="animate-spin" />
               </div>
             )}
-            <div className="relative">
-              <button
-                className="interactive-element p-1.5 rounded-full bg-white text-primary-800 hover:bg-primary-100"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowOptions(!showOptions);
-                }}
-              >
-                <MoreVertical size={16} />
-              </button>
-              
-              {showOptions && (
-                <div 
-                  className="absolute right-0 top-full mt-1 bg-white shadow-elevated rounded-md py-1 z-10 w-40"
-                  onClick={(e) => e.stopPropagation()}
+            {/* Only show options menu if product is in user's collection */}
+            {isInUserCollection && (
+              <div className="relative">
+                <button
+                  className="interactive-element p-1.5 rounded-full bg-white text-primary-800 hover:bg-primary-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowOptions(!showOptions);
+                  }}
                 >
-                  <button
-                    className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50"
-                    onClick={handleOpenListSelector}
+                  <MoreVertical size={16} />
+                </button>
+                
+                {showOptions && (
+                  <div 
+                    className="absolute right-0 top-full mt-1 bg-white shadow-elevated rounded-md py-1 z-10 w-40"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    <List size={16} />
-                    <span>Manage list</span>
-                  </button>
-                  <button
-                    className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50"
-                    onClick={handleOpenExternalLink}
-                  >
-                    <ExternalLink size={16} />
-                    <span>Open original</span>
-                  </button>
-                  <button
-                    className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50 text-error-600"
-                    onClick={handleRemove}
-                  >
-                    <Trash2 size={16} />
-                    <span>Remove</span>
-                  </button>
-                </div>
-              )}
-            </div>
+                    <button
+                      className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50"
+                      onClick={handleOpenListSelector}
+                    >
+                      <List size={16} />
+                      <span>Manage list</span>
+                    </button>
+                    <button
+                      className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50"
+                      onClick={handleOpenExternalLink}
+                    >
+                      <ExternalLink size={16} />
+                      <span>Open original</span>
+                    </button>
+                    <button
+                      className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-primary-50 text-error-600"
+                      onClick={handleRemove}
+                    >
+                      <Trash2 size={16} />
+                      <span>Remove</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
         
@@ -212,26 +231,41 @@ const ProductCard = ({ product, showPin = false, showTags = true, showActions = 
               <ExternalLink size={12} />
             </button>
             
-            {/* Comment and share buttons on the right - only show if showActions is true */}
-            {showActions && (
-              <div className="flex items-center gap-3">
+            {/* Right side buttons - conditional based on props */}
+            <div className="flex items-center gap-3">
+              {/* Show "Add to List" button if product is not in user's collection */}
+              {showAddToList && !isInUserCollection && (
                 <button 
-                  className="interactive-element flex items-center gap-1 text-primary-500 hover:text-primary-700 transition-colors"
-                  onClick={handleCommentClick}
-                  title="View comments"
+                  className="interactive-element flex items-center gap-1 px-2 py-1 text-xs font-medium text-accent-700 bg-accent-100 hover:bg-accent-200 rounded-md transition-colors"
+                  onClick={handleAddToList}
+                  title="Add to your lists"
                 >
-                  <MessageSquare size={14} />
-                  <span className="text-xs">0</span>
+                  <Plus size={12} />
+                  <span>Add to List</span>
                 </button>
-                <button 
-                  className="interactive-element text-primary-500 hover:text-primary-700 transition-colors"
-                  onClick={handleShareClick}
-                  title="Share product"
-                >
-                  <Share2 size={14} />
-                </button>
-              </div>
-            )}
+              )}
+
+              {/* Comment and share buttons - only show if showActions is true */}
+              {showActions && (
+                <>
+                  <button 
+                    className="interactive-element flex items-center gap-1 text-primary-500 hover:text-primary-700 transition-colors"
+                    onClick={handleCommentClick}
+                    title="View comments"
+                  >
+                    <MessageSquare size={14} />
+                    <span className="text-xs">0</span>
+                  </button>
+                  <button 
+                    className="interactive-element text-primary-500 hover:text-primary-700 transition-colors"
+                    onClick={handleShareClick}
+                    title="Share product"
+                  >
+                    <Share2 size={14} />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </motion.div>
@@ -257,11 +291,20 @@ const ProductCard = ({ product, showPin = false, showTags = true, showActions = 
         variant="danger"
       />
       
+      {/* List Selector Modal for products in user's collection */}
       {showListSelector && (
         <ProductListSelector 
           productId={product.id}
           currentListId={product.listId}
           onClose={() => setShowListSelector(false)}
+        />
+      )}
+
+      {/* Add to List Modal for products not in user's collection */}
+      {showAddToListModal && (
+        <ListSelectorModal 
+          productId={product.id}
+          onClose={() => setShowAddToListModal(false)}
         />
       )}
     </>

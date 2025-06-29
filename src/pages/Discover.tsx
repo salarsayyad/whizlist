@@ -52,6 +52,22 @@ const Discover = () => {
 
   const filteredProducts = getFilteredProducts(selectedTimeRange);
 
+  // Create a set of product URLs that are already in the user's collection
+  const userProductUrls = new Set(products.map(product => product.productUrl));
+
+  // For demo purposes, we'll simulate some "discovered" products that aren't in the user's collection
+  // In a real app, these would come from a different API endpoint or be marked differently
+  const getDiscoveredProducts = () => {
+    // For now, we'll treat all products as if they're in the user's collection
+    // In the future, you can modify this logic to distinguish between user's products and discovered products
+    return filteredProducts.map(product => ({
+      ...product,
+      isInUserCollection: true // Change this logic based on your app's needs
+    }));
+  };
+
+  const discoveredProducts = getDiscoveredProducts();
+
   const timeRangeOptions = [
     { value: 'day' as TimeRange, label: 'Today', icon: Clock },
     { value: 'week' as TimeRange, label: 'This Week', icon: Calendar },
@@ -131,7 +147,7 @@ const Discover = () => {
             transition={{ duration: 0.3, delay: 0.1 }}
           >
             <h2 className="text-lg font-medium text-primary-900">
-              {getTimeRangeLabel(selectedTimeRange)} ({filteredProducts.length} products)
+              {getTimeRangeLabel(selectedTimeRange)} ({discoveredProducts.length} products)
             </h2>
           </motion.div>
         </div>
@@ -165,7 +181,7 @@ const Discover = () => {
       </div>
 
       {/* Products Grid */}
-      {filteredProducts.length === 0 ? (
+      {discoveredProducts.length === 0 ? (
         <motion.div 
           className="text-center py-16 card p-8"
           initial={{ opacity: 0, y: 20 }}
@@ -209,7 +225,7 @@ const Discover = () => {
               animate={{ opacity: 1 }}
               transition={{ staggerChildren: 0.1 }}
             >
-              {filteredProducts.map((product, index) => (
+              {discoveredProducts.map((product, index) => (
                 <motion.div
                   key={product.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -221,6 +237,8 @@ const Discover = () => {
                     showPin={false} // Don't show pin in Discover page
                     showTags={false} // Don't show tags in Discover page
                     showActions={false} // Don't show comment/share buttons in Discover page
+                    showAddToList={true} // Show "Add to List" button for products not in collection
+                    isInUserCollection={product.isInUserCollection}
                   />
                 </motion.div>
               ))}
@@ -232,7 +250,7 @@ const Discover = () => {
               animate={{ opacity: 1 }}
               transition={{ staggerChildren: 0.05 }}
             >
-              {filteredProducts.map((product, index) => (
+              {discoveredProducts.map((product, index) => (
                 <motion.div
                   key={product.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -296,25 +314,6 @@ const ProductListItem = ({ product }: { product: any }) => {
             </span>
           </div>
         </div>
-        
-        {/* Show tags in list view for Discover page */}
-        {product.tags && product.tags.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1">
-            {product.tags.slice(0, 3).map((tag: string) => (
-              <span 
-                key={tag} 
-                className="badge-primary text-xs"
-              >
-                {tag}
-              </span>
-            ))}
-            {product.tags.length > 3 && (
-              <span className="text-xs text-primary-500">
-                +{product.tags.length - 3} more
-              </span>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
