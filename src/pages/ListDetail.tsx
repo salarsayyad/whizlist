@@ -350,6 +350,9 @@ const ListDetail = () => {
         )}
       </div>
       
+      {/* Divider line between header and content */}
+      <div className="h-px bg-primary-200 mb-6 mt-4"></div>
+      
       {/* Main content area - adjust margin when sidebar is open */}
       <div className={`transition-all duration-300 ${showCommentsSidebar ? 'lg:mr-96' : ''}`}>
         <div>
