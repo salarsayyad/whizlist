@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Bell, Key, LogOut } from 'lucide-react';
+import { User, Bell, Key, LogOut, Construction, Wrench } from 'lucide-react';
 import Button from '../components/ui/Button';
 import { useAuthStore } from '../store/authStore';
+import { motion } from 'framer-motion';
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState('account');
@@ -131,7 +132,35 @@ const Settings = () => {
               <div>
                 <h2 className="text-lg font-medium text-primary-900 mb-4">Notification Preferences</h2>
                 
-                <div className="space-y-4">
+                {/* Under Construction Message */}
+                <motion.div 
+                  className="mb-6 p-4 bg-warning-50 border border-warning-200 rounded-lg"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-warning-100 rounded-full">
+                      <Construction size={20} className="text-warning-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-warning-800 mb-1">Under Construction</h3>
+                      <p className="text-sm text-warning-700">
+                        We're currently enhancing our notification system to give you more control over your preferences.
+                        This feature will be available soon!
+                      </p>
+                      <div className="mt-3 flex items-center gap-2">
+                        <Wrench size={14} className="text-warning-500" />
+                        <div className="bg-warning-200 h-1.5 rounded-full w-full overflow-hidden">
+                          <div className="bg-warning-500 h-full rounded-full" style={{ width: '65%' }}></div>
+                        </div>
+                        <span className="text-xs text-warning-600 font-medium">65%</span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+                
+                <div className="space-y-4 opacity-60 pointer-events-none">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-primary-900 font-medium">Email Notifications</h3>
