@@ -206,9 +206,10 @@ const ProductDetail = () => {
 
       {/* Main content area - adjust margin when sidebar is open */}
       <div className={`transition-all duration-300 ${showCommentsSidebar ? 'lg:mr-96' : ''}`}>
-        {/* Product Header Section - Image on Right, Content on Left */}
+        {/* Product Header Section */}
         <div className="card p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-6">
+          {/* Desktop Layout: Image on Right, Content on Left */}
+          <div className="hidden lg:flex gap-6">
             {/* Left Side - Product Info */}
             <div className="lg:w-2/3 flex flex-col">
               {/* Product Title */}
@@ -267,7 +268,7 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              {/* Description - Moved under tags */}
+              {/* Description - Desktop */}
               {product.description && (
                 <div className="mb-6">
                   <h3 className="text-lg font-medium text-primary-900 mb-3">Description</h3>
@@ -278,7 +279,7 @@ const ProductDetail = () => {
               )}
             </div>
 
-            {/* Right Side - Product Image */}
+            {/* Right Side - Product Image (Desktop) */}
             <div className="lg:w-1/3 flex-shrink-0">
               <div className="aspect-square rounded-lg overflow-hidden bg-primary-100 sticky top-6">
                 {product.imageUrl ? (
@@ -294,6 +295,92 @@ const ProductDetail = () => {
                 )}
               </div>
             </div>
+          </div>
+
+          {/* Mobile Layout: Stacked Content */}
+          <div className="lg:hidden">
+            {/* Product Title */}
+            <h1 className="text-2xl font-bold text-primary-900 mb-3">{product.title}</h1>
+            
+            {/* Product URL */}
+            <div className="mb-3">
+              <a 
+                href={product.productUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-accent-600 hover:text-accent-700 hover:underline text-sm"
+              >
+                {new URL(product.productUrl).hostname}
+              </a>
+            </div>
+            
+            {/* Product Price */}
+            {product.price && (
+              <p className="text-xl font-semibold text-primary-800 mb-4">{product.price}</p>
+            )}
+            
+            {/* Tags Section */}
+            <div className="mb-6">
+              <div className="flex flex-wrap gap-1">
+                {product.tags.map((tag) => (
+                  <div
+                    key={tag}
+                    className="group relative inline-flex items-center"
+                  >
+                    <button
+                      className="badge-primary hover:bg-primary-200 transition-all duration-200 pr-2 group-hover:pr-6"
+                      onClick={() => handleTagClick(tag)}
+                    >
+                      {tag}
+                    </button>
+                    <button
+                      className="absolute right-1 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-0.5 rounded-full hover:bg-primary-300 text-primary-600 hover:text-primary-800"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveTag(tag);
+                      }}
+                      title={`Remove ${tag} tag`}
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+                <button 
+                  className="badge bg-primary-50 text-primary-600 hover:bg-primary-100 flex items-center transition-colors"
+                  onClick={() => setShowAddTagModal(true)}
+                >
+                  <Plus size={12} className="mr-1" />
+                  Add Tag
+                </button>
+              </div>
+            </div>
+
+            {/* Product Image (Mobile - Before Description) */}
+            <div className="mb-6">
+              <div className="aspect-square rounded-lg overflow-hidden bg-primary-100 max-w-sm mx-auto">
+                {product.imageUrl ? (
+                  <img 
+                    src={product.imageUrl} 
+                    alt={product.title} 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-primary-500">
+                    <span>No image available</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Description (Mobile - After Image) */}
+            {product.description && (
+              <div className="mb-6">
+                <h3 className="text-lg font-medium text-primary-900 mb-3">Description</h3>
+                <p className="text-primary-700 leading-relaxed">
+                  {product.description}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
