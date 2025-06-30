@@ -7,8 +7,16 @@ import { motion } from 'framer-motion';
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState('account');
-  const { signOut } = useAuthStore();
+  const { signOut, user } = useAuthStore();
   const navigate = useNavigate();
+  
+  // Password change state
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   
   const handleLogout = async () => {
     try {
@@ -16,6 +24,73 @@ const Settings = () => {
       navigate('/');
     } catch (error) {
       console.error('Error logging out:', error);
+    }
+  };
+  
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Reset messages
+    setPasswordError('');
+    setPasswordSuccess('');
+    
+    // Validate passwords
+    if (!currentPassword) {
+      setPasswordError('Current password is required');
+      return;
+    }
+    
+    if (!newPassword) {
+      setPasswordError('New password is required');
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      setPasswordError('New password must be at least 6 characters');
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      setPasswordError('New passwords do not match');
+      return;
+    }
+    
+    setIsChangingPassword(true);
+    
+    try {
+      const { supabase } = await import('../lib/supabase');
+      
+      // First verify the current password by attempting to sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user?.email || '',
+        password: currentPassword
+      });
+      
+      if (signInError) {
+        setPasswordError('Current password is incorrect');
+        setIsChangingPassword(false);
+        return;
+      }
+      
+      // Update the password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+      
+      if (updateError) {
+        setPasswordError(updateError.message);
+      } else {
+        setPasswordSuccess('Password updated successfully');
+        // Clear form
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      }
+    } catch (error) {
+      setPasswordError('An unexpected error occurred. Please try again.');
+      console.error('Error changing password:', error);
+    } finally {
+      setIsChangingPassword(false);
     }
   };
   
@@ -89,7 +164,7 @@ const Settings = () => {
                       type="text"
                       id="name"
                       className="input"
-                      defaultValue="John Smith"
+                      defaultValue={user?.user_metadata?.full_name || ''}
                     />
                   </div>
                   
@@ -101,8 +176,12 @@ const Settings = () => {
                       type="email"
                       id="email"
                       className="input"
-                      defaultValue="john.smith@example.com"
+                      defaultValue={user?.email || ''}
+                      disabled
                     />
+                    <p className="mt-1 text-xs text-primary-500">
+                      Email address cannot be changed. Contact support if you need to update your email.
+                    </p>
                   </div>
                   
                   <div>
@@ -110,8 +189,22 @@ const Settings = () => {
                       Profile Picture
                     </label>
                     <div className="flex items-center gap-4">
-                      <div className="h-16 w-16 rounded-full bg-primary-200 flex items-center justify-center text-primary-700 font-medium text-xl">
-                        JS
+                      <div className="h-16 w-16 rounded-full bg-primary-200 flex items-center justify-center text-primary-700 font-medium text-xl overflow-hidden">
+                        {user?.user_metadata?.avatar_url ? (
+                          <img 
+                            src={user.user_metadata.avatar_url} 
+                            alt={user.user_metadata?.full_name || 'User'} 
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span>
+                            {user?.user_metadata?.full_name?.split(' ')
+                              .map(n => n[0])
+                              .join('')
+                              .toUpperCase()
+                              .substring(0, 2) || 'U'}
+                          </span>
+                        )}
                       </div>
                       <Button variant="secondary">
                         Change
@@ -205,7 +298,19 @@ const Settings = () => {
                   <div>
                     <h3 className="text-primary-900 font-medium mb-2">Change Password</h3>
                     
-                    <div className="space-y-4">
+                    <form onSubmit={handlePasswordChange} className="space-y-4">
+                      {passwordError && (
+                        <div className="p-3 bg-error-50 border border-error-200 rounded-md text-error-700 text-sm">
+                          {passwordError}
+                        </div>
+                      )}
+                      
+                      {passwordSuccess && (
+                        <div className="p-3 bg-success-50 border border-success-200 rounded-md text-success-700 text-sm">
+                          {passwordSuccess}
+                        </div>
+                      )}
+                      
                       <div>
                         <label htmlFor="current-password" className="block text-sm font-medium text-primary-700 mb-1">
                           Current Password
@@ -214,6 +319,9 @@ const Settings = () => {
                           type="password"
                           id="current-password"
                           className="input"
+                          value={currentPassword}
+                          onChange={(e) => setCurrentPassword(e.target.value)}
+                          required
                         />
                       </div>
                       
@@ -225,7 +333,14 @@ const Settings = () => {
                           type="password"
                           id="new-password"
                           className="input"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          required
+                          minLength={6}
                         />
+                        <p className="mt-1 text-xs text-primary-500">
+                          Password must be at least 6 characters long
+                        </p>
                       </div>
                       
                       <div>
@@ -236,24 +351,22 @@ const Settings = () => {
                           type="password"
                           id="confirm-password"
                           className="input"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          required
                         />
                       </div>
-                    </div>
-                    
-                    <div className="mt-4">
-                      <Button>
-                        Update Password
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="pt-4 border-t border-primary-100">
-                    <h3 className="text-primary-900 font-medium mb-2">Two-Factor Authentication</h3>
-                    <p className="text-primary-600 mb-4">Add an extra layer of security to your account</p>
-                    
-                    <Button variant="secondary">
-                      Enable 2FA
-                    </Button>
+                      
+                      <div className="pt-2">
+                        <Button
+                          type="submit"
+                          isLoading={isChangingPassword}
+                          disabled={isChangingPassword || !currentPassword || !newPassword || !confirmPassword}
+                        >
+                          Update Password
+                        </Button>
+                      </div>
+                    </form>
                   </div>
                 </div>
               </div>
