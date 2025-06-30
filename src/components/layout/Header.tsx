@@ -1,4 +1,4 @@
-import { Menu, Bell, Search, Plus, Zap, X, ChevronDown } from 'lucide-react';
+import { Menu, Search, Plus, Zap, X, ChevronDown } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu as HeadlessMenu } from '@headlessui/react';
@@ -173,12 +173,16 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
           </button>
         </div>
         
-        {/* Right Section - Notifications and Profile */}
+        {/* Right Section - Bolt Logo and Profile */}
         <div className="flex items-center space-x-2 flex-shrink-0">
-          <button className="p-2 rounded-md text-primary-500 hover:text-primary-700 hover:bg-primary-100 relative">
-            <Bell size={20} />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-accent-500 rounded-full"></span>
-          </button>
+          {/* Bolt Logo */}
+          <div className="p-2 rounded-md hover:bg-primary-100 transition-colors">
+            <img 
+              src="/bolt_white_circle_360x360.png" 
+              alt="Bolt Logo" 
+              className="w-6 h-6"
+            />
+          </div>
           
           {/* User Dropdown Menu */}
           <HeadlessMenu as="div" className="relative">
