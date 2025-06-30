@@ -266,6 +266,16 @@ const ProductDetail = () => {
                   </button>
                 </div>
               </div>
+
+              {/* Description - Moved under tags */}
+              {product.description && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-medium text-primary-900 mb-3">Description</h3>
+                  <p className="text-primary-700 leading-relaxed">
+                    {product.description}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Right Side - Product Image */}
@@ -285,16 +295,6 @@ const ProductDetail = () => {
               </div>
             </div>
           </div>
-
-          {/* Description - Full Width Below */}
-          {product.description && (
-            <div className="mt-6 pt-6 border-t border-primary-200">
-              <h3 className="text-lg font-medium text-primary-900 mb-3">Description</h3>
-              <p className="text-primary-700 leading-relaxed">
-                {product.description}
-              </p>
-            </div>
-          )}
         </div>
       </div>
 
