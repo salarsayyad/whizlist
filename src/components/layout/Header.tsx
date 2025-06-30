@@ -175,12 +175,19 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
         
         {/* Right Section - Bolt Logo and Profile */}
         <div className="flex items-center space-x-2 flex-shrink-0">
-          {/* Bolt Logo - Full height */}
-          <img 
-            src="/bolt_white_circle_360x360.png" 
-            alt="Bolt Logo" 
-            className="h-14 w-14"
-          />
+          {/* Bolt Logo - Full height with link */}
+          <a 
+            href="https://bolt.new/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="block"
+          >
+            <img 
+              src="/bolt_white_circle_360x360.png" 
+              alt="Bolt Logo" 
+              className="h-14 w-14"
+            />
+          </a>
           
           {/* User Dropdown Menu */}
           <HeadlessMenu as="div" className="relative">
