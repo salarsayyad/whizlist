@@ -1,4 +1,4 @@
-import { X, Grid, List as ListIcon, FolderOpen, Share2, Star, Trash2, Settings, Plus, ChevronDown, ChevronRight, Package, TrendingUp, Pin } from 'lucide-react';
+import { X, Grid, List as ListIcon, FolderOpen, Plus, ChevronDown, ChevronRight, Package, TrendingUp, Pin } from 'lucide-react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { useState, useEffect } from 'react';
@@ -231,42 +231,6 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                 <span>All Products</span>
               </NavLink>
             </li>
-            <li>
-              <NavLink 
-                to="/starred" 
-                className={({ isActive }) => 
-                  cn("nav-link", isActive && "nav-link-active")
-                }
-                onClick={handleNavLinkClick}
-              >
-                <Star size={18} />
-                <span>Starred</span>
-              </NavLink>
-            </li>
-            <li>
-              <NavLink 
-                to="/shared" 
-                className={({ isActive }) => 
-                  cn("nav-link", isActive && "nav-link-active")
-                }
-                onClick={handleNavLinkClick}
-              >
-                <Share2 size={18} />
-                <span>Shared with me</span>
-              </NavLink>
-            </li>
-            <li>
-              <NavLink 
-                to="/trash" 
-                className={({ isActive }) => 
-                  cn("nav-link", isActive && "nav-link-active")
-                }
-                onClick={handleNavLinkClick}
-              >
-                <Trash2 size={18} />
-                <span>Trash</span>
-              </NavLink>
-            </li>
           </ul>
           
           <div className="mt-8">
@@ -441,19 +405,6 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             </ul>
           </div>
         </nav>
-        
-        <div className="border-t border-primary-200 p-4">
-          <NavLink 
-            to="/settings"
-            className={({ isActive }) => 
-              cn("nav-link", isActive && "nav-link-active")
-            }
-            onClick={handleNavLinkClick}
-          >
-            <Settings size={18} />
-            <span>Settings</span>
-          </NavLink>
-        </div>
       </aside>
 
       {showCreateFolder && (
