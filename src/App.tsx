@@ -8,6 +8,7 @@ import FolderDetail from './pages/FolderDetail';
 import TagDetail from './pages/TagDetail';
 import Unassigned from './pages/Unassigned';
 import Settings from './pages/Settings';
+import UnderConstruction from './pages/UnderConstruction';
 import NotFound from './pages/NotFound';
 import Landing from './pages/Landing';
 import Login from './pages/auth/Login';
@@ -34,6 +35,7 @@ function App() {
           <Route path="/tag/:tag" element={<TagDetail />} />
           <Route path="/unassigned" element={<Unassigned />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/under-construction" element={<UnderConstruction />} />
         </Route>
       </Route>
       

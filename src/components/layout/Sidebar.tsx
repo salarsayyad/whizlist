@@ -169,6 +169,11 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     navigate('/unassigned');
     handleNavLinkClick();
   };
+
+  const handleUnderConstructionClick = () => {
+    navigate('/under-construction');
+    handleNavLinkClick();
+  };
   
   return (
     <>
@@ -232,40 +237,31 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
               </NavLink>
             </li>
             <li>
-              <NavLink 
-                to="/starred" 
-                className={({ isActive }) => 
-                  cn("nav-link", isActive && "nav-link-active")
-                }
-                onClick={handleNavLinkClick}
+              <button 
+                className="nav-link w-full text-left"
+                onClick={handleUnderConstructionClick}
               >
                 <Star size={18} />
                 <span>Starred</span>
-              </NavLink>
+              </button>
             </li>
             <li>
-              <NavLink 
-                to="/shared" 
-                className={({ isActive }) => 
-                  cn("nav-link", isActive && "nav-link-active")
-                }
-                onClick={handleNavLinkClick}
+              <button 
+                className="nav-link w-full text-left"
+                onClick={handleUnderConstructionClick}
               >
                 <Share2 size={18} />
                 <span>Shared with me</span>
-              </NavLink>
+              </button>
             </li>
             <li>
-              <NavLink 
-                to="/trash" 
-                className={({ isActive }) => 
-                  cn("nav-link", isActive && "nav-link-active")
-                }
-                onClick={handleNavLinkClick}
+              <button 
+                className="nav-link w-full text-left"
+                onClick={handleUnderConstructionClick}
               >
                 <Trash2 size={18} />
                 <span>Trash</span>
-              </NavLink>
+              </button>
             </li>
           </ul>
           
