@@ -37,7 +37,7 @@ const Landing = () => {
           <Button size="lg" className="mb-16">Get Started - It's Free</Button>
         </Link>
         
-        <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto text-left">
+        <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto text-left mb-16">
           <div className="flex items-start gap-3">
             <CheckCircle className="text-accent-500 flex-shrink-0" size={24} />
             <div>
@@ -59,6 +59,22 @@ const Landing = () => {
               <p className="text-primary-600">Share lists with friends and family for easy collaboration.</p>
             </div>
           </div>
+        </div>
+
+        {/* Bolt Logo */}
+        <div className="flex justify-center">
+          <a 
+            href="https://bolt.new/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="block"
+          >
+            <img 
+              src="/bolt_black_circle_360x360.png" 
+              alt="Powered by Bolt" 
+              className="w-32 h-32 opacity-80 hover:opacity-100 transition-opacity duration-200"
+            />
+          </a>
         </div>
       </main>
     </div>
