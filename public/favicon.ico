@@ -1,0 +1,12 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- White background -->
+  <rect width="16" height="16" fill="white"/>
+  
+  <!-- Green lightning bolt (Zap icon) scaled down -->
+  <path d="M9.33 2L4.67 9.33H8L6.67 14L11.33 6.67H8L9.33 2Z" 
+        fill="#16a34a" 
+        stroke="#16a34a" 
+        stroke-width="0.75" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"/>
+</svg>
