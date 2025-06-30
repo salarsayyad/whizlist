@@ -27,33 +27,50 @@ export function truncateText(text: string, maxLength: number): string {
 export async function extractProductDetails(url: string) {
   try {
     // First try extract-gpt for quick initial data
-    const { data: gptData, error: gptError } = await supabase.functions.invoke('extract-gpt', {
-      body: { 
-        url,
-        fields: [
-          { name: 'title', type: 'string', description: 'Product title or name' },
-          { name: 'description', type: 'string', description: 'Product description' },
-          { name: 'price', type: 'string', description: 'Product price with currency symbol' },
-          { name: 'image_url', type: 'string', description: 'Main product image URL' }
-        ]
+    let initialProduct;
+    
+    try {
+      const { data: gptData, error: gptError } = await supabase.functions.invoke('extract-gpt', {
+        body: { 
+          url,
+          fields: [
+            { name: 'title', type: 'string', description: 'Product title or name' },
+            { name: 'description', type: 'string', description: 'Product description' },
+            { name: 'price', type: 'string', description: 'Product price with currency symbol' },
+            { name: 'image_url', type: 'string', description: 'Main product image URL' }
+          ]
+        }
+      });
+
+      if (gptError) {
+        console.warn('GPT extraction failed, using fallback data:', gptError);
+        throw gptError;
       }
-    });
 
-    if (gptError) {
-      console.warn('GPT extraction failed:', gptError);
-      throw gptError;
+      // Initial product data from GPT
+      initialProduct = {
+        title: gptData?.data?.title || new URL(url).hostname,
+        description: gptData?.data?.description || url,
+        price: gptData?.data?.price || null,
+        imageUrl: gptData?.data?.image_url || null,
+        productUrl: url,
+        isPinned: false,
+        tags: []
+      };
+    } catch (gptError) {
+      console.warn('GPT extraction failed, using minimal fallback data:', gptError);
+      
+      // Fallback to minimal product data if GPT extraction fails
+      initialProduct = {
+        title: new URL(url).hostname,
+        description: url,
+        price: null,
+        imageUrl: null,
+        productUrl: url,
+        isPinned: false,
+        tags: []
+      };
     }
-
-    // Initial product data from GPT
-    const initialProduct = {
-      title: gptData?.data?.title || new URL(url).hostname,
-      description: gptData?.data?.description || url,
-      price: gptData?.data?.price || null,
-      imageUrl: gptData?.data?.image_url || null,
-      productUrl: url,
-      isPinned: false,
-      tags: []
-    };
 
     return {
       product: initialProduct,
@@ -126,13 +143,80 @@ export async function extractProductDetails(url: string) {
   } catch (error) {
     console.error('Error extracting product details:', error);
     
-    if (error instanceof Error) {
-      if (error.message.includes('Invalid URL')) {
-        throw new Error('Please enter a valid product URL starting with http:// or https://');
-      }
+    // Even if everything fails, provide a minimal fallback
+    try {
+      const fallbackProduct = {
+        title: new URL(url).hostname,
+        description: url,
+        price: null,
+        imageUrl: null,
+        productUrl: url,
+        isPinned: false,
+        tags: []
+      };
+
+      return {
+        product: fallbackProduct,
+        updateDetails: async (productId: string) => {
+          // Still attempt Firecrawl extraction even if initial extraction failed
+          try {
+            useProductStore.getState().setExtracting(productId, true);
+
+            const { data: firecrawlData, error: firecrawlError } = await supabase.functions.invoke('extract-firecrawl', {
+              body: { url }
+            });
+
+            if (!firecrawlError && firecrawlData) {
+              let finalImageUrl = firecrawlData.image_url;
+
+              // If we have an image URL, upload it to Supabase Storage
+              if (finalImageUrl && finalImageUrl.startsWith('http')) {
+                try {
+                  const { user } = await supabase.auth.getUser();
+                  if (user.data.user) {
+                    const uploadResult = await uploadImageFromUrl(
+                      finalImageUrl,
+                      productId,
+                      user.data.user.id
+                    );
+
+                    if (uploadResult.success && uploadResult.url) {
+                      finalImageUrl = uploadResult.url;
+                    }
+                  }
+                } catch (uploadError) {
+                  console.warn('Failed to upload image to storage, using original URL:', uploadError);
+                }
+              }
+
+              // Update the product with enhanced details
+              const { data: updatedProduct, error: updateError } = await supabase
+                .from('products')
+                .update({
+                  title: firecrawlData.title || fallbackProduct.title,
+                  description: firecrawlData.description || fallbackProduct.description,
+                  price: firecrawlData.price || fallbackProduct.price,
+                  image_url: finalImageUrl
+                })
+                .eq('id', productId)
+                .select()
+                .single();
+
+              if (!updateError && updatedProduct) {
+                useProductStore.getState().updateProductInStore(mapDbProductToUiProduct(updatedProduct));
+              }
+            }
+          } catch (firecrawlError) {
+            console.warn('Firecrawl extraction also failed:', firecrawlError);
+          } finally {
+            useProductStore.getState().setExtracting(productId, false);
+          }
+        }
+      };
+    } catch (urlError) {
+      // If even URL parsing fails, throw a user-friendly error
+      throw new Error('Please enter a valid product URL starting with http:// or https://');
     }
-    
-    throw new Error('Could not extract product details. Please check if the product page is accessible and try again.');
   }
 }
 
