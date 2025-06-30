@@ -1,11 +1,13 @@
-import { Menu, Bell, Search, Plus, Zap, X } from 'lucide-react';
+import { Menu, Bell, Search, Plus, Zap, X, ChevronDown } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Menu as HeadlessMenu } from '@headlessui/react';
 import AddProductModal from '../product/AddProductModal';
 import SearchResults from '../search/SearchResults';
 import { useAuthStore } from '../../store/authStore';
 import { useProductStore } from '../../store/productStore';
 import { useClickOutside } from '../../hooks/useClickOutside';
+import { cn } from '../../lib/utils';
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -17,7 +19,7 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedSearchIndex, setSelectedSearchIndex] = useState(-1);
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, signOut } = useAuthStore();
   const { fetchAllProducts } = useProductStore();
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -88,6 +90,15 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
   const handleSearchInputFocus = () => {
     if (searchQuery.trim().length > 0) {
       setShowSearchResults(true);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Error logging out:', error);
     }
   };
 
@@ -169,19 +180,72 @@ const Header = ({ onMenuToggle }: HeaderProps) => {
             <span className="absolute top-1 right-1 w-2 h-2 bg-accent-500 rounded-full"></span>
           </button>
           
-          <div className="h-8 w-8 rounded-full bg-primary-200 flex items-center justify-center text-primary-700 font-medium">
-            {user?.user_metadata?.avatar_url ? (
-              <img
-                src={user.user_metadata.avatar_url}
-                alt={user.user_metadata?.full_name || 'User'}
-                className="w-8 h-8 rounded-full"
-              />
-            ) : (
-              <span className="text-sm">
-                {getInitials(user?.user_metadata?.full_name)}
-              </span>
-            )}
-          </div>
+          {/* User Dropdown Menu */}
+          <HeadlessMenu as="div" className="relative">
+            <HeadlessMenu.Button className="flex items-center gap-1 p-1 rounded-md hover:bg-primary-100 transition-colors">
+              <div className="h-8 w-8 rounded-full bg-primary-200 flex items-center justify-center text-primary-700 font-medium">
+                {user?.user_metadata?.avatar_url ? (
+                  <img
+                    src={user.user_metadata.avatar_url}
+                    alt={user.user_metadata?.full_name || 'User'}
+                    className="w-8 h-8 rounded-full"
+                  />
+                ) : (
+                  <span className="text-sm">
+                    {getInitials(user?.user_metadata?.full_name)}
+                  </span>
+                )}
+              </div>
+              <ChevronDown size={14} className="text-primary-500" />
+            </HeadlessMenu.Button>
+
+            <HeadlessMenu.Items className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-elevated border border-primary-200 py-1 z-50 focus:outline-none">
+              {/* User Info */}
+              <div className="px-4 py-3 border-b border-primary-100">
+                <p className="text-sm font-medium text-primary-900 truncate">
+                  {user?.user_metadata?.full_name || 'User'}
+                </p>
+                <p className="text-xs text-primary-500 truncate">
+                  {user?.email}
+                </p>
+              </div>
+
+              {/* Menu Items */}
+              <HeadlessMenu.Item>
+                {({ active }) => (
+                  <button
+                    className={cn(
+                      "flex items-center gap-3 w-full px-4 py-2 text-sm transition-colors",
+                      active ? "bg-primary-50 text-primary-900" : "text-primary-700"
+                    )}
+                    onClick={() => navigate('/settings')}
+                  >
+                    <div className="w-4 h-4 rounded bg-primary-200 flex items-center justify-center">
+                      <span className="text-xs">⚙️</span>
+                    </div>
+                    <span>Settings</span>
+                  </button>
+                )}
+              </HeadlessMenu.Item>
+
+              <HeadlessMenu.Item>
+                {({ active }) => (
+                  <button
+                    className={cn(
+                      "flex items-center gap-3 w-full px-4 py-2 text-sm transition-colors",
+                      active ? "bg-error-50 text-error-900" : "text-error-700"
+                    )}
+                    onClick={handleLogout}
+                  >
+                    <div className="w-4 h-4 rounded bg-error-100 flex items-center justify-center">
+                      <span className="text-xs">🚪</span>
+                    </div>
+                    <span>Log out</span>
+                  </button>
+                )}
+              </HeadlessMenu.Item>
+            </HeadlessMenu.Items>
+          </HeadlessMenu>
         </div>
       </div>
       
