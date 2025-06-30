@@ -4,14 +4,29 @@ import { useAuthStore } from '../store/authStore';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
+// Enhanced error handling for missing environment variables
+if (!supabaseUrl) {
+  console.error('Missing VITE_SUPABASE_URL environment variable');
+  throw new Error('Supabase URL is required. Please check your environment configuration.');
+}
+
+if (!supabaseAnonKey) {
+  console.error('Missing VITE_SUPABASE_ANON_KEY environment variable');
+  throw new Error('Supabase Anonymous Key is required. Please check your environment configuration.');
 }
 
 // Validate URL format
 if (!supabaseUrl.startsWith('https://')) {
+  console.error('Invalid Supabase URL format:', supabaseUrl);
   throw new Error('Invalid Supabase URL format. Must start with https://');
 }
+
+// Log environment status (without exposing sensitive data)
+console.log('Supabase configuration:', {
+  url: supabaseUrl ? `${supabaseUrl.substring(0, 20)}...` : 'MISSING',
+  hasAnonKey: !!supabaseAnonKey,
+  environment: import.meta.env.MODE
+});
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
